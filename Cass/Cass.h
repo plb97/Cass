@@ -8,6 +8,5 @@
 
 #import <Foundation/Foundation.h>
 
-@interface Cass : NSObject
+#import <cassandra.h>
 
-@end

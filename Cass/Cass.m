@@ -7,7 +7,5 @@
 //
 
 #import "Cass.h"
+#import "Cass-Swift.h"
 
-@implementation Cass
-
-@end

@@ -9,12 +9,32 @@
 /* Begin PBXBuildFile section */
 		3708E56E1FE93D7A00365543 /* Cass.h in Headers */ = {isa = PBXBuildFile; fileRef = 3708E56D1FE93D7A00365543 /* Cass.h */; };
 		3708E5701FE93D7A00365543 /* Cass.m in Sources */ = {isa = PBXBuildFile; fileRef = 3708E56F1FE93D7A00365543 /* Cass.m */; };
+		3708E5781FE93DF600365543 /* Cass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3708E5771FE93DF600365543 /* Cass.swift */; };
+		373FD3A61FE94C9100B14377 /* Batch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD39D1FE94C9100B14377 /* Batch.swift */; };
+		373FD3A71FE94C9100B14377 /* Listener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD39F1FE94C9100B14377 /* Listener.swift */; };
+		373FD3A81FE94C9100B14377 /* Cluster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD3A01FE94C9100B14377 /* Cluster.swift */; };
+		373FD3A91FE94C9100B14377 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD3A11FE94C9100B14377 /* Session.swift */; };
+		373FD3AA1FE94C9100B14377 /* Future.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD3A21FE94C9100B14377 /* Future.swift */; };
+		373FD3AB1FE94C9100B14377 /* Resultset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD3A31FE94C9100B14377 /* Resultset.swift */; };
+		373FD3AC1FE94C9100B14377 /* Statement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD3A41FE94C9100B14377 /* Statement.swift */; };
+		373FD3AD1FE94C9100B14377 /* Authenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD3A51FE94C9100B14377 /* Authenticator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		3708E56A1FE93D7A00365543 /* libCass.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCass.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		3708E56D1FE93D7A00365543 /* Cass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Cass.h; sourceTree = "<group>"; };
 		3708E56F1FE93D7A00365543 /* Cass.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Cass.m; sourceTree = "<group>"; };
+		3708E5761FE93DF600365543 /* Cass-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Cass-Bridging-Header.h"; sourceTree = "<group>"; };
+		3708E5771FE93DF600365543 /* Cass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cass.swift; sourceTree = "<group>"; };
+		3708E5791FE93E4A00365543 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		373FD39D1FE94C9100B14377 /* Batch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Batch.swift; sourceTree = "<group>"; };
+		373FD39F1FE94C9100B14377 /* Listener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Listener.swift; sourceTree = "<group>"; };
+		373FD3A01FE94C9100B14377 /* Cluster.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Cluster.swift; sourceTree = "<group>"; };
+		373FD3A11FE94C9100B14377 /* Session.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
+		373FD3A21FE94C9100B14377 /* Future.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Future.swift; sourceTree = "<group>"; };
+		373FD3A31FE94C9100B14377 /* Resultset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Resultset.swift; sourceTree = "<group>"; };
+		373FD3A41FE94C9100B14377 /* Statement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Statement.swift; sourceTree = "<group>"; };
+		373FD3A51FE94C9100B14377 /* Authenticator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Authenticator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,6 +51,7 @@
 		3708E5611FE93D7A00365543 = {
 			isa = PBXGroup;
 			children = (
+				3708E5791FE93E4A00365543 /* Config.xcconfig */,
 				3708E56C1FE93D7A00365543 /* Cass */,
 				3708E56B1FE93D7A00365543 /* Products */,
 			);
@@ -47,8 +68,18 @@
 		3708E56C1FE93D7A00365543 /* Cass */ = {
 			isa = PBXGroup;
 			children = (
+				373FD3A51FE94C9100B14377 /* Authenticator.swift */,
+				373FD39D1FE94C9100B14377 /* Batch.swift */,
+				373FD3A01FE94C9100B14377 /* Cluster.swift */,
+				373FD3A21FE94C9100B14377 /* Future.swift */,
+				373FD39F1FE94C9100B14377 /* Listener.swift */,
+				373FD3A31FE94C9100B14377 /* Resultset.swift */,
+				373FD3A11FE94C9100B14377 /* Session.swift */,
+				373FD3A41FE94C9100B14377 /* Statement.swift */,
 				3708E56D1FE93D7A00365543 /* Cass.h */,
 				3708E56F1FE93D7A00365543 /* Cass.m */,
+				3708E5771FE93DF600365543 /* Cass.swift */,
+				3708E5761FE93DF600365543 /* Cass-Bridging-Header.h */,
 			);
 			path = Cass;
 			sourceTree = "<group>";
@@ -95,6 +126,7 @@
 				TargetAttributes = {
 					3708E5691FE93D7A00365543 = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 0920;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -121,7 +153,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				373FD3AC1FE94C9100B14377 /* Statement.swift in Sources */,
+				373FD3A61FE94C9100B14377 /* Batch.swift in Sources */,
+				373FD3AA1FE94C9100B14377 /* Future.swift in Sources */,
 				3708E5701FE93D7A00365543 /* Cass.m in Sources */,
+				373FD3A91FE94C9100B14377 /* Session.swift in Sources */,
+				373FD3AD1FE94C9100B14377 /* Authenticator.swift in Sources */,
+				3708E5781FE93DF600365543 /* Cass.swift in Sources */,
+				373FD3AB1FE94C9100B14377 /* Resultset.swift in Sources */,
+				373FD3A71FE94C9100B14377 /* Listener.swift in Sources */,
+				373FD3A81FE94C9100B14377 /* Cluster.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,21 +274,32 @@
 		};
 		3708E5741FE93D7A00365543 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3708E5791FE93E4A00365543 /* Config.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = UT8MHLKDHU;
 				EXECUTABLE_PREFIX = lib;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Cass/Cass-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
 		3708E5751FE93D7A00365543 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3708E5791FE93E4A00365543 /* Config.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = UT8MHLKDHU;
 				EXECUTABLE_PREFIX = lib;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Cass/Cass-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
