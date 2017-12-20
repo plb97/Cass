@@ -36,6 +36,8 @@
 		373FD3A41FE94C9100B14377 /* Statement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Statement.swift; sourceTree = "<group>"; };
 		373FD3A51FE94C9100B14377 /* Authenticator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Authenticator.swift; sourceTree = "<group>"; };
 		373FD3C81FEA754B00B14377 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		373FD3CC1FEA798000B14377 /* LICENCE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENCE.md; sourceTree = "<group>"; };
+		373FD3CD1FEA798000B14377 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +54,8 @@
 		3708E5611FE93D7A00365543 = {
 			isa = PBXGroup;
 			children = (
+				373FD3CC1FEA798000B14377 /* LICENCE.md */,
+				373FD3CD1FEA798000B14377 /* LICENSE.md */,
 				373FD3C81FEA754B00B14377 /* README.md */,
 				3708E5791FE93E4A00365543 /* Config.xcconfig */,
 				3708E56C1FE93D7A00365543 /* Cass */,
