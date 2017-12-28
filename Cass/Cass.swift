@@ -10,46 +10,8 @@ import Foundation
 
 // http://docs.datastax.com/en/developer/cpp-driver/2.7/
 
-public
-typealias Checker_f = (Error?) -> Bool
-public
-protocol Error {
-    func error() -> String?
-    func check(checker: Checker_f) -> Bool
-}
-func checkError(_ err_: Error?) -> Bool {
-    if let err = err_?.error() {
-        print(err)
-        fatalError(err)
-    }
-    return true
-}
-
-public
-class UuidGenerator {
-    let uuid_gen = cass_uuid_gen_new()
-    public init() {
-        print("init UuidGenerator")
-    }
-    deinit {
-        print("deinit UuidGenerator")
-        cass_uuid_gen_free(uuid_gen)
-    }
-    public func time_uuid() -> UUID {
-        var cass_uuid = CassUuid(time_and_version: 0,clock_seq_and_node: 0)
-        cass_uuid_gen_time(uuid_gen, &cass_uuid)
-        let u = uuid(cass_uuid: &cass_uuid)
-        return u
-    }
-    public func timestamp(_ u: UUID) -> Date {
-        let cass_uuid = uuid(uuid: u)
-        let date = Date(timeIntervalSince1970: TimeInterval(cass_uuid_timestamp(cass_uuid)) / 1000)
-        return date
-    }
-}
-
-func utf8_string(data: UnsafePointer<Int8>?, len: Int) -> String? {
-    if nil == data || 0 > len {
+func utf8_string(text: UnsafePointer<Int8>?, len: Int) -> String? {
+    if nil == text || 0 > len {
         return nil
     }
     let p = UnsafeMutablePointer<Int8>.allocate(capacity: len+1)
@@ -57,18 +19,35 @@ func utf8_string(data: UnsafePointer<Int8>?, len: Int) -> String? {
         p.deallocate(capacity: len+1)
     }
     p.initialize(to: 0, count:len+1)
-    strncpy(p, data, len)
+    strncpy(p, text, len)
     return String(validatingUTF8: p)
 }
-
-func error_string(_ future: OpaquePointer!) -> String? {
-    var message: UnsafePointer<Int8>?
-    var message_length: Int = 0
-    cass_future_error_message(future, &message, &message_length)
-    return utf8_string(data: message, len: message_length)
+/*
+typealias to_string_f = (OpaquePointer?, UnsafeMutablePointer<UnsafePointer<Int8>?>?, UnsafeMutablePointer<Int>?) -> ()
+func to_string(_ data: OpaquePointer?,_ fn: to_string_f) -> String? {
+    var text: UnsafePointer<Int8>?
+    var len: Int = 0
+    fn(data, &text, &len)
+    return utf8_string(text: text, len: len)
 }
-
-func uuid(cass_uuid: inout CassUuid) -> UUID {
+*/
+/*
+func futureMessage(_ future: OpaquePointer) -> String? {
+    let rc = cass_future_error_code(future)
+    if (CASS_OK != rc) {
+        defer {
+            cass_future_free(future)
+        }
+        if let msg = error_string(future) {
+            return msg
+        } else {
+            return message(rc,"Execution error ")
+        }
+    }
+    return nil
+}
+*/
+func uuid_(cass_uuid: inout CassUuid) -> UUID {
     let bytesPointer = UnsafeMutableRawPointer.allocate(bytes: 16, alignedTo: 1)
     defer {
         bytesPointer.deallocate(bytes: 16, alignedTo: 1)
@@ -95,7 +74,7 @@ func uuid(cass_uuid: inout CassUuid) -> UUID {
     )
     return u
 }
-func uuid(uuid: UUID) -> CassUuid {
+func uuid_(uuid: UUID) -> CassUuid {
     let a = [uuid.uuid.3,
              uuid.uuid.2,
              uuid.uuid.1,
@@ -198,6 +177,14 @@ fileprivate func string(uuid: uuid_t, upper: Bool = false) -> String {
  cass_statement_bind_collection(CassStatement* statement    => Set, Array, Dictionary
  cass_statement_bind_tuple(CassStatement* statement             => Foundation.?
  */
+
+func timestamp(date: Date) -> Int64 {
+    return Int64(date.timeIntervalSince1970 * 1000)
+}
+func date(timestamp: Int64) -> Date {
+    return Date(timeIntervalSince1970: TimeInterval(timestamp) / 1000)
+}
+
 func bind(_ statement: OpaquePointer, lst: [Any?]) {
     for (idx,value) in lst.enumerated() {
         if let v = value {
@@ -239,35 +226,36 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
         // Foundation types
         case let v as UUID:
             print(idx,"UUID",v)
-            cass_statement_bind_uuid(statement, idx, uuid(uuid:v))
+            cass_statement_bind_uuid(statement, idx, uuid_(uuid:v))
         case let v as Date:
             print(idx,"Date",v)
-            cass_statement_bind_int64(statement, idx, Int64(v.timeIntervalSince1970 * 1000))
-            /*case let v as Decimal:
-             print(idx,"Decimal",v)
-             let exp = Int32(v.exponent)
-             let u = NSDecimalNumber(decimal: v.significand).int64Value
-             print(">>> u=\(u) exp=\(exp) \(String(format:"%02X",u))")
-             var ptr = UnsafeMutableRawPointer.allocate(bytes: 8, alignedTo: 8)
-             defer {
-             ptr.deallocate(bytes: 8, alignedTo: 8)
-             }
-             ptr.storeBytes(of: u, as: Int64.self)
-             let ia = Array(UnsafeBufferPointer(start: ptr.bindMemory(to: UInt8.self, capacity: 8), count: 8))
-             var n = 0
-             for b in ia {
-             n += 1
-             if 0 == b || 255 == b {
-             break
-             }
-             }
-             let dec = ia[0..<n]
-             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) n=\(n) dec=\(dec) \(type(of: dec))")
-             let rdec = Array(dec.reversed())
-             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) dec=\(rdec) \(type(of: rdec))")
-             let val = UnsafeRawPointer(rdec).bindMemory(to: UInt8.self, capacity: n)
-             cass_statement_bind_decimal(statement, idx, val, n, -exp)*/
-
+            cass_statement_bind_int64(statement, idx, timestamp(date: v))
+        case let v as Duration:
+            cass_statement_bind_duration(statement, idx, v.months, v.days, v.nanos)
+//        case let v as Decimal:
+//             print(idx,"Decimal",v)
+//             let exp = Int32(v.exponent)
+//             let u = NSDecimalNumber(decimal: v.significand).int64Value
+//             print(">>> u=\(u) exp=\(exp) \(String(format:"%02X",u))")
+//             var ptr = UnsafeMutableRawPointer.allocate(bytes: 8, alignedTo: 8)
+//             defer {
+//                ptr.deallocate(bytes: 8, alignedTo: 8)
+//             }
+//             ptr.storeBytes(of: u, as: Int64.self)
+//             let ia = Array(UnsafeBufferPointer(start: ptr.bindMemory(to: UInt8.self, capacity: 8), count: 8))
+//             var n = 0
+//             for b in ia {
+//                n += 1
+//                if 0 == b || 255 == b {
+//                    break
+//                }
+//             }
+//             let dec = ia[0..<n]
+//             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) n=\(n) dec=\(dec) \(type(of: dec))")
+//             let rdec = Array(dec.reversed())
+//             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) dec=\(rdec) \(type(of: rdec))")
+//             let val = UnsafeRawPointer(rdec).bindMemory(to: UInt8.self, capacity: n)
+//             cass_statement_bind_decimal(statement, idx, val, n, -exp)
         case let vs as Set<String>:
             print(idx,"Set<String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
@@ -1189,35 +1177,37 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
         // Foundation
         case let v as UUID:
             print(nam,"uuid_t",v)
-            cass_statement_bind_uuid_by_name(statement, nam, uuid(uuid:v))
+            cass_statement_bind_uuid_by_name(statement, nam, uuid_(uuid:v))
         case let v as Date:
             print(nam,"Date",v)
-            cass_statement_bind_int64_by_name(statement, nam, Int64(v.timeIntervalSince1970 * 1000))
-            /*case let v as Decimal:
-             print(nam,"Decimal",v)
-             let exp = Int32(v.exponent)
-             let u = NSDecimalNumber(decimal: v.significand).int64Value
-             print(">>> u=\(u) exp=\(exp) \(String(format:"%02X",u))")
-             var ptr = UnsafeMutableRawPointer.allocate(bytes: 8, alignedTo: 8)
-             defer {
-             ptr.deallocate(bytes: 8, alignedTo: 8)
-             }
-             ptr.storeBytes(of: u, as: Int64.self)
-             let ia = Array(UnsafeBufferPointer(start: ptr.bindMemory(to: UInt8.self, capacity: 8), count: 8))
-             var n = 0
-             for b in ia {
-             n += 1
-             if 0 == b || 255 == b {
-             break
-             }
-             }
-             let dec = ia[0..<n]
-             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) n=\(n) dec=\(dec) \(type(of: dec))")
-             let rdec = Array(dec.reversed())
-             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) dec=\(rdec) \(type(of: rdec))")
-             let val = UnsafeRawPointer(rdec).bindMemory(to: UInt8.self, capacity: n)
-             cass_statement_bind_decimal_by_name(statement, nam, val, n, -exp)*/
-
+            cass_statement_bind_int64_by_name(statement, nam, timestamp(date: v))
+        case let v as Duration:
+            print(nam,"Duration",v)
+            cass_statement_bind_duration_by_name(statement, nam, v.months, v.days, v.nanos)
+//        case let v as Decimal:
+//             print(nam,"Decimal",v)
+//             let exp = Int32(v.exponent)
+//             let u = NSDecimalNumber(decimal: v.significand).int64Value
+//             print(">>> u=\(u) exp=\(exp) \(String(format:"%02X",u))")
+//             var ptr = UnsafeMutableRawPointer.allocate(bytes: 8, alignedTo: 8)
+//             defer {
+//                ptr.deallocate(bytes: 8, alignedTo: 8)
+//             }
+//             ptr.storeBytes(of: u, as: Int64.self)
+//             let ia = Array(UnsafeBufferPointer(start: ptr.bindMemory(to: UInt8.self, capacity: 8), count: 8))
+//             var n = 0
+//             for b in ia {
+//                n += 1
+//                if 0 == b || 255 == b {
+//                    break
+//                }
+//             }
+//             let dec = ia[0..<n]
+//             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) n=\(n) dec=\(dec) \(type(of: dec))")
+//             let rdec = Array(dec.reversed())
+//             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) dec=\(rdec) \(type(of: rdec))")
+//             let val = UnsafeRawPointer(rdec).bindMemory(to: UInt8.self, capacity: n)
+//             cass_statement_bind_decimal_by_name(statement, nam, val, n, -exp)
         case let vs as Set<String>:
             print(nam,"Set<String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
@@ -2091,372 +2081,291 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
         }
     }
 }
-/*
- XX(CASS_VALUE_TYPE_CUSTOM,  0x0000, "", "") \
- XX(CASS_VALUE_TYPE_ASCII,  0x0001, "ascii", "org.apache.cassandra.db.marshal.AsciiType") \
- XX(CASS_VALUE_TYPE_BIGINT,  0x0002, "bigint", "org.apache.cassandra.db.marshal.LongType") \
- XX(CASS_VALUE_TYPE_BLOB,  0x0003, "blob", "org.apache.cassandra.db.marshal.BytesType") \
- XX(CASS_VALUE_TYPE_BOOLEAN,  0x0004, "boolean", "org.apache.cassandra.db.marshal.BooleanType") \
- XX(CASS_VALUE_TYPE_COUNTER,  0x0005, "counter", "org.apache.cassandra.db.marshal.CounterColumnType") \
- XX(CASS_VALUE_TYPE_DECIMAL,  0x0006, "decimal", "org.apache.cassandra.db.marshal.DecimalType") \
- XX(CASS_VALUE_TYPE_DOUBLE,  0x0007, "double", "org.apache.cassandra.db.marshal.DoubleType") \
- XX(CASS_VALUE_TYPE_FLOAT,  0x0008, "float", "org.apache.cassandra.db.marshal.FloatType") \
- XX(CASS_VALUE_TYPE_INT,  0x0009, "int", "org.apache.cassandra.db.marshal.Int32Type") \
- XX(CASS_VALUE_TYPE_TEXT,  0x000A, "text", "org.apache.cassandra.db.marshal.UTF8Type") \
- XX(CASS_VALUE_TYPE_TIMESTAMP,  0x000B, "timestamp", "org.apache.cassandra.db.marshal.TimestampType") \
- XX(CASS_VALUE_TYPE_UUID,  0x000C, "uuid", "org.apache.cassandra.db.marshal.UUIDType") \
- XX(CASS_VALUE_TYPE_VARCHAR,  0x000D, "varchar", "") \
- XX(CASS_VALUE_TYPE_VARINT,  0x000E, "varint", "org.apache.cassandra.db.marshal.IntegerType") \
- XX(CASS_VALUE_TYPE_TIMEUUID,  0x000F, "timeuuid", "org.apache.cassandra.db.marshal.TimeUUIDType") \
- XX(CASS_VALUE_TYPE_INET,  0x0010, "inet", "org.apache.cassandra.db.marshal.InetAddressType") \
- XX(CASS_VALUE_TYPE_DATE,  0x0011, "date", "org.apache.cassandra.db.marshal.SimpleDateType") \
- XX(CASS_VALUE_TYPE_TIME,  0x0012, "time", "org.apache.cassandra.db.marshal.TimeType") \
- XX(CASS_VALUE_TYPE_SMALL_INT,  0x0013, "smallint", "org.apache.cassandra.db.marshal.ShortType") \
- XX(CASS_VALUE_TYPE_TINY_INT,  0x0014, "tinyint", "org.apache.cassandra.db.marshal.ByteType") \
- XX(CASS_VALUE_TYPE_DURATION,  0x0015, "duration", "org.apache.cassandra.db.marshal.DurationType") \
- XX(CASS_VALUE_TYPE_LIST,  0x0020, "list", "org.apache.cassandra.db.marshal.ListType") \
- XX(CASS_VALUE_TYPE_MAP,  0x0021, "map", "org.apache.cassandra.db.marshal.MapType") \
- XX(CASS_VALUE_TYPE_SET,  0x0022, "set", "org.apache.cassandra.db.marshal.SetType") \
- XX(CASS_VALUE_TYPE_UDT,  0x0030, "", "") \
- XX(CASS_VALUE_TYPE_TUPLE,  0x0031, "tuple", "org.apache.cassandra.db.marshal.TupleType")
- */
-func get_value(_ val_: OpaquePointer?) -> Any? {
-    if let val = val_ {
-        let typ = cass_value_type(val)
-        //print("=== typ=\(typ) val=\(val)")
-        switch typ {
-        case CASS_VALUE_TYPE_VARCHAR:
-            var data: UnsafePointer<Int8>?
-            var len: Int = 0
-            cass_value_get_string(val, &data, &len)
-            let res = utf8_string(data: data, len: len)
-            return res!
-        case CASS_VALUE_TYPE_BOOLEAN:
-            var res = cass_false
-            cass_value_get_bool(val , &res)
-            return cass_true == res
-        case CASS_VALUE_TYPE_FLOAT:
-            var res: Float32 = 0
-            cass_value_get_float(val, &res)
-            return res
-        case CASS_VALUE_TYPE_DOUBLE:
-            var res: Float64 = 0
-            cass_value_get_double(val, &res)
-            return res
-        case CASS_VALUE_TYPE_INT:
-            var res: Int32 = 0
-            cass_value_get_int32(val, &res)
-            return res
-        case CASS_VALUE_TYPE_BIGINT:
-            var res: Int64 = 0
-            cass_value_get_int64(val, &res)
-            return res
-        case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-            var cass_uuid = CassUuid()
-            cass_value_get_uuid(val, &cass_uuid)
-            let res = uuid(cass_uuid: &cass_uuid)
-            return res
-        case CASS_VALUE_TYPE_BLOB:
-            var data: UnsafePointer<UInt8>?
-            var len: Int = 0
-            cass_value_get_bytes(val, &data, &len)
-            let res = Array(UnsafeBufferPointer(start: data, count: len))
-            return res
-        case CASS_VALUE_TYPE_TIMESTAMP:
-            var timestamp: Int64 = 0
-            cass_value_get_int64(val, &timestamp)
-            let res = Date(timeIntervalSince1970: TimeInterval(timestamp) / 1000)
-            return res
-            /*case CASS_VALUE_TYPE_DECIMAL:
-             var data: UnsafePointer<UInt8>?
-             var len: Int = 0
-             var scale: Int32 = 0
-             cass_value_get_decimal(val, &data, &len, &scale)
-             let buf = Array(UnsafeBufferPointer(start: data, count: len).reversed())
-             let bytesPointer = UnsafeMutableRawPointer.allocate(bytes: 8, alignedTo: 8)
-             defer {
-             bytesPointer.deallocate(bytes: 8, alignedTo: 8)
-             }
-             bytesPointer.initializeMemory(as: UInt64.self, to: 0)
-             bytesPointer.copyBytes(from: buf, count: len)
-             print("<<< buf=\(buf)")
-             let f = Int64(1 << (8*len))
-             let pu = bytesPointer.bindMemory(to: Int64.self, capacity: 1)
-             let u = pu.pointee  > f >> 1 ? pu.pointee - f : pu.pointee
-             let res = 0 > u
-             ? Decimal(sign:.minus, exponent: -Int(scale), significand: Decimal(-u))
-             : Decimal(sign:.plus, exponent: -Int(scale), significand: Decimal(u))
-             return res*/
 
-        case CASS_VALUE_TYPE_SET:
-            let sub_type = cass_value_primary_sub_type(val)
-            var res: Set<AnyHashable>
-            switch sub_type {
-            case CASS_VALUE_TYPE_VARCHAR:
-                res = Set<String>()
-            case CASS_VALUE_TYPE_BOOLEAN:
-                res = Set<Bool>()
-            case CASS_VALUE_TYPE_FLOAT:
-                res = Set<Float32>()
-            case CASS_VALUE_TYPE_DOUBLE:
-                res = Set<Float64>()
-            case CASS_VALUE_TYPE_INT:
-                res = Set<Int32>()
-            case CASS_VALUE_TYPE_BIGINT:
-                res = Set<Int64>()
-            case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                res = Set<UUID>()
-            case CASS_VALUE_TYPE_TIMESTAMP:
-                res = Set<Date>()
-            default:
-                //return nil
-                fatalError("Invalid argument: type=\(typ) value=\(val)")
-            }
-            let it = CollectionIterator(val)
-            for v in it {
-                res.insert(v as! AnyHashable)
-            }
-            return res
-        case CASS_VALUE_TYPE_LIST:
-            let sub_type = cass_value_primary_sub_type(val)
-            var res: Array<AnyHashable>
-            switch sub_type {
-            case CASS_VALUE_TYPE_VARCHAR:
-                res = Array<String>()
-            case CASS_VALUE_TYPE_BOOLEAN:
-                res = Array<Bool>()
-            case CASS_VALUE_TYPE_FLOAT:
-                res = Array<Float32>()
-            case CASS_VALUE_TYPE_DOUBLE:
-                res = Array<Float64>()
-            case CASS_VALUE_TYPE_INT:
-                res = Array<Int32>()
-            case CASS_VALUE_TYPE_BIGINT:
-                res = Array<Int64>()
-            case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                res = Array<UUID>()
-            case CASS_VALUE_TYPE_TIMESTAMP:
-                res = Array<Date>()
-            default:
-                //return nil
-                fatalError("Invalid argument: type=\(typ) value=\(val)")
-            }
-            let it = CollectionIterator(val)
-            for v in it {
-                res.append(v as! AnyHashable)
-            }
-            return res
-        case CASS_VALUE_TYPE_MAP:
-            let key_type = cass_value_primary_sub_type(val)
-            let val_type = cass_value_secondary_sub_type(val)
-            var res: Dictionary<AnyHashable, Any?>
-            switch key_type {
-            case CASS_VALUE_TYPE_VARCHAR:
-                switch val_type {
-                case CASS_VALUE_TYPE_VARCHAR:
-                    res = Dictionary<String, String?>()
-                case CASS_VALUE_TYPE_BOOLEAN:
-                    res = Dictionary<String, Bool?>()
-                case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<String, Float32?>()
-                case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<String, Float64?>()
-                case CASS_VALUE_TYPE_INT:
-                    res = Dictionary<String, Int32?>()
-                case CASS_VALUE_TYPE_BIGINT:
-                    res = Dictionary<String, Int64?>()
-                case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                    res = Dictionary<String, UUID?>()
-                case CASS_VALUE_TYPE_TIMESTAMP:
-                    res = Dictionary<String, Date?>()
-                default:
-                    //return nil
-                    fatalError("Invalid argument: type=\(typ) value=\(val)")
-                }
-            case CASS_VALUE_TYPE_BOOLEAN:
-                switch val_type {
-                case CASS_VALUE_TYPE_VARCHAR:
-                    res = Dictionary<Bool, String?>()
-                case CASS_VALUE_TYPE_BOOLEAN:
-                    res = Dictionary<Bool, Bool?>()
-                case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Bool, Float32?>()
-                case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Bool, Float64?>()
-                case CASS_VALUE_TYPE_INT:
-                    res = Dictionary<Bool, Int32?>()
-                case CASS_VALUE_TYPE_BIGINT:
-                    res = Dictionary<Bool, Int64?>()
-                case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                    res = Dictionary<Bool, UUID?>()
-                case CASS_VALUE_TYPE_TIMESTAMP:
-                    res = Dictionary<Bool, Date?>()
-                default:
-                    //return nil
-                    fatalError("Invalid argument: type=\(typ) value=\(val)")
-                }
-            case CASS_VALUE_TYPE_FLOAT:
-                switch val_type {
-                case CASS_VALUE_TYPE_VARCHAR:
-                    res = Dictionary<Float, String?>()
-                case CASS_VALUE_TYPE_BOOLEAN:
-                    res = Dictionary<Float, Bool?>()
-                case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Float, Float32?>()
-                case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Float, Float64?>()
-                case CASS_VALUE_TYPE_INT:
-                    res = Dictionary<Float, Int32?>()
-                case CASS_VALUE_TYPE_BIGINT:
-                    res = Dictionary<Float, Int64?>()
-                case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                    res = Dictionary<Float, UUID?>()
-                case CASS_VALUE_TYPE_TIMESTAMP:
-                    res = Dictionary<Float, Date?>()
-                default:
-                    //return nil
-                    fatalError("Invalid argument: type=\(typ) value=\(val)")
-                }
-            case CASS_VALUE_TYPE_DOUBLE:
-                switch val_type {
-                case CASS_VALUE_TYPE_VARCHAR:
-                    res = Dictionary<Double, String?>()
-                case CASS_VALUE_TYPE_BOOLEAN:
-                    res = Dictionary<Double, Bool?>()
-                case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Double, Float32?>()
-                case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Double, Float64?>()
-                case CASS_VALUE_TYPE_INT:
-                    res = Dictionary<Double, Int32?>()
-                case CASS_VALUE_TYPE_BIGINT:
-                    res = Dictionary<Double, Int64?>()
-                case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                    res = Dictionary<Double, UUID?>()
-                case CASS_VALUE_TYPE_TIMESTAMP:
-                    res = Dictionary<Double, Date?>()
-                default:
-                    //return nil
-                    fatalError("Invalid argument: type=\(typ) value=\(val)")
-                }
-            case CASS_VALUE_TYPE_INT:
-                switch val_type {
-                case CASS_VALUE_TYPE_VARCHAR:
-                    res = Dictionary<Int32, String?>()
-                case CASS_VALUE_TYPE_BOOLEAN:
-                    res = Dictionary<Int32, Bool?>()
-                case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Int32, Float32?>()
-                case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Int32, Float64?>()
-                case CASS_VALUE_TYPE_INT:
-                    res = Dictionary<Int32, Int32?>()
-                case CASS_VALUE_TYPE_BIGINT:
-                    res = Dictionary<Int32, Int64?>()
-                case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                    res = Dictionary<Int32, UUID?>()
-                case CASS_VALUE_TYPE_TIMESTAMP:
-                    res = Dictionary<Int32, Date?>()
-                default:
-                    //return nil
-                    fatalError("Invalid argument: type=\(typ) value=\(val)")
-                }
-            case CASS_VALUE_TYPE_BIGINT:
-                switch val_type {
-                case CASS_VALUE_TYPE_VARCHAR:
-                    res = Dictionary<Int64, String?>()
-                case CASS_VALUE_TYPE_BOOLEAN:
-                    res = Dictionary<Int64, Bool?>()
-                case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Int64, Float32?>()
-                case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Int64, Float64?>()
-                case CASS_VALUE_TYPE_INT:
-                    res = Dictionary<Int64, Int32?>()
-                case CASS_VALUE_TYPE_BIGINT:
-                    res = Dictionary<Int64, Int64?>()
-                case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                    res = Dictionary<Int64, UUID?>()
-                case CASS_VALUE_TYPE_TIMESTAMP:
-                    res = Dictionary<Int64, Date?>()
-                default:
-                    //return nil
-                    fatalError("Invalid argument: type=\(typ) value=\(val)")
-                }
-            case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                switch val_type {
-                case CASS_VALUE_TYPE_VARCHAR:
-                    res = Dictionary<UUID, String?>()
-                case CASS_VALUE_TYPE_BOOLEAN:
-                    res = Dictionary<UUID, Bool?>()
-                case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<UUID, Float32?>()
-                case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<UUID, Float64?>()
-                case CASS_VALUE_TYPE_INT:
-                    res = Dictionary<UUID, Int32?>()
-                case CASS_VALUE_TYPE_BIGINT:
-                    res = Dictionary<UUID, Int64?>()
-                case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                    res = Dictionary<UUID, UUID?>()
-                case CASS_VALUE_TYPE_TIMESTAMP:
-                    res = Dictionary<UUID, Date?>()
-                default:
-                    //return nil
-                    fatalError("Invalid argument: type=\(typ) value=\(val)")
-                }
-            case CASS_VALUE_TYPE_TIMESTAMP:
-                switch val_type {
-                case CASS_VALUE_TYPE_VARCHAR:
-                    res = Dictionary<Date, String?>()
-                case CASS_VALUE_TYPE_BOOLEAN:
-                    res = Dictionary<Date, Bool?>()
-                case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Date, Float32?>()
-                case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Date, Float64?>()
-                case CASS_VALUE_TYPE_INT:
-                    res = Dictionary<Date, Int32?>()
-                case CASS_VALUE_TYPE_BIGINT:
-                    res = Dictionary<Date, Int64?>()
-                case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
-                    res = Dictionary<Date, UUID?>()
-                case CASS_VALUE_TYPE_TIMESTAMP:
-                    res = Dictionary<Date, Date?>()
-                default:
-                    //return nil
-                    fatalError("Invalid argument: type=\(typ) value=\(val)")
-                }
-            default:
-                //return nil
-                fatalError("Invalid argument: type=\(typ) value=\(val)")
-            }
-            let it = MapIterator(val)
-            for (k, v) in it {
-                res[k] = v
-            }
-            return res
-        default:
-            //return nil
-            fatalError("Invalid argument: type=\(typ) value=\(val)")
+extension CassConsistency: CustomStringConvertible {
+    public var description: String {
+//        switch self {
+//        case CASS_CONSISTENCY_UNKNOWN: return "CASS_CONSISTENCY_UNKNOWN"
+//        case CASS_CONSISTENCY_ANY: return "CASS_CONSISTENCY_ANY"
+//        case CASS_CONSISTENCY_ONE: return "CASS_CONSISTENCY_ONE"
+//        case CASS_CONSISTENCY_TWO: return "CASS_CONSISTENCY_TWO"
+//        case CASS_CONSISTENCY_THREE: return "CASS_CONSISTENCY_THREE"
+//        case CASS_CONSISTENCY_QUORUM: return "CASS_CONSISTENCY_QUORUM"
+//        case CASS_CONSISTENCY_ALL: return "CASS_CONSISTENCY_ALL"
+//        case CASS_CONSISTENCY_LOCAL_QUORUM: return "CASS_CONSISTENCY_LOCAL_QUORUM"
+//        case CASS_CONSISTENCY_EACH_QUORUM: return "CASS_CONSISTENCY_EACH_QUORUM"
+//        case CASS_CONSISTENCY_SERIAL: return "CASS_CONSISTENCY_SERIAL"
+//        case CASS_CONSISTENCY_LOCAL_SERIAL: return "CASS_CONSISTENCY_LOCAL_SERIAL"
+//        case CASS_CONSISTENCY_LOCAL_ONE: return "CASS_CONSISTENCY_LOCAL_ONE"
+//        default: fatalError()
+//        }
+        if let str = String(validatingUTF8: cass_consistency_string(self)) {
+            return str
+        } else {
+            fatalError() // ne devrait pas se produire
         }
-    } else {
-        return nil
+    }
+    public static func fromString(_ consistency: String) -> CassConsistency {
+        switch consistency {
+        case "CASS_CONSISTENCY_UNKNOWN": return CASS_CONSISTENCY_UNKNOWN
+        case "CASS_CONSISTENCY_ANY": return CASS_CONSISTENCY_ANY
+        case "CASS_CONSISTENCY_ONE": return CASS_CONSISTENCY_ONE
+        case "CASS_CONSISTENCY_TWO": return CASS_CONSISTENCY_TWO
+        case "CASS_CONSISTENCY_THREE": return CASS_CONSISTENCY_THREE
+        case "CASS_CONSISTENCY_QUORUM": return CASS_CONSISTENCY_QUORUM
+        case "CASS_CONSISTENCY_ALL": return CASS_CONSISTENCY_ALL
+        case "CASS_CONSISTENCY_LOCAL_QUORUM": return CASS_CONSISTENCY_LOCAL_QUORUM
+        case "CASS_CONSISTENCY_EACH_QUORUM": return CASS_CONSISTENCY_EACH_QUORUM
+        case "CASS_CONSISTENCY_SERIAL": return CASS_CONSISTENCY_SERIAL
+        case "CASS_CONSISTENCY_LOCAL_SERIAL": return CASS_CONSISTENCY_LOCAL_SERIAL
+        case "CASS_CONSISTENCY_LOCAL_ONE": return CASS_CONSISTENCY_LOCAL_ONE
+        default: fatalError()
+        }
     }
 }
 
-func futureMessage(_ future: OpaquePointer) -> String? {
-    let rc = cass_future_error_code(future)
-    if (CASS_OK != rc) {
-        defer {
-            cass_future_free(future)
-        }
-        if let msg = error_string(future) {
-            return msg
+extension CassWriteType: CustomStringConvertible {
+    public var description: String {
+//        switch self {
+//        case CASS_WRITE_TYPE_UNKNOWN: return "CASS_WRITE_TYPE_UNKNOWN"
+//        case CASS_WRITE_TYPE_SIMPLE: return "CASS_WRITE_TYPE_SIMPLE"
+//        case CASS_WRITE_TYPE_BATCH: return "CASS_WRITE_TYPE_BATCH"
+//        case CASS_WRITE_TYPE_UNLOGGED_BATCH: return "CASS_WRITE_TYPE_UNLOGGED_BATCH"
+//        case CASS_WRITE_TYPE_COUNTER: return "CASS_WRITE_TYPE_COUNTER"
+//        case CASS_WRITE_TYPE_BATCH_LOG: return "CASS_WRITE_TYPE_BATCH_LOG"
+//        case CASS_WRITE_TYPE_CAS: return "CASS_WRITE_TYPE_CAS"
+//        default: fatalError()
+//        }
+        if let str = String(validatingUTF8: cass_write_type_string(self)) {
+            return str
         } else {
-            return "Execution error \(rc)"
+            fatalError() // ne devrait pas se produire
         }
     }
-    return nil
+}
+
+extension CassColumnType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case CASS_COLUMN_TYPE_REGULAR: return "CASS_COLUMN_TYPE_REGULAR"
+        case CASS_COLUMN_TYPE_PARTITION_KEY: return "CASS_COLUMN_TYPE_PARTITION_KEY"
+        case CASS_COLUMN_TYPE_CLUSTERING_KEY: return "CASS_COLUMN_TYPE_CLUSTERING_KEY"
+        case CASS_COLUMN_TYPE_STATIC: return "CASS_COLUMN_TYPE_STATIC"
+        case CASS_COLUMN_TYPE_COMPACT_VALUE: return "CASS_COLUMN_TYPE_COMPACT_VALUE"
+        default: fatalError()
+        }
+    }
+}
+
+extension CassIndexType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case CASS_INDEX_TYPE_UNKNOWN: return "CASS_INDEX_TYPE_UNKNOWN"
+        case CASS_INDEX_TYPE_KEYS: return "CASS_INDEX_TYPE_KEYS"
+        case CASS_INDEX_TYPE_CUSTOM: return "CASS_INDEX_TYPE_CUSTOM"
+        case CASS_INDEX_TYPE_COMPOSITES: return "CASS_INDEX_TYPE_COMPOSITES"
+        default: fatalError()
+        }
+    }
+}
+
+extension CassValueType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case CASS_VALUE_TYPE_UNKNOWN: return "CASS_VALUE_TYPE_UNKNOWN"
+        case CASS_VALUE_TYPE_CUSTOM: return "CASS_VALUE_TYPE_CUSTOM"
+        case CASS_VALUE_TYPE_ASCII: return "CASS_VALUE_TYPE_ASCII"
+        case CASS_VALUE_TYPE_BIGINT: return "CASS_VALUE_TYPE_BIGINT"
+        case CASS_VALUE_TYPE_BLOB: return "CASS_VALUE_TYPE_BLOB"
+        case CASS_VALUE_TYPE_BOOLEAN: return "CASS_VALUE_TYPE_BOOLEAN"
+        case CASS_VALUE_TYPE_COUNTER: return "CASS_VALUE_TYPE_COUNTER"
+        case CASS_VALUE_TYPE_DECIMAL: return "CASS_VALUE_TYPE_DECIMAL"
+        case CASS_VALUE_TYPE_DOUBLE: return "CASS_VALUE_TYPE_DOUBLE"
+        case CASS_VALUE_TYPE_FLOAT: return "CASS_VALUE_TYPE_FLOAT"
+        case CASS_VALUE_TYPE_INT: return "CASS_VALUE_TYPE_INT"
+        case CASS_VALUE_TYPE_TEXT: return "CASS_VALUE_TYPE_TEXT"
+        case CASS_VALUE_TYPE_TIMESTAMP: return "CASS_VALUE_TYPE_TIMESTAMP"
+        case CASS_VALUE_TYPE_UUID: return "CASS_VALUE_TYPE_UUID"
+        case CASS_VALUE_TYPE_VARCHAR: return "CASS_VALUE_TYPE_VARCHAR"
+        case CASS_VALUE_TYPE_VARINT: return "CASS_VALUE_TYPE_VARINT"
+        case CASS_VALUE_TYPE_TIMEUUID: return "CASS_VALUE_TYPE_TIMEUUID"
+        case CASS_VALUE_TYPE_INET: return "CASS_VALUE_TYPE_INET"
+        case CASS_VALUE_TYPE_DATE: return "CASS_VALUE_TYPE_DATE"
+        case CASS_VALUE_TYPE_TIME: return "CASS_VALUE_TYPE_TIME"
+        case CASS_VALUE_TYPE_SMALL_INT: return "CASS_VALUE_TYPE_SMALL_INT"
+        case CASS_VALUE_TYPE_TINY_INT: return "CASS_VALUE_TYPE_TINY_INT"
+        case CASS_VALUE_TYPE_DURATION: return "CASS_VALUE_TYPE_DURATION"
+        case CASS_VALUE_TYPE_LIST: return "CASS_VALUE_TYPE_LIST"
+        case CASS_VALUE_TYPE_MAP: return "CASS_VALUE_TYPE_MAP"
+        case CASS_VALUE_TYPE_SET: return "CASS_VALUE_TYPE_SET"
+        case CASS_VALUE_TYPE_UDT: return "CASS_VALUE_TYPE_UDT"
+        case CASS_VALUE_TYPE_TUPLE: return "CASS_VALUE_TYPE_TUPLE"
+        default: fatalError()
+        }
+    }
+}
+
+extension CassClusteringOrder: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case CASS_CLUSTERING_ORDER_NONE: return "CASS_CLUSTERING_ORDER_NONE"
+        case CASS_CLUSTERING_ORDER_ASC: return "CASS_CLUSTERING_ORDER_ASC"
+        case CASS_CLUSTERING_ORDER_DESC: return "CASS_CLUSTERING_ORDER_DESC"
+        default: fatalError()
+        }
+    }
+}
+
+extension CassCollectionType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case CASS_COLLECTION_TYPE_LIST: return "CASS_COLLECTION_TYPE_LIST"
+        case CASS_COLLECTION_TYPE_MAP: return "CASS_COLLECTION_TYPE_MAP"
+        case CASS_COLLECTION_TYPE_SET: return "CASS_COLLECTION_TYPE_SET"
+        default: fatalError()
+        }
+    }
+}
+
+extension CassIteratorType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case CASS_ITERATOR_TYPE_RESULT: return "CASS_ITERATOR_TYPE_RESULT"
+        case CASS_ITERATOR_TYPE_ROW: return "CASS_ITERATOR_TYPE_ROW"
+        case CASS_ITERATOR_TYPE_COLLECTION: return "CASS_ITERATOR_TYPE_COLLECTION"
+        case CASS_ITERATOR_TYPE_MAP: return "CASS_ITERATOR_TYPE_MAP"
+        case CASS_ITERATOR_TYPE_TUPLE: return "CASS_ITERATOR_TYPE_TUPLE"
+        case CASS_ITERATOR_TYPE_USER_TYPE_FIELD: return "CASS_ITERATOR_TYPE_USER_TYPE_FIELD"
+        case CASS_ITERATOR_TYPE_META_FIELD: return "CASS_ITERATOR_TYPE_META_FIELD"
+        case CASS_ITERATOR_TYPE_KEYSPACE_META: return "CASS_ITERATOR_TYPE_KEYSPACE_META"
+        case CASS_ITERATOR_TYPE_TABLE_META: return "CASS_ITERATOR_TYPE_TABLE_META"
+        case CASS_ITERATOR_TYPE_TYPE_META: return "CASS_ITERATOR_TYPE_TYPE_META"
+        case CASS_ITERATOR_TYPE_FUNCTION_META: return "CASS_ITERATOR_TYPE_FUNCTION_META"
+        case CASS_ITERATOR_TYPE_AGGREGATE_META: return "CASS_ITERATOR_TYPE_AGGREGATE_META"
+        case CASS_ITERATOR_TYPE_COLUMN_META: return "CASS_ITERATOR_TYPE_COLUMN_META"
+        case CASS_ITERATOR_TYPE_INDEX_META: return "CASS_ITERATOR_TYPE_INDEX_META"
+        case CASS_ITERATOR_TYPE_MATERIALIZED_VIEW_META: return "CASS_ITERATOR_TYPE_MATERIALIZED_VIEW_META"
+        default: fatalError()
+        }
+    }
+}
+
+extension CassLogLevel: CustomStringConvertible {
+    public var description: String {
+//        switch self {
+//        case CASS_LOG_DISABLED: return "CASS_LOG_DISABLED"
+//        case CASS_LOG_CRITICAL: return "CASS_LOG_CRITICAL"
+//        case CASS_LOG_ERROR: return "CASS_LOG_ERROR"
+//        case CASS_LOG_WARN: return "CASS_LOG_WARN"
+//        case CASS_LOG_INFO: return "CASS_LOG_INFO"
+//        case CASS_LOG_DEBUG: return "CASS_LOG_DEBUG"
+//        case CASS_LOG_TRACE: return "CASS_LOG_TRACE"
+//        default: fatalError()
+//        }
+        if let str = String(validatingUTF8: cass_log_level_string(self)) {
+            return str
+        } else {
+            fatalError() // ne devrait pas se produire
+        }
+    }
+}
+
+extension CassSslVerifyFlags: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case CASS_SSL_VERIFY_NONE: return "CASS_SSL_VERIFY_NONE"
+        case CASS_SSL_VERIFY_PEER_CERT: return "CASS_SSL_VERIFY_PEER_CERT"
+        case CASS_SSL_VERIFY_PEER_IDENTITY: return "CASS_SSL_VERIFY_PEER_IDENTITY"
+        case CASS_SSL_VERIFY_PEER_IDENTITY_DNS: return "CASS_SSL_VERIFY_PEER_IDENTITY_DNS"
+        default: fatalError()
+        }
+    }
+}
+
+extension CassErrorSource: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case CASS_ERROR_SOURCE_NONE: return "CASS_ERROR_SOURCE_NONE"
+        case CASS_ERROR_SOURCE_LIB: return "CASS_ERROR_SOURCE_LIB"
+        case CASS_ERROR_SOURCE_SERVER: return "CASS_ERROR_SOURCE_SERVER"
+        case CASS_ERROR_SOURCE_SSL: return "CASS_ERROR_SOURCE_SSL"
+        case CASS_ERROR_SOURCE_COMPRESSION: return "CASS_ERROR_SOURCE_COMPRESSION"
+        default: fatalError()
+        }
+    }
+}
+
+extension CassError: CustomStringConvertible {
+    public var description: String {
+//        switch self {
+//        case CASS_OK: return "CASS_OK"
+//        case CASS_ERROR_LIB_BAD_PARAMS: return "CASS_ERROR_LIB_BAD_PARAMS"
+//        case CASS_ERROR_LIB_NO_STREAMS: return "CASS_ERROR_LIB_NO_STREAMS"
+//        case CASS_ERROR_LIB_UNABLE_TO_INIT: return "CASS_ERROR_LIB_UNABLE_TO_INIT"
+//        case CASS_ERROR_LIB_MESSAGE_ENCODE: return "CASS_ERROR_LIB_MESSAGE_ENCODE"
+//        case CASS_ERROR_LIB_HOST_RESOLUTION: return "CASS_ERROR_LIB_HOST_RESOLUTION"
+//        case CASS_ERROR_LIB_UNEXPECTED_RESPONSE: return "CASS_ERROR_LIB_UNEXPECTED_RESPONSE"
+//        case CASS_ERROR_LIB_REQUEST_QUEUE_FULL: return "CASS_ERROR_LIB_REQUEST_QUEUE_FULL"
+//        case CASS_ERROR_LIB_NO_AVAILABLE_IO_THREAD: return "CASS_ERROR_LIB_NO_AVAILABLE_IO_THREAD"
+//        case CASS_ERROR_LIB_WRITE_ERROR: return "CASS_ERROR_LIB_WRITE_ERROR"
+//        case CASS_ERROR_LIB_NO_HOSTS_AVAILABLE: return "CASS_ERROR_LIB_NO_HOSTS_AVAILABLE"
+//        case CASS_ERROR_LIB_INDEX_OUT_OF_BOUNDS: return "CASS_ERROR_LIB_INDEX_OUT_OF_BOUNDS"
+//        case CASS_ERROR_LIB_INVALID_ITEM_COUNT: return "CASS_ERROR_LIB_INVALID_ITEM_COUNT"
+//        case CASS_ERROR_LIB_INVALID_VALUE_TYPE: return "CASS_ERROR_LIB_INVALID_VALUE_TYPE"
+//        case CASS_ERROR_LIB_REQUEST_TIMED_OUT: return "CASS_ERROR_LIB_REQUEST_TIMED_OUT"
+//        case CASS_ERROR_LIB_UNABLE_TO_SET_KEYSPACE: return "CASS_ERROR_LIB_UNABLE_TO_SET_KEYSPACE"
+//        case CASS_ERROR_LIB_CALLBACK_ALREADY_SET: return "CASS_ERROR_LIB_CALLBACK_ALREADY_SET"
+//        case CASS_ERROR_LIB_INVALID_STATEMENT_TYPE: return "CASS_ERROR_LIB_INVALID_STATEMENT_TYPE"
+//        case CASS_ERROR_LIB_NAME_DOES_NOT_EXIST: return "CASS_ERROR_LIB_NAME_DOES_NOT_EXIST"
+//        case CASS_ERROR_LIB_UNABLE_TO_DETERMINE_PROTOCOL: return "CASS_ERROR_LIB_UNABLE_TO_DETERMINE_PROTOCOL"
+//        case CASS_ERROR_LIB_NULL_VALUE: return "CASS_ERROR_LIB_NULL_VALUE"
+//        case CASS_ERROR_LIB_NOT_IMPLEMENTED: return "CASS_ERROR_LIB_NOT_IMPLEMENTED"
+//        case CASS_ERROR_LIB_UNABLE_TO_CONNECT: return "CASS_ERROR_LIB_UNABLE_TO_CONNECT"
+//        case CASS_ERROR_LIB_UNABLE_TO_CLOSE: return "CASS_ERROR_LIB_UNABLE_TO_CLOSE"
+//        case CASS_ERROR_LIB_NO_PAGING_STATE: return "CASS_ERROR_LIB_NO_PAGING_STATE"
+//        case CASS_ERROR_LIB_PARAMETER_UNSET: return "CASS_ERROR_LIB_PARAMETER_UNSET"
+//        case CASS_ERROR_LIB_INVALID_ERROR_RESULT_TYPE: return "CASS_ERROR_LIB_INVALID_ERROR_RESULT_TYPE"
+//        case CASS_ERROR_LIB_INVALID_FUTURE_TYPE: return "CASS_ERROR_LIB_INVALID_FUTURE_TYPE"
+//        case CASS_ERROR_LIB_INTERNAL_ERROR: return "CASS_ERROR_LIB_INTERNAL_ERROR"
+//        case CASS_ERROR_LIB_INVALID_CUSTOM_TYPE: return "CASS_ERROR_LIB_INVALID_CUSTOM_TYPE"
+//        case CASS_ERROR_LIB_INVALID_DATA: return "CASS_ERROR_LIB_INVALID_DATA"
+//        case CASS_ERROR_LIB_NOT_ENOUGH_DATA: return "CASS_ERROR_LIB_NOT_ENOUGH_DATA"
+//        case CASS_ERROR_LIB_INVALID_STATE: return "CASS_ERROR_LIB_INVALID_STATE"
+//        case CASS_ERROR_LIB_NO_CUSTOM_PAYLOAD: return "CASS_ERROR_LIB_NO_CUSTOM_PAYLOAD"
+//
+//        case CASS_ERROR_SERVER_SERVER_ERROR: return "CASS_ERROR_SERVER_SERVER_ERROR"
+//        case CASS_ERROR_SERVER_PROTOCOL_ERROR: return "CASS_ERROR_SERVER_PROTOCOL_ERROR"
+//        case CASS_ERROR_SERVER_BAD_CREDENTIALS: return "CASS_ERROR_SERVER_BAD_CREDENTIALS"
+//        case CASS_ERROR_SERVER_UNAVAILABLE: return "CASS_ERROR_SERVER_UNAVAILABLE"
+//        case CASS_ERROR_SERVER_OVERLOADED: return "CASS_ERROR_SERVER_OVERLOADED"
+//        case CASS_ERROR_SERVER_IS_BOOTSTRAPPING: return "CASS_ERROR_SERVER_IS_BOOTSTRAPPING"
+//        case CASS_ERROR_SERVER_TRUNCATE_ERROR: return "CASS_ERROR_SERVER_TRUNCATE_ERROR"
+//        case CASS_ERROR_SERVER_WRITE_TIMEOUT: return "CASS_ERROR_SERVER_WRITE_TIMEOUT"
+//        case CASS_ERROR_SERVER_READ_TIMEOUT: return "CASS_ERROR_SERVER_READ_TIMEOUT"
+//        case CASS_ERROR_SERVER_READ_FAILURE: return "CASS_ERROR_SERVER_READ_FAILURE"
+//        case CASS_ERROR_SERVER_FUNCTION_FAILURE: return "CASS_ERROR_SERVER_FUNCTION_FAILURE"
+//        case CASS_ERROR_SERVER_WRITE_FAILURE: return "CASS_ERROR_SERVER_WRITE_FAILURE"
+//        case CASS_ERROR_SERVER_SYNTAX_ERROR: return "CASS_ERROR_SERVER_SYNTAX_ERROR"
+//        case CASS_ERROR_SERVER_UNAUTHORIZED: return "CASS_ERROR_SERVER_UNAUTHORIZED"
+//        case CASS_ERROR_SERVER_INVALID_QUERY: return "CASS_ERROR_SERVER_INVALID_QUERY"
+//        case CASS_ERROR_SERVER_CONFIG_ERROR: return "CASS_ERROR_SERVER_CONFIG_ERROR"
+//        case CASS_ERROR_SERVER_ALREADY_EXISTS: return "CASS_ERROR_SERVER_ALREADY_EXISTS"
+//        case CASS_ERROR_SERVER_UNPREPARED: return "CASS_ERROR_SERVER_UNPREPARED"
+//
+//        case CASS_ERROR_SSL_INVALID_CERT: return "CASS_ERROR_SSL_INVALID_CERT"
+//        case CASS_ERROR_SSL_INVALID_PRIVATE_KEY: return "CASS_ERROR_SSL_INVALID_PRIVATE_KEY"
+//        case CASS_ERROR_SSL_NO_PEER_CERT: return "CASS_ERROR_SSL_NO_PEER_CERT"
+//        case CASS_ERROR_SSL_INVALID_PEER_CERT: return "CASS_ERROR_SSL_INVALID_PEER_CERT"
+//        case CASS_ERROR_SSL_IDENTITY_MISMATCH: return "CASS_ERROR_SSL_IDENTITY_MISMATCH"
+//        case CASS_ERROR_SSL_PROTOCOL_ERROR: return "CASS_ERROR_SSL_PROTOCOL_ERROR"
+//
+//        default: fatalError()
+//        }
+        if let str = String(validatingUTF8: cass_error_desc(self)) {
+            return str
+        } else {
+            fatalError() // ne devrait pas se produire
+        }
+    }
 }
 

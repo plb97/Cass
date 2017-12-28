@@ -6,56 +6,63 @@
 //  Copyright © 2017 PLB. All rights reserved.
 //
 
-import Foundation
-
+//import Foundation
+/*
+public
+struct Response {
+    public var buffer: [Int8]
+    public init(_ size: Int) {
+        buffer = Array(repeating: Int8(0), count: size)
+    }
+    public init(buffer: [Int8]) {
+        self.buffer = Array(buffer)
+    }
+    public func size() -> Int {
+        return buffer.count
+    }
+}
+*/
 public
 struct Authenticator {
     let auth: OpaquePointer?
     init(auth: OpaquePointer?) {
         self.auth = auth
     }
-    var hostname: String? {
-        var length: Int = 0
-        let data: UnsafePointer<Int8>? = cass_authenticator_hostname(auth, &length)
-        return utf8_string(data: data, len: length)
-    }
-    var address: String? {
+    var address: Inet {
         let addr = UnsafeMutablePointer<CassInet>.allocate(capacity: 1)
         defer {
             addr.deallocate(capacity: 1)
         }
         cass_authenticator_address(auth, addr)
-        let len = Int(CASS_INET_V6_LENGTH+1) // = 17
-        let str = UnsafeMutablePointer<CChar>.allocate(capacity: len)
-        defer {
-            str.deallocate(capacity: len)
-        }
-        cass_inet_string(addr.pointee,str)
-        return String(validatingUTF8: str)
+        return Inet(addr.pointee)
     }
-    var class_name: String? {
+    var hostname: String {
+        var length: Int = 0
+        let data: UnsafePointer<Int8>? = cass_authenticator_hostname(auth, &length)
+        return utf8_string(text: data, len: length)!
+    }
+    var className: String {
         var length: Int = 0
         let data: UnsafePointer<Int8>? = cass_authenticator_class_name(auth, &length)
-        return utf8_string(data: data, len: length)
+        return utf8_string(text: data, len: length)!
     }
-    var exchange_data: UnsafeMutableRawPointer? {
+    var exchangeData: UnsafeMutableRawPointer? {
         get { return cass_authenticator_exchange_data(auth) }
-        set(exchange_data) { cass_authenticator_set_exchange_data(auth, exchange_data) }
+        set (exchange_data) { cass_authenticator_set_exchange_data(auth, exchange_data) }
     }
-    /*func get_response(size: Int) -> Array<CChar> {
-     let data = cass_authenticator_response(auth,size)
-     return Array(UnsafeBufferPointer(start: data, count: size))
+    func getResponse(size: Int) -> Array<Int8> {
+        let data = cass_authenticator_response(auth,size)
+        return Array(UnsafeBufferPointer(start: data, count: size))
      }
-     func set_response(data: Array<CChar>, size: Int) -> () {
-     cass_authenticator_set_response(auth,UnsafeMutablePointer(mutating: data),size < data.count ? size : data.count)
-     }*/
-    func set_error(_ error: String) -> () {
+    func setResponse(data: Array<Int8>) -> () {
+        cass_authenticator_set_response(auth,UnsafeMutablePointer(mutating: data),data.count)
+    }
+    func setError(_ error: String) -> () {
         cass_authenticator_set_error(auth, error)
     }
 }
+
 /*
- public typealias Authenticator_f = (Authenticator?, UnsafeMutableRawPointer?) -> ()
- public typealias Authenticator_token_f = (Authenticator?, UnsafeMutableRawPointer?, String?) -> ()
  private func ok(auth_: Authenticator? = nil,data_: UnsafeMutableRawPointer? = nil) -> () {}
  private func ok_token(auth_: Authenticator? = nil,data_: UnsafeMutableRawPointer? = nil,token_: String? = nil) -> () {}
  public

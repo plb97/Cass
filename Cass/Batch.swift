@@ -5,67 +5,108 @@
 //  Created by Philippe on 25/10/2017.
 //  Copyright © 2017 PLB. All rights reserved.
 //
+import Foundation
 
-fileprivate
-func getSession() -> Session {
-    let session = Session()
-    _ = Cluster().setContactPoints("127.0.0.1").setCredentials().connect(session).check()
-    return session
-}
-
-fileprivate
-func create_keyspace(session: Session) -> () {
-    print("create_keyspace...")
-    let query = """
-    CREATE KEYSPACE IF NOT EXISTS examples WITH replication = {
-                           'class': 'SimpleStrategy', 'replication_factor': '3' };
-    """
-    let future = session.execute(SimpleStatement(query))
-    print("...create_keyspace")
-    _ = future.check()
-}
-fileprivate
-func create_table(session: Session) -> () {
-    print("create_table...")
-    let query = """
-    CREATE TABLE IF NOT EXISTS examples.pairs (key text,
-                                              value text,
-                                              PRIMARY KEY (key));
-    """
-    let future = session.execute(SimpleStatement(query))
-    print("...create_table")
-    _ = future.check()
-}
-fileprivate
-func prepare_statement(session: Session) -> PreparedStatement {
-    let query = "INSERT INTO examples.pairs (key, value) VALUES (?, ?);"
-    let prepared = session.prepare(query)
-    _ = prepared.check()
-    return prepared
-}
-fileprivate
-func insert_into(session: Session,_ pairs: [[String]]) -> () {
-    print("insert_into...")
-    let batch = BatchLogged()
-    let prepared = prepare_statement(session: session)
-    for pair in pairs {
-        batch.add(prepared: prepared, pair)
+public
+class Batch: Error {
+    let batch: OpaquePointer!
+    init(_ type: CassBatchType) {
+        print("init Batch")
+        batch = cass_batch_new(type)
+        super.init()
     }
-    batch.add(SimpleStatement("INSERT INTO examples.pairs (key, value) VALUES ('c', '3');"))
-    batch.add(SimpleStatement("INSERT INTO examples.pairs (key, value) VALUES (?, ?);","d","4"))
-    let future = session.execute(batch: batch)
-    print("insert_into...")
-    _ = future.check()
+    deinit {
+        print("deinit Batch")
+        cass_batch_free(batch)
+    }
+    public func setConsistencyAny() -> () {
+        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_ANY))
+    }
+    public func setConsistencyOne() -> () {
+        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_ONE))
+    }
+    public func setConsistencyTwo() -> () {
+        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_TWO))
+    }
+    public func setConsistencyThree() -> () {
+        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_THREE))
+    }
+    public func setConsistencyQuorum() -> () {
+        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_QUORUM))
+    }
+    public func setConsistencyAll() -> () {
+        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_ALL))
+    }
+    public func setConsistencyLocalQuorum() -> () {
+        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_LOCAL_QUORUM))
+    }
+    public func setConsistencyEachQuorum() -> () {
+        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_EACH_QUORUM))
+    }
+    public func setConsistencyLocalOne() -> () {
+        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_LOCAL_ONE))
+    }
+    public func setConsistencySerial() -> () {
+        error = message(cass_batch_set_serial_consistency(batch, CASS_CONSISTENCY_SERIAL))
+    }
+    public func setConsistencyLocalSerial() -> () {
+        error = message(cass_batch_set_serial_consistency(batch, CASS_CONSISTENCY_LOCAL_SERIAL))
+    }
+    public func setTimestamp(_ date: Date) -> () {
+        error = message(cass_batch_set_timestamp(batch, timestamp(date: date)))
+    }
+    public func setRequestTimeout(_ timeout_ms: UInt64) -> () {
+        error = message(cass_batch_set_request_timeout(batch, timeout_ms))
+    }
+    public func setIsIdempotent(_ is_idempotent: Bool) -> () {
+        error = message(cass_batch_set_is_idempotent(batch, is_idempotent ? cass_true : cass_false ))
+    }
+    public func setRetryPolicy(_ retry_policy: RetryPolicy) -> () {
+        error = message(cass_batch_set_retry_policy(batch, retry_policy.policy))
+    }
+
+    public func addStatement(_ statement: SimpleStatement) {
+        if let stmt = statement.stmt() {
+            defer {
+                cass_statement_free(stmt)
+            }
+            cass_batch_add_statement(batch, stmt)
+        }
+    }
+    public func addStatement(prepared: PreparedStatement,_ lst: [Any?]) {
+        if let statement = prepared.stmt(lst) {
+            defer {
+                cass_statement_free(statement)
+            }
+            cass_batch_add_statement(batch, statement)
+        }
+    }
+    public func addStatement(prepared: PreparedStatement, map: [String: Any?]) {
+        if let statement = prepared.stmt(map: map) {
+            defer {
+                cass_statement_free(statement)
+            }
+            cass_batch_add_statement(batch, statement)
+        }
+    }
 }
 
-func batch() {
-    print("batch...")
-    
-    let pairs = [["a", "1"], ["b", "2"]]
-
-    let session = getSession()
-    create_keyspace(session: session)
-    create_table(session: session)
-    insert_into(session: session, pairs)
-    print("...batch")
+public
+class BatchLogged: Batch {
+    public init() {
+        super.init(CASS_BATCH_TYPE_LOGGED)
+    }
 }
+public
+class BatchUnLogged: Batch {
+    public init() {
+        super.init(CASS_BATCH_TYPE_UNLOGGED)
+    }
+}
+public
+class BatchCounter: Batch {
+    public init() {
+        super.init(CASS_BATCH_TYPE_COUNTER)
+    }
+}
+

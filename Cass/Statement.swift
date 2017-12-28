@@ -14,19 +14,19 @@ class SimpleStatement {
     private let _lst: [Any?]?
     private let _map: [String: Any?]?
     public init(_ query: String,_ values: Any?...) {
-        print("init SimpleStament")
+        print("init SimpleStatement")
         self.query = query
         self._lst = values
         self._map = nil
     }
     public init(_ query: String, map: [String: Any?]) {
-        print("init SimpleStament")
+        print("init SimpleStatement")
         self.query = query
         self._lst = nil
         self._map = map
     }
     deinit {
-        print("deinit SimpleStament")
+        print("deinit SimpleStatement")
     }
     func stmt() -> OpaquePointer! {
         if let lst = _lst {
@@ -49,16 +49,15 @@ class SimpleStatement {
 }
 
 public
-class PreparedStatement: Error  {
-    var err_: String?
+class PreparedStatement: Error {
     var prepared_: OpaquePointer?
     init(_ future: OpaquePointer) {
         defer {
             cass_future_free(future)
         }
         cass_future_wait(future)
-        err_ = futureMessage(future)
-        if nil == err_ {
+        super.init(error_message(future))
+        if nil == error {
             prepared_ = cass_future_get_prepared(future)
         }
         print("init PreparedStatement")
@@ -69,12 +68,6 @@ class PreparedStatement: Error  {
             cass_prepared_free(prepared)
             prepared_ = nil
         }
-    }
-    public func error() -> String? {
-        return err_
-    }
-    public func check(checker: Checker_f = checkError) -> Bool {
-        return checker(self)
     }
     func stmt(_ lst: [Any?]) -> OpaquePointer! {
         if let prepared = prepared_ {
