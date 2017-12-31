@@ -31,6 +31,7 @@
 		372628161FF3E9D20064A392 /* Tuple.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372628151FF3E9D20064A392 /* Tuple.swift */; };
 		3726281A1FF5A48B0064A392 /* ErrorResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372628191FF5A48B0064A392 /* ErrorResult.swift */; };
 		3726281C1FF5AF050064A392 /* Duration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3726281B1FF5AF050064A392 /* Duration.swift */; };
+		372628221FF78FFD0064A392 /* AuthenticatorCallbacks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372628211FF78FFD0064A392 /* AuthenticatorCallbacks.swift */; };
 		373FD3A61FE94C9100B14377 /* Batch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD39D1FE94C9100B14377 /* Batch.swift */; };
 		373FD3A71FE94C9100B14377 /* Listener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD39F1FE94C9100B14377 /* Listener.swift */; };
 		373FD3A81FE94C9100B14377 /* Cluster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 373FD3A01FE94C9100B14377 /* Cluster.swift */; };
@@ -69,6 +70,7 @@
 		372628151FF3E9D20064A392 /* Tuple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tuple.swift; sourceTree = "<group>"; };
 		372628191FF5A48B0064A392 /* ErrorResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorResult.swift; sourceTree = "<group>"; };
 		3726281B1FF5AF050064A392 /* Duration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Duration.swift; sourceTree = "<group>"; };
+		372628211FF78FFD0064A392 /* AuthenticatorCallbacks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatorCallbacks.swift; sourceTree = "<group>"; };
 		373FD39D1FE94C9100B14377 /* Batch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Batch.swift; sourceTree = "<group>"; };
 		373FD39F1FE94C9100B14377 /* Listener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Listener.swift; sourceTree = "<group>"; };
 		373FD3A01FE94C9100B14377 /* Cluster.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Cluster.swift; sourceTree = "<group>"; };
@@ -122,12 +124,15 @@
 				3708E5771FE93DF600365543 /* Cass.swift */,
 				372627F21FED1D620064A392 /* AggregateMeta.swift */,
 				373FD3A51FE94C9100B14377 /* Authenticator.swift */,
+				372628211FF78FFD0064A392 /* AuthenticatorCallbacks.swift */,
 				373FD39D1FE94C9100B14377 /* Batch.swift */,
 				373FD3A01FE94C9100B14377 /* Cluster.swift */,
 				3726280F1FF2EC010064A392 /* ColumnMeta.swift */,
 				3726280D1FEFB33B0064A392 /* CustomPayload.swift */,
 				372627EE1FED15D40064A392 /* DataType.swift */,
+				3726281B1FF5AF050064A392 /* Duration.swift */,
 				372628001FEE37960064A392 /* Error.swift */,
+				372628191FF5A48B0064A392 /* ErrorResult.swift */,
 				372627F01FED1B240064A392 /* FunctionMeta.swift */,
 				373FD3A21FE94C9100B14377 /* Future.swift */,
 				372628111FF2EDFC0064A392 /* IndexMeta.swift */,
@@ -147,8 +152,6 @@
 				372628051FEED6750064A392 /* UuidGen.swift */,
 				372627F41FED1EB60064A392 /* Value.swift */,
 				372627E81FECFFCC0064A392 /* Version.swift */,
-				372628191FF5A48B0064A392 /* ErrorResult.swift */,
-				3726281B1FF5AF050064A392 /* Duration.swift */,
 			);
 			path = Cass;
 			sourceTree = "<group>";
@@ -240,6 +243,7 @@
 				372627F11FED1B240064A392 /* FunctionMeta.swift in Sources */,
 				3708E5781FE93DF600365543 /* Cass.swift in Sources */,
 				372627E31FECFA7E0064A392 /* SchemaMeta.swift in Sources */,
+				372628221FF78FFD0064A392 /* AuthenticatorCallbacks.swift in Sources */,
 				372628011FEE37960064A392 /* Error.swift in Sources */,
 				372628161FF3E9D20064A392 /* Tuple.swift in Sources */,
 				372628061FEED6750064A392 /* UuidGen.swift in Sources */,

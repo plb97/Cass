@@ -12,17 +12,14 @@ public
 class Tuple: Error {
     let tuple: OpaquePointer
     public init(itemCount: Int) {
-        print("init Tuple")
         tuple = cass_tuple_new(itemCount)
         super.init()
     }
     public init(dataType: DataType) {
-        print("init Tuple")
         tuple = cass_tuple_new_from_data_type(dataType.data_type)
         super.init()
     }
     deinit {
-        print("deinit Tuple")
         cass_tuple_free(tuple)
     }
     public func setNull(index: Int) -> Tuple {
@@ -71,7 +68,7 @@ class Tuple: Error {
     }
     //setCustom
     public func setUuid(index: Int, value: UUID) -> Tuple {
-        msg_ = message(cass_tuple_set_uuid(tuple, index, uuid_(uuid:value)))
+        msg_ = message(cass_tuple_set_uuid(tuple, index, UUID2CassUuid(uuid:value)))
         return self
     }
     public func setInet(index: Int, value: Inet) -> Tuple {

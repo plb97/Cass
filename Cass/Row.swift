@@ -9,18 +9,14 @@
 //import Foundation
 
 public
-class Row {
+struct Row {
     let row: OpaquePointer
     init?(_ row_: OpaquePointer?) {
-        print("init Row")
         if let row = row_ {
             self.row = row
         } else {
             return nil
         }
-    }
-    deinit {
-        print("deinit Row")
     }
     public func any(_ i: Int) -> Any? {
         let col = Value(cass_row_get_column(row, i))

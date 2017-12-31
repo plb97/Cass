@@ -22,32 +22,7 @@ func utf8_string(text: UnsafePointer<Int8>?, len: Int) -> String? {
     strncpy(p, text, len)
     return String(validatingUTF8: p)
 }
-/*
-typealias to_string_f = (OpaquePointer?, UnsafeMutablePointer<UnsafePointer<Int8>?>?, UnsafeMutablePointer<Int>?) -> ()
-func to_string(_ data: OpaquePointer?,_ fn: to_string_f) -> String? {
-    var text: UnsafePointer<Int8>?
-    var len: Int = 0
-    fn(data, &text, &len)
-    return utf8_string(text: text, len: len)
-}
-*/
-/*
-func futureMessage(_ future: OpaquePointer) -> String? {
-    let rc = cass_future_error_code(future)
-    if (CASS_OK != rc) {
-        defer {
-            cass_future_free(future)
-        }
-        if let msg = error_string(future) {
-            return msg
-        } else {
-            return message(rc,"Execution error ")
-        }
-    }
-    return nil
-}
-*/
-func uuid_(cass_uuid: inout CassUuid) -> UUID {
+func CassUuid2UUID(cass_uuid: inout CassUuid) -> UUID {
     let bytesPointer = UnsafeMutableRawPointer.allocate(bytes: 16, alignedTo: 1)
     defer {
         bytesPointer.deallocate(bytes: 16, alignedTo: 1)
@@ -74,7 +49,7 @@ func uuid_(cass_uuid: inout CassUuid) -> UUID {
     )
     return u
 }
-func uuid_(uuid: UUID) -> CassUuid {
+func UUID2CassUuid(uuid: UUID) -> CassUuid {
     let a = [uuid.uuid.3,
              uuid.uuid.2,
              uuid.uuid.1,
@@ -99,7 +74,7 @@ func uuid_(uuid: UUID) -> CassUuid {
     let pu = bytesPointer.bindMemory(to: CassUuid.self, capacity: 1)
     return pu.pointee
 }
-fileprivate func string(uuid: uuid_t, upper: Bool = false) -> String {
+func toString(uuid: uuid_t, upper: Bool = false) -> String {
     let fmt = upper
         ? "%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X"
         : "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x"
@@ -126,62 +101,10 @@ fileprivate func string(uuid: uuid_t, upper: Bool = false) -> String {
                   uuid.15)
 }
 
-/*
- CASS_EXPORT CassFuture* cass_session_connect(CassSession* session, const CassCluster* cluster);
- CASS_EXPORT CassFuture* cass_session_connect_keyspace(CassSession* session, const CassCluster* cluster, const char* keyspace);
- CASS_EXPORT CassFuture* cass_session_close(CassSession* session);
- CASS_EXPORT CassFuture* cass_session_prepare(CassSession* session, const char* query);
- CASS_EXPORT CassFuture* cass_session_execute(CassSession* session, const CassStatement* statement);
- CASS_EXPORT CassFuture* cass_session_execute_batch(CassSession* session, const CassBatch* batch);
- */
-/*
- null
- int8
- int16
- int32
- uint32
- int64
- float
- double
- bool
- string
- bytes  (bytes value, int size)
- uuid   (CassUuid)
- inet   (CassInet)
- decimal    (bytes varint, int size, int32 scale)
- duration (int32 months, int32 days, int64 nanos)
- collection (list, set, map)    (CassCollection)
- tuple  (CassTuple)
- user_type  (CassUserType)
-
- custom?    (string class_name, bytes value, size int)
-
- */
-/*
- cass_statement_bind_null(CassStatement* statement          => nil
- cass_statement_bind_int8(CassStatement* statement          => Int8
- cass_statement_bind_int16(CassStatement* statement         => Int16
- cass_statement_bind_int32(CassStatement* statement         => Int32
- cass_statement_bind_uint32(CassStatement* statement        => UInt32
- cass_statement_bind_int64(CassStatement* statement         => Int64, Foundation.Date
- cass_statement_bind_float(CassStatement* statement         => Float
- cass_statement_bind_double(CassStatement* statement        => Double
- cass_statement_bind_bool(CassStatement* statement          => Bool
- cass_statement_bind_string(CassStatement* statement        => String
- cass_statement_bind_bytes(CassStatement* statement         => Array<UInt8>
- cass_statement_bind_custom(CassStatement* statement
- cass_statement_bind_uuid(CassStatement* statement          => Foundation.UUID
- cass_statement_bind_inet(CassStatement* statement
- cass_statement_bind_decimal(CassStatement* statement          => Foundation.Decimal?
- cass_statement_bind_duration(CassStatement* statement        => Foundation.?
- cass_statement_bind_collection(CassStatement* statement    => Set, Array, Dictionary
- cass_statement_bind_tuple(CassStatement* statement             => Foundation.?
- */
-
-func timestamp(date: Date) -> Int64 {
+func date2Timestamp(date: Date) -> Int64 {
     return Int64(date.timeIntervalSince1970 * 1000)
 }
-func date(timestamp: Int64) -> Date {
+func timestamp2Date(timestamp: Int64) -> Date {
     return Date(timeIntervalSince1970: TimeInterval(timestamp) / 1000)
 }
 
@@ -189,54 +112,39 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
     for (idx,value) in lst.enumerated() {
         if let v = value {
             let t = type(of:v)
-            print("index=",idx,"type of=",t,"->", type(of:t))
         }
         switch value {
         case nil:
-            print(idx,"<nil>")
             cass_statement_bind_null(statement, idx)
 
         case let v as String:
-            print(idx,"String",v)
             cass_statement_bind_string(statement, idx,v)
         case let v as Bool:
-            print(idx,"Bool",v)
             cass_statement_bind_bool(statement, idx, (v ? cass_true : cass_false))
         case let v as Float32/*, case let v as Float*/:
-            print(idx,"Float32 (float)",v)
             cass_statement_bind_float(statement, idx, v)
         case let v as Float64/*, let v as Double*/:
-            print(idx,"Float64 (double)",v)
             cass_statement_bind_double(statement, idx, v)
         case let v as Int8 /*, let v as Int*/:
-            print(idx,"Int8",v)
             cass_statement_bind_int8(statement, idx, v)
         case let v as Int16 /*, let v as Int*/:
-            print(idx,"Int16",v)
             cass_statement_bind_int16(statement, idx, v)
         case let v as Int32 /*, let v as Int*/:
-            print(idx,"Int32",v)
             cass_statement_bind_int32(statement, idx, v)
         case let v as Int64 /*, let v as Int*/:
-            print(idx,"Int64",v)
             cass_statement_bind_int64(statement, idx, v)
         case let v as Array<UInt8>:
-            print(idx,"Array<UInt8>",v)
             cass_statement_bind_bytes(statement, idx, v, v.count)
-        // Foundation types
+
         case let v as UUID:
-            print(idx,"UUID",v)
-            cass_statement_bind_uuid(statement, idx, uuid_(uuid:v))
+            cass_statement_bind_uuid(statement, idx, UUID2CassUuid(uuid:v))
         case let v as Date:
-            print(idx,"Date",v)
-            cass_statement_bind_int64(statement, idx, timestamp(date: v))
+            cass_statement_bind_int64(statement, idx, date2Timestamp(date: v))
         case let v as Duration:
             cass_statement_bind_duration(statement, idx, v.months, v.days, v.nanos)
 //        case let v as Decimal:
-//             print(idx,"Decimal",v)
 //             let exp = Int32(v.exponent)
 //             let u = NSDecimalNumber(decimal: v.significand).int64Value
-//             print(">>> u=\(u) exp=\(exp) \(String(format:"%02X",u))")
 //             var ptr = UnsafeMutableRawPointer.allocate(bytes: 8, alignedTo: 8)
 //             defer {
 //                ptr.deallocate(bytes: 8, alignedTo: 8)
@@ -251,13 +159,10 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
 //                }
 //             }
 //             let dec = ia[0..<n]
-//             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) n=\(n) dec=\(dec) \(type(of: dec))")
 //             let rdec = Array(dec.reversed())
-//             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) dec=\(rdec) \(type(of: rdec))")
 //             let val = UnsafeRawPointer(rdec).bindMemory(to: UInt8.self, capacity: n)
 //             cass_statement_bind_decimal(statement, idx, val, n, -exp)
         case let vs as Set<String>:
-            print(idx,"Set<String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -267,7 +172,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Set<Bool>:
-            print(idx,"Set<Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -277,7 +181,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Set<Float32>/*, let vs as Set<Float>*/:
-            print(idx,"Set<Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -287,7 +190,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Set<Float64>/*, let vs as Set<Double>*/:
-            print(idx,"Set<Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -297,7 +199,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Set<Int8> /*, let vs as Set<Int>*/:
-            print(idx,"Set<Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -307,7 +208,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Set<Int16> /*, let vs as Set<Int>*/:
-            print(idx,"Set<Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -317,7 +217,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Set<Int32> /*, let vs as Set<Int>*/:
-            print(idx,"Set<Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -327,7 +226,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Set<Int64> /*, let vs as Set<Int>*/:
-            print(idx,"Set<Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -338,7 +236,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             cass_statement_bind_collection(statement, idx, collection)
 
         case let vs as Array<String>:
-            print(idx,"Array<String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -348,7 +245,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Array<Bool>:
-            print(idx,"Array<Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -358,7 +254,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Array<Float32>/*, let v as Array<Float>*/:
-            print(idx,"Array<Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -368,7 +263,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Array<Float64>/*, let vs as Array<Double>*/:
-            print(idx,"Array<Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -378,7 +272,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Array<Int8> /*, let vs as Array<Int>*/:
-            print(idx,"Array<Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -388,7 +281,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Array<Int16> /*, let vs as Array<Int>*/:
-            print(idx,"Array<Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -398,7 +290,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Array<Int32> /*, let vs as Array<Int>*/:
-            print(idx,"Array<Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -408,7 +299,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Array<Int64> /*, let vs as Array<Int>*/:
-            print(idx,"Array<Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -419,7 +309,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             cass_statement_bind_collection(statement, idx, collection)
 
         case let vs as Dictionary<String, String>:
-            print(idx,"Dictionary<String, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -430,7 +319,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<String, Bool>:
-            print(idx,"Dictionary<String, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -441,7 +329,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<String, Float32>:
-            print(idx,"Dictionary<String, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -452,7 +339,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<String, Float64>:
-            print(idx,"Dictionary<String, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -463,7 +349,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<String, Int8>:
-            print(idx,"Dictionary<String, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -474,7 +359,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<String, Int16>:
-            print(idx,"Dictionary<String, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -485,7 +369,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<String, Int32>:
-            print(idx,"Dictionary<String, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -496,7 +379,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<String, Int64>:
-            print(idx,"Dictionary<String, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -507,7 +389,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Bool, String>:
-            print(idx,"Dictionary<Bool, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -518,7 +399,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Bool, Bool>:
-            print(idx,"Dictionary<Bool, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -529,7 +409,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Bool, Float32>:
-            print(idx,"Dictionary<Bool, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -540,7 +419,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Bool, Float64>:
-            print(idx,"Dictionary<Bool, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -551,7 +429,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Bool, Int8>:
-            print(idx,"Dictionary<Bool, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -562,7 +439,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Bool, Int16>:
-            print(idx,"Dictionary<Bool, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -573,7 +449,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Bool, Int32>:
-            print(idx,"Dictionary<Bool, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -584,7 +459,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Bool, Int64>:
-            print(idx,"Dictionary<Bool, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -595,7 +469,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float32, String>:
-            print(idx,"Dictionary<Float32, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -606,7 +479,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float32, Bool>:
-            print(idx,"Dictionary<Float32, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -617,7 +489,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float32, Float32>:
-            print(idx,"Dictionary<Float32, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -628,7 +499,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float32, Float64>:
-            print(idx,"Dictionary<Float32, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -639,7 +509,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float32, Int8>:
-            print(idx,"Dictionary<Float32, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -650,7 +519,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float32, Int16>:
-            print(idx,"Dictionary<Float32, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -661,7 +529,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float32, Int32>:
-            print(idx,"Dictionary<Float32, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -672,7 +539,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float32, Int64>:
-            print(idx,"Dictionary<Float32, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -683,7 +549,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float64, String>:
-            print(idx,"Dictionary<Float64, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -694,7 +559,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float64, Bool>:
-            print(idx,"Dictionary<Float64, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -705,7 +569,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float64, Float32>:
-            print(idx,"Dictionary<Float64, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -716,7 +579,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float64, Float64>:
-            print(idx,"Dictionary<Float64, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -727,7 +589,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float64, Int8>:
-            print(idx,"Dictionary<Float64, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -738,7 +599,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float64, Int16>:
-            print(idx,"Dictionary<Float64, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -749,7 +609,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float64, Int32>:
-            print(idx,"Dictionary<Float64, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -760,7 +619,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Float64, Int64>:
-            print(idx,"Dictionary<Float64, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -771,7 +629,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int8, String>:
-            print(idx,"Dictionary<Int8, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -782,7 +639,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int8, Bool>:
-            print(idx,"Dictionary<Int8, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -793,7 +649,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int8, Float32>:
-            print(idx,"Dictionary<Int8, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -804,7 +659,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int8, Float64>:
-            print(idx,"Dictionary<Int8, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -815,7 +669,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int8, Int8>:
-            print(idx,"Dictionary<Int8, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -826,7 +679,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int8, Int16>:
-            print(idx,"Dictionary<Int8, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -837,7 +689,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int8, Int32>:
-            print(idx,"Dictionary<Int8, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -848,7 +699,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int8, Int64>:
-            print(idx,"Dictionary<Int8, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -859,7 +709,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int16, String>:
-            print(idx,"Dictionary<Int16, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -870,7 +719,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int16, Bool>:
-            print(idx,"Dictionary<Int16, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -881,7 +729,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int16, Float32>:
-            print(idx,"Dictionary<Int16, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -892,7 +739,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int16, Float64>:
-            print(idx,"Dictionary<Int16, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -903,7 +749,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int16, Int8>:
-            print(idx,"Dictionary<Int16, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -914,7 +759,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int16, Int16>:
-            print(idx,"Dictionary<Int16, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -925,7 +769,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int16, Int32>:
-            print(idx,"Dictionary<Int16, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -936,7 +779,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int16, Int64>:
-            print(idx,"Dictionary<Int16, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -947,7 +789,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int32, String>:
-            print(idx,"Dictionary<Int32, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -958,7 +799,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int32, Bool>:
-            print(idx,"Dictionary<Int32, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -969,7 +809,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int32, Float32>:
-            print(idx,"Dictionary<Int32, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -980,7 +819,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int32, Float64>:
-            print(idx,"Dictionary<Int32, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -991,7 +829,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int32, Int8>:
-            print(idx,"Dictionary<Int32, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1002,7 +839,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int32, Int16>:
-            print(idx,"Dictionary<Int32, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1013,7 +849,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int32, Int32>:
-            print(idx,"Dictionary<Int32, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1024,7 +859,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int32, Int64>:
-            print(idx,"Dictionary<Int32, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1035,7 +869,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int64, String>:
-            print(idx,"Dictionary<Int64, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1046,7 +879,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int64, Bool>:
-            print(idx,"Dictionary<Int64, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1057,7 +889,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int64, Float32>:
-            print(idx,"Dictionary<Int64, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1068,7 +899,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int64, Float64>:
-            print(idx,"Dictionary<Int64, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1079,7 +909,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int64, Int8>:
-            print(idx,"Dictionary<Int64, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1090,7 +919,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int64, Int16>:
-            print(idx,"Dictionary<Int64, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1101,7 +929,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int64, Int32>:
-            print(idx,"Dictionary<Int64, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1112,7 +939,6 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             }
             cass_statement_bind_collection(statement, idx, collection)
         case let vs as Dictionary<Int64, Int64>:
-            print(idx,"Dictionary<Int64, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1124,71 +950,50 @@ func bind(_ statement: OpaquePointer, lst: [Any?]) {
             cass_statement_bind_collection(statement, idx, collection)
 
         default:
-            print("*** index=\(idx), type of=\(type(of:value!)), Any=\(value!)")
             fatalError("Invalid argument: index=\(idx), type of=\(type(of:value!)), Any=\(value!)")
         }
     }
 }
 func bind(_ statement: OpaquePointer, map: [String: Any?]) {
-    /*print("string",type(of:String.self))
-     print("int",type(of:Int.self))
-     let dico = [AnyHashable : Any?]()
-     print("dico",dico)*/
     for (nam, value) in map {
         let f = {(_ value: Any?) -> () in
             if let v = value {
                 let t = type(of:v)
-                print("name=",nam," type of=",t,"->", type(of:t))
             }
         }
         f(value)
         switch value {
         case nil:
-            print(nam,"<nil>")
             cass_statement_bind_null_by_name(statement, nam)
 
         case let v as String:
-            print(nam,"String",v)
             cass_statement_bind_string_by_name(statement, nam,v)
         case let v as Bool:
-            print(nam,"Bool",v)
             cass_statement_bind_bool_by_name(statement, nam, (v ? cass_true : cass_false))
         case let v as Float32/*, let v as Float*/:
-            print(nam,"Float32 (float)",v)
             cass_statement_bind_float_by_name(statement, nam, v)
         case let v as Float64/*, let v as Double*/:
-            print(nam,"Float64 (double)",v)
             cass_statement_bind_double_by_name(statement, nam, v)
         case let v as Int8 /*, let v as Int*/:
-            print(nam,"Int8",v)
             cass_statement_bind_int8_by_name(statement, nam, v)
         case let v as Int16 /*, let v as Int*/:
-            print(nam,"Int16",v)
             cass_statement_bind_int16_by_name(statement, nam, v)
         case let v as Int32 /*, let v as Int*/:
-            print(nam,"Int32",v)
             cass_statement_bind_int32_by_name(statement, nam, v)
         case let v as Int64 /*, let v as Int*/:
-            print(nam,"Int64",v)
             cass_statement_bind_int64_by_name(statement, nam, v)
         case let v as Array<UInt8>:
-            print(nam,"Array<UInt8>",v)
             cass_statement_bind_bytes_by_name(statement, nam, v, v.count)
-        // Foundation
+
         case let v as UUID:
-            print(nam,"uuid_t",v)
-            cass_statement_bind_uuid_by_name(statement, nam, uuid_(uuid:v))
+            cass_statement_bind_uuid_by_name(statement, nam, UUID2CassUuid(uuid:v))
         case let v as Date:
-            print(nam,"Date",v)
-            cass_statement_bind_int64_by_name(statement, nam, timestamp(date: v))
+            cass_statement_bind_int64_by_name(statement, nam, date2Timestamp(date: v))
         case let v as Duration:
-            print(nam,"Duration",v)
             cass_statement_bind_duration_by_name(statement, nam, v.months, v.days, v.nanos)
 //        case let v as Decimal:
-//             print(nam,"Decimal",v)
 //             let exp = Int32(v.exponent)
 //             let u = NSDecimalNumber(decimal: v.significand).int64Value
-//             print(">>> u=\(u) exp=\(exp) \(String(format:"%02X",u))")
 //             var ptr = UnsafeMutableRawPointer.allocate(bytes: 8, alignedTo: 8)
 //             defer {
 //                ptr.deallocate(bytes: 8, alignedTo: 8)
@@ -1203,13 +1008,10 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
 //                }
 //             }
 //             let dec = ia[0..<n]
-//             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) n=\(n) dec=\(dec) \(type(of: dec))")
 //             let rdec = Array(dec.reversed())
-//             print(">>> u=\(u) exp=\(exp) ptr=\(ptr) dec=\(rdec) \(type(of: rdec))")
 //             let val = UnsafeRawPointer(rdec).bindMemory(to: UInt8.self, capacity: n)
 //             cass_statement_bind_decimal_by_name(statement, nam, val, n, -exp)
         case let vs as Set<String>:
-            print(nam,"Set<String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1219,7 +1021,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Set<Bool>:
-            print(nam,"Set<Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1229,7 +1030,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Set<Float32>/*, let vs as Set<Float>*/:
-            print(nam,"Set<Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1239,7 +1039,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Set<Float64>/*, let vs as Set<Double>*/:
-            print(nam,"Set<Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1249,7 +1048,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Set<Int8> /*, let vs as Set<Int>*/:
-            print(nam,"Set<Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1259,7 +1057,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Set<Int16> /*, let vs as Set<Int>*/:
-            print(nam,"Set<Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1269,7 +1066,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Set<Int32> /*, let vs as Set<Int>*/:
-            print(nam,"Set<Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1279,7 +1075,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Set<Int64> /*, let vs as Set<Int>*/:
-            print(nam,"Set<Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_SET, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1290,7 +1085,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             cass_statement_bind_collection_by_name(statement, nam, collection)
 
         case let vs as Array<String>:
-            print(nam,"Array<String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1300,7 +1094,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Array<Bool>:
-            print(nam,"Array<Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1310,7 +1103,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Array<Float32>/*, let vs as Array<Float>*/:
-            print(nam,"Array<Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1320,7 +1112,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Array<Float64>/*, let vs as Array<Double>*/:
-            print(nam,"Array<Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1330,7 +1121,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Array<Int8> /*, let vs as Array<Int>*/:
-            print(nam,"Array<Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1340,7 +1130,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Array<Int16> /*, let vs as Array<Int>*/:
-            print(nam,"Array<Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1350,7 +1139,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Array<Int32> /*, let vs as Array<Int>*/:
-            print(nam,"Array<Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1360,7 +1148,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Array<Int64> /*, let vs as Array<Int>*/:
-            print(nam,"Array<Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_LIST, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1371,7 +1158,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             cass_statement_bind_collection_by_name(statement, nam, collection)
 
         case let vs as Dictionary<String, String>:
-            print(nam,"Dictionary<String, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1382,7 +1168,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<String, Bool>:
-            print(nam,"Dictionary<String, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1393,7 +1178,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<String, Float32>:
-            print(nam,"Dictionary<String, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1404,7 +1188,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<String, Float64>:
-            print(nam,"Dictionary<String, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1415,7 +1198,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<String, Int8>:
-            print(nam,"Dictionary<String, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1426,7 +1208,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<String, Int16>:
-            print(nam,"Dictionary<String, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1437,7 +1218,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<String, Int32>:
-            print(nam,"Dictionary<String, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1448,7 +1228,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<String, Int64>:
-            print(nam,"Dictionary<String, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1459,7 +1238,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Bool, String>:
-            print(nam,"Dictionary<Bool, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1470,7 +1248,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Bool, Bool>:
-            print(nam,"Dictionary<Bool, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1481,7 +1258,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Bool, Float32>:
-            print(nam,"Dictionary<Bool, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1492,7 +1268,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Bool, Float64>:
-            print(nam,"Dictionary<Bool, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1503,7 +1278,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Bool, Int8>:
-            print(nam,"Dictionary<Bool, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1514,7 +1288,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Bool, Int16>:
-            print(nam,"Dictionary<Bool, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1525,7 +1298,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Bool, Int32>:
-            print(nam,"Dictionary<Bool, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1536,7 +1308,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Bool, Int64>:
-            print(nam,"Dictionary<Bool, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1547,7 +1318,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float32, String>:
-            print(nam,"Dictionary<Float32, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1558,7 +1328,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float32, Bool>:
-            print(nam,"Dictionary<Float32, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1569,7 +1338,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float32, Float32>:
-            print(nam,"Dictionary<Float32, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1580,7 +1348,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float32, Float64>:
-            print(nam,"Dictionary<Float32, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1591,7 +1358,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float32, Int8>:
-            print(nam,"Dictionary<Float32, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1602,7 +1368,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float32, Int16>:
-            print(nam,"Dictionary<Float32, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1613,7 +1378,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float32, Int32>:
-            print(nam,"Dictionary<Float32, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1624,7 +1388,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float32, Int64>:
-            print(nam,"Dictionary<Float32, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1635,7 +1398,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float64, String>:
-            print(nam,"Dictionary<Float64, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1646,7 +1408,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float64, Bool>:
-            print(nam,"Dictionary<Float64, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1657,7 +1418,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float64, Float32>:
-            print(nam,"Dictionary<Float64, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1668,7 +1428,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float64, Float64>:
-            print(nam,"Dictionary<Float64, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1679,7 +1438,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float64, Int8>:
-            print(nam,"Dictionary<Float64, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1690,7 +1448,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float64, Int16>:
-            print(nam,"Dictionary<Float64, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1701,7 +1458,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float64, Int32>:
-            print(nam,"Dictionary<Float64, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1712,7 +1468,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Float64, Int64>:
-            print(nam,"Dictionary<Float64, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1723,7 +1478,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int8, String>:
-            print(nam,"Dictionary<Int8, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1734,7 +1488,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int8, Bool>:
-            print(nam,"Dictionary<Int8, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1745,7 +1498,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int8, Float32>:
-            print(nam,"Dictionary<Int8, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1756,7 +1508,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int8, Float64>:
-            print(nam,"Dictionary<Int8, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1767,7 +1518,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int8, Int8>:
-            print(nam,"Dictionary<Int8, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1778,7 +1528,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int8, Int16>:
-            print(nam,"Dictionary<Int8, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1789,7 +1538,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int8, Int32>:
-            print(nam,"Dictionary<Int8, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1800,7 +1548,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int8, Int64>:
-            print(nam,"Dictionary<Int8, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1811,7 +1558,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int16, String>:
-            print(nam,"Dictionary<Int16, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1822,7 +1568,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int16, Bool>:
-            print(nam,"Dictionary<Int16, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1833,7 +1578,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int16, Float32>:
-            print(nam,"Dictionary<Int16, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1844,7 +1588,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int16, Float64>:
-            print(nam,"Dictionary<Int16, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1855,7 +1598,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int16, Int8>:
-            print(nam,"Dictionary<Int16, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1866,7 +1608,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int16, Int16>:
-            print(nam,"Dictionary<Int16, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1877,7 +1618,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int16, Int32>:
-            print(nam,"Dictionary<Int16, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1888,7 +1628,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int16, Int64>:
-            print(nam,"Dictionary<Int16, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1899,7 +1638,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int32, String>:
-            print(nam,"Dictionary<Int32, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1910,7 +1648,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int32, Bool>:
-            print(nam,"Dictionary<Int32, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1921,7 +1658,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int32, Float32>:
-            print(nam,"Dictionary<Int32, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1932,7 +1668,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int32, Float64>:
-            print(nam,"Dictionary<Int32, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1943,7 +1678,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int32, Int8>:
-            print(nam,"Dictionary<Int32, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1954,7 +1688,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int32, Int16>:
-            print(nam,"Dictionary<Int32, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1965,7 +1698,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int32, Int32>:
-            print(nam,"Dictionary<Int32, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1976,7 +1708,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int32, Int64>:
-            print(nam,"Dictionary<Int32, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1987,7 +1718,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int64, String>:
-            print(nam,"Dictionary<Int64, String>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -1998,7 +1728,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int64, Bool>:
-            print(nam,"Dictionary<Int64, Bool>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -2009,7 +1738,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int64, Float32>:
-            print(nam,"Dictionary<Int64, Float32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -2020,7 +1748,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int64, Float64>:
-            print(nam,"Dictionary<Int64, Float64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -2031,7 +1758,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int64, Int8>:
-            print(nam,"Dictionary<Int64, Int8>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -2042,7 +1768,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int64, Int16>:
-            print(nam,"Dictionary<Int64, Int16>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -2053,7 +1778,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int64, Int32>:
-            print(nam,"Dictionary<Int64, Int32>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -2064,7 +1788,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             }
             cass_statement_bind_collection_by_name(statement, nam, collection)
         case let vs as Dictionary<Int64, Int64>:
-            print(nam,"Dictionary<Int64, Int64>",vs)
             let collection = cass_collection_new(CASS_COLLECTION_TYPE_MAP, vs.count)
             defer {
                 cass_collection_free(collection)
@@ -2076,7 +1799,6 @@ func bind(_ statement: OpaquePointer, map: [String: Any?]) {
             cass_statement_bind_collection_by_name(statement, nam, collection)
 
         default:
-            print("*** name=\(nam), type of=\(type(of:value!)), Any=\(value!)")
             fatalError("Invalid argument: name=\(nam), type of=\(type(of:value!)), Any=\(value!)")
         }
     }

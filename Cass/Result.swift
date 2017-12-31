@@ -12,7 +12,6 @@ public
 class Result: Error {
     let result_: OpaquePointer?
     init(_ future: OpaquePointer) {
-        print("init Result")
         let rc = cass_future_error_code(future)
         if CASS_OK == rc {
             result_ = cass_future_get_result(future)
@@ -23,7 +22,6 @@ class Result: Error {
         }
     }
     deinit {
-        print("deinit Result")
         if let result = result_ {
             cass_result_free(result)
         }

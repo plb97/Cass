@@ -13,7 +13,6 @@ struct KeyspaceMeta {
     let keyspace_meta: OpaquePointer
     init?(_ keyspace_meta_: OpaquePointer?) {
         if let keyspace_meta = keyspace_meta_ {
-            print("init KeyspaceMeta",keyspace_meta)
             self.keyspace_meta = keyspace_meta
         } else {
             return nil

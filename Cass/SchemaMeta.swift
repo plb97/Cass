@@ -12,11 +12,9 @@ public
 class SchemaMeta {
     let schema_meta: OpaquePointer
     init(_ schema_meta: OpaquePointer) {
-        print("init SchemaMeta",schema_meta)
         self.schema_meta = schema_meta
     }
     deinit {
-        print("deinit SchemaMeta")
         cass_schema_meta_free(schema_meta)
     }
     public var snapshotVersion: UInt32 {

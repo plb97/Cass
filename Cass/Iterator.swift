@@ -9,10 +9,9 @@
 //import Foundation
 
 public
-class IteratorBase: Error {
+class Iterator: Error {
     let iterator_: OpaquePointer?
     fileprivate init(rowsFromResult meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_from_result(meta)
         } else {
@@ -21,7 +20,6 @@ class IteratorBase: Error {
         super.init()
     }
     fileprivate init(valuesFromCollection meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_from_collection(meta)
         } else {
@@ -30,7 +28,6 @@ class IteratorBase: Error {
         super.init()
     }
     fileprivate init(itemsFromMap meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_from_map(meta)
         } else {
@@ -39,7 +36,6 @@ class IteratorBase: Error {
         super.init()
     }
     fileprivate init(fieldsFromKeyspaceMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_fields_from_keyspace_meta(meta )
         } else {
@@ -48,7 +44,6 @@ class IteratorBase: Error {
         super.init()
     }
     fileprivate init(fieldsFromAggregateMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_fields_from_aggregate_meta(meta)
         } else {
@@ -57,7 +52,6 @@ class IteratorBase: Error {
         super.init()
     }
     fileprivate init(fieldsFromTableMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_fields_from_table_meta(meta)
         } else {
@@ -66,7 +60,6 @@ class IteratorBase: Error {
         super.init()
     }
     fileprivate init(fieldsFromFunctionMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_fields_from_function_meta(meta)
         } else {
@@ -75,7 +68,6 @@ class IteratorBase: Error {
         super.init()
     }
     fileprivate init(fieldsFromColumnMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_fields_from_column_meta(meta)
         } else {
@@ -84,7 +76,6 @@ class IteratorBase: Error {
         super.init()
     }
     fileprivate init(tablesFromKeyspaceMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_tables_from_keyspace_meta(meta)
         } else {
@@ -92,7 +83,6 @@ class IteratorBase: Error {
         }
     }
     fileprivate init(functionsFromKeyspaceMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_functions_from_keyspace_meta(meta)
         } else {
@@ -100,7 +90,6 @@ class IteratorBase: Error {
         }
     }
     fileprivate init(aggregatesFromKeyspaceMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_aggregates_from_keyspace_meta(meta)
         } else {
@@ -108,7 +97,6 @@ class IteratorBase: Error {
         }
     }
     fileprivate init(columnsFromTableMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_columns_from_table_meta(meta)
         } else {
@@ -116,7 +104,6 @@ class IteratorBase: Error {
         }
     }
     fileprivate init(indexesFromTableMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_indexes_from_table_meta(meta)
         } else {
@@ -124,7 +111,6 @@ class IteratorBase: Error {
         }
     }
     fileprivate init(materializedViewsFromTableMeta meta_: OpaquePointer?) {
-        print("init IteratorBase")
         if let meta = meta_ {
             iterator_ = cass_iterator_materialized_views_from_table_meta(meta)
         } else {
@@ -132,7 +118,6 @@ class IteratorBase: Error {
         }
     }
     deinit {
-        print("deinit IteratorBase")
         if let iterator = iterator_ {
             cass_iterator_free(iterator)
         }
@@ -269,14 +254,10 @@ class IteratorBase: Error {
 }
 
 public
-class RowIterator: IteratorBase, Sequence, IteratorProtocol {
+class RowIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = Row
     init(_ result_: OpaquePointer?) {
-        print("init RowIterator")
         super.init(rowsFromResult: result_)
-    }
-    deinit {
-        print("deinit RowIterator")
     }
     public func next() -> Row? {
         return row
@@ -285,14 +266,10 @@ class RowIterator: IteratorBase, Sequence, IteratorProtocol {
 }
 
 public
-class CollectionIterator: IteratorBase, Sequence, IteratorProtocol {
+class CollectionIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = Any
     init(_ collection: OpaquePointer) {
-        print("init CollectionIterator")
         super.init(valuesFromCollection: collection)
-    }
-    deinit {
-        print("deinit CollectionIterator")
     }
     public func next() -> Any? {
         return value?.any
@@ -300,14 +277,10 @@ class CollectionIterator: IteratorBase, Sequence, IteratorProtocol {
 }
 
 public
-class MapIterator: IteratorBase, Sequence, IteratorProtocol {
+class MapIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = (key: AnyHashable, value: Any?)
     init(_ map: OpaquePointer) {
-        print("init MapIterator")
         super.init(itemsFromMap: map)
-    }
-    deinit {
-        print("deinit MapIterator")
     }
     public func next() -> (key: AnyHashable, value: Any?)? {
         return keyValue
@@ -315,42 +288,30 @@ class MapIterator: IteratorBase, Sequence, IteratorProtocol {
 }
 
 public
-class TableIterator: IteratorBase, Sequence, IteratorProtocol {
+class TableIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = TableMeta
     init(_ keyspace_meta: OpaquePointer) {
-        print("init TableIterator")
         super.init(tablesFromKeyspaceMeta: keyspace_meta)
-    }
-    deinit {
-        print("deinit TableIterator")
     }
     public func next() -> TableMeta? {
         return tableMeta
     }
 }
 public
-class FunctionIterator: IteratorBase, Sequence, IteratorProtocol {
+class FunctionIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = FunctionMeta
     init(_ keyspace_meta: OpaquePointer) {
-        print("init FunctionIterator")
         super.init(functionsFromKeyspaceMeta: keyspace_meta)
-    }
-    deinit {
-        print("deinit FunctionIterator")
     }
     public func next() -> FunctionMeta? {
         return functionMeta
     }
 }
 public
-class AggregateIterator: IteratorBase, Sequence, IteratorProtocol {
+class AggregateIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = AggregateMeta
     init(_ keyspace_meta: OpaquePointer) {
-        print("init AggregateIterator")
         super.init(aggregatesFromKeyspaceMeta: keyspace_meta)
-    }
-    deinit {
-        print("deinit AggregateIterator")
     }
     public func next() -> AggregateMeta? {
         return aggregateMeta
@@ -358,14 +319,10 @@ class AggregateIterator: IteratorBase, Sequence, IteratorProtocol {
 }
 
 public
-class ColumnIterator: IteratorBase, Sequence, IteratorProtocol {
+class ColumnIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = ColumnMeta
     init(_ table_meta: OpaquePointer) {
-        print("init ColumnIterator")
         super.init(columnsFromTableMeta: table_meta)
-    }
-    deinit {
-        print("deinit ColumnIterator")
     }
     public func next() -> ColumnMeta? {
         return columnMeta
@@ -373,14 +330,10 @@ class ColumnIterator: IteratorBase, Sequence, IteratorProtocol {
 }
 
 public
-class IndexIterator: IteratorBase, Sequence, IteratorProtocol {
+class IndexIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = IndexMeta
     init(_ table_meta: OpaquePointer) {
-        print("init IndexIterator")
         super.init(indexesFromTableMeta: table_meta)
-    }
-    deinit {
-        print("deinit IndexIterator")
     }
     public func next() -> IndexMeta? {
         return indexMeta
@@ -388,59 +341,43 @@ class IndexIterator: IteratorBase, Sequence, IteratorProtocol {
 }
 
 public
-class FieldKeyspaceIterator: IteratorBase, Sequence, IteratorProtocol {
+class FieldKeyspaceIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = (name: String, value: Any?)
     init(_ keyspace_meta: OpaquePointer) {
-        print("init FieldKeyspaceIterator")
         super.init(fieldsFromKeyspaceMeta: keyspace_meta)
     }
-    deinit {
-        print("deinit FieldKeyspaceIterator")
-    }
     public func next() -> (name: String, value: Any?)? {
         return metaField
     }
 }
 
 public
-class FieldAggregateIterator: IteratorBase, Sequence, IteratorProtocol {
+class FieldAggregateIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = (name: String, value: Any?)
     init(_ aggregate_meta: OpaquePointer) {
-        print("init FieldAggregateIterator")
         super.init(fieldsFromAggregateMeta: aggregate_meta)
     }
-    deinit {
-        print("deinit FieldAggregateIterator")
-    }
     public func next() -> (name: String, value: Any?)? {
         return metaField
     }
 }
 
 public
-class FieldTableIterator: IteratorBase, Sequence, IteratorProtocol {
+class FieldTableIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = (name: String, value: Any?)
     init(_ table_meta: OpaquePointer) {
-        print("init FieldTableIterator")
         super.init(fieldsFromTableMeta: table_meta)
     }
-    deinit {
-        print("deinit FieldTableIterator")
-    }
     public func next() -> (name: String, value: Any?)? {
         return metaField
     }
 }
 
 public
-class FieldFunctionIterator: IteratorBase, Sequence, IteratorProtocol {
+class FieldFunctionIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = (name: String, value: Any?)
     init(_ function_meta: OpaquePointer) {
-        print("init FieldFunctionIterator")
         super.init(fieldsFromFunctionMeta: function_meta)
-    }
-    deinit {
-        print("deinit FieldFunctionIterator")
     }
     public func next() -> (name: String, value: Any?)? {
         return metaField
@@ -448,14 +385,10 @@ class FieldFunctionIterator: IteratorBase, Sequence, IteratorProtocol {
 }
 
 public
-class MaterializedViewIterator: IteratorBase, Sequence, IteratorProtocol {
+class MaterializedViewIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = MaterializedViewMeta
     init(_ table_meta: OpaquePointer) {
-        print("init MaterializedViewIterator")
         super.init(materializedViewsFromTableMeta: table_meta)
-    }
-    deinit {
-        print("deinit MaterializedViewIterator")
     }
     public func next() -> MaterializedViewMeta? {
         return materializedViewMeta
@@ -463,14 +396,10 @@ class MaterializedViewIterator: IteratorBase, Sequence, IteratorProtocol {
 }
 
 public
-class FieldColumnIterator: IteratorBase, Sequence, IteratorProtocol {
+class FieldColumnIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = (name: String, value: Any?)
     init(_ column_meta: OpaquePointer) {
-        print("init FieldColumnIterator")
         super.init(fieldsFromColumnMeta: column_meta)
-    }
-    deinit {
-        print("deinit FieldColumnIterator")
     }
     public func next() -> (name: String, value: Any?)? {
         return metaField

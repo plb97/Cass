@@ -19,19 +19,15 @@ class DataType: Error {
         }
     }
     init(fromExisting type: DataType) {
-        print("init DataType")
         data_type = cass_data_type_new_from_existing(type.data_type)
     }
     init(tuple itemCount: Int) {
-        print("init DataType")
         data_type = cass_data_type_new_tuple(itemCount)
     }
     init(udt itemCount: Int) {
-        print("init DataType")
         data_type = cass_data_type_new_udt(itemCount)
     }
     deinit {
-        print("deinit DataType")
         defer {
             cass_data_type_free(data_type)
         }

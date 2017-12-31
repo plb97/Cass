@@ -11,12 +11,10 @@ public
 class Batch: Error {
     let batch: OpaquePointer!
     init(_ type: CassBatchType) {
-        print("init Batch")
         batch = cass_batch_new(type)
         super.init()
     }
     deinit {
-        print("deinit Batch")
         cass_batch_free(batch)
     }
     public func setConsistencyAny() -> () {
@@ -53,7 +51,7 @@ class Batch: Error {
         error = message(cass_batch_set_serial_consistency(batch, CASS_CONSISTENCY_LOCAL_SERIAL))
     }
     public func setTimestamp(_ date: Date) -> () {
-        error = message(cass_batch_set_timestamp(batch, timestamp(date: date)))
+        error = message(cass_batch_set_timestamp(batch, date2Timestamp(date: date)))
     }
     public func setRequestTimeout(_ timeout_ms: UInt64) -> () {
         error = message(cass_batch_set_request_timeout(batch, timeout_ms))

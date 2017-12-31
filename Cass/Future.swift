@@ -23,7 +23,7 @@ func error_message(_ future_: OpaquePointer?) -> String? {
 }
 
 public
-class FutureBase: Error {
+class Future: Error {
     static func setCallback(_ future: OpaquePointer,_ listener: Listener) -> () {
         let ptr = UnsafeMutablePointer<Listener>.allocate(capacity: MemoryLayout<Listener>.stride)
         ptr.initialize(to: listener)
@@ -31,23 +31,31 @@ class FutureBase: Error {
     }
     var future: OpaquePointer
     init(_ future: OpaquePointer) {
-        print("init FutureBase",future)
         self.future = future
         super.init(error_message(future))
     }
     deinit {
-        print("deinit FutureBase", future)
         cass_future_free(future)
     }
     public var ready: Bool {
         return cass_true == cass_future_ready(future)
     }
-    func wait(timed: UInt64? = nil) -> () {
-        if let duration = timed {
-            cass_future_wait_timed(future, duration)
-        } else {
-            cass_future_wait(future)
+    public func wait() -> Future {
+        cass_future_wait(future)
+        return self
+    }
+    public func wait(micros: UInt64) -> Future { // microsecondes
+        let timedout = cass_false == cass_future_wait_timed(future, micros)
+        if timedout {
+            msg_ = "TIMED OUT"
         }
+        return self
+    }
+    public func wait(millis: UInt64) -> Future { // millisecondes
+        return wait(micros: millis * 1_000)
+    }
+    public func wait(sec: UInt64) -> Future { // secondes
+        return wait(micros: sec * 1_000_000)
     }
     public var result: Result {
         return Result(future)
@@ -75,22 +83,6 @@ class FutureBase: Error {
         } else {
             return nil
         }
-    }
-}
-
-public
-class Future: FutureBase {
-    init(_ future: OpaquePointer, timed: UInt64? = nil) {
-        print("init Future")
-        super.init(future)
-        if let duration = timed {
-            cass_future_wait_timed(future, duration)
-        } else {
-            cass_future_wait(future)
-        }
-    }
-    deinit {
-        print("deinit Future")
     }
 }
 

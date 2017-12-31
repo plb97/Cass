@@ -55,7 +55,6 @@ struct Value {
             return nil
         }
         let typ = cass_value_type(value)
-        //print("=== value type=\(typ) val=\(value)")
         switch typ {
         case CASS_VALUE_TYPE_TEXT, CASS_VALUE_TYPE_ASCII, CASS_VALUE_TYPE_VARCHAR:
             var data: UnsafePointer<Int8>?
@@ -110,7 +109,7 @@ struct Value {
             var cass_uuid = CassUuid()
             let rc = cass_value_get_uuid(value, &cass_uuid)
             if CASS_OK == rc {
-                let res = uuid_(cass_uuid: &cass_uuid)
+                let res = CassUuid2UUID(cass_uuid: &cass_uuid)
                 return res
             }
             //return nil
@@ -129,7 +128,7 @@ struct Value {
             var timestamp: Int64 = 0
             let rc = cass_value_get_int64(value, &timestamp)
             if CASS_OK == rc {
-                let res = date(timestamp: timestamp)
+                let res = timestamp2Date(timestamp: timestamp)
                 return res
             }
             //return nil
@@ -157,7 +156,6 @@ struct Value {
                  }
                  bytesPointer.initializeMemory(as: UInt64.self, to: 0)
                  bytesPointer.copyBytes(from: buf, count: len)
-                 print("<<< buf=\(buf)")
                  let f = Int64(1 << (8*len))
                  let pu = bytesPointer.bindMemory(to: Int64.self, capacity: 1)
                  let u = pu.pointee  > f >> 1 ? pu.pointee - f : pu.pointee
@@ -229,9 +227,7 @@ struct Value {
             return res
         case CASS_VALUE_TYPE_MAP:
             let key_type = cass_value_primary_sub_type(value)
-            //print("=== key_type=\(key_type)")
             let val_type = cass_value_secondary_sub_type(value)
-            //print("=== val_type=\(val_type)")
             var res: Dictionary<AnyHashable, Any?>
             switch key_type {
             case CASS_VALUE_TYPE_TEXT, CASS_VALUE_TYPE_ASCII, CASS_VALUE_TYPE_VARCHAR:
@@ -420,7 +416,6 @@ struct Value {
             }
             return res
         default:
-            //print("Unknown argument: type=\(typ) value=\(value)")
             return value
         }
     }

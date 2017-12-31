@@ -8,8 +8,8 @@
 
 //import Foundation
 
-public
-typealias Checker_f = (Error?) -> Bool
+public typealias Checker_f = (Error?) -> Bool
+
 func checkError(_ err_: Error?) -> Bool {
     if let err = err_?.error {
         print(err)

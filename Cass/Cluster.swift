@@ -6,35 +6,16 @@
 //  Copyright © 2017 PLB. All rights reserved.
 //
 
-import Foundation
-
-typealias initial_callback_f = @convention(c) (OpaquePointer?, UnsafeMutableRawPointer?) -> ()
-typealias challenge_callback_f = @convention(c) (OpaquePointer?, UnsafeMutableRawPointer?, UnsafePointer<Int8>?, Int) -> ()
-typealias success_callback_f = @convention(c) (OpaquePointer?, UnsafeMutableRawPointer?, UnsafePointer<Int8>?, Int) -> ()
-typealias cleanup_callback_f = @convention(c) (OpaquePointer?, UnsafeMutableRawPointer?) -> ()
-typealias data_cleanup_callback_f = @convention(c) (UnsafeMutableRawPointer?) -> ()
-
-func default_inital_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) -> () {}
-func default_challenge_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>?, _ token_length: Int) -> () {}
-func default_success_callback(_ auth: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>?, _ token_length: Int) -> () {}
-func default_cleanup_callback(_ auth: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) -> () {}
-func default_data_cleanup_callback(_ data: UnsafeMutableRawPointer?) -> () {}
-
-public typealias InitialCallback_f = (Authenticator, UnsafeMutableRawPointer?) -> ()
-public typealias ChallengeCallback_f = (Authenticator, UnsafeMutableRawPointer?, String?) -> ()
-public typealias SuccessCallback_f = (Authenticator, UnsafeMutableRawPointer?, String?) -> ()
-public typealias CleanupCallback_f = (Authenticator, UnsafeMutableRawPointer?) -> ()
-public typealias DataCleanupCallback_f = (UnsafeMutableRawPointer?) -> ()
+//import Foundation
 
 public
 class Cluster: Error {
     let cluster: OpaquePointer = cass_cluster_new()
+//    var authenticatorCallbacks: AuthenticatorCallbacks? = nil
     public init() {
-        print("init Cluster")
         super.init()
     }
     deinit {
-        print("deinit Cluster")
         cass_cluster_free(cluster)
     }
     public func connect(_ session: Session) -> Future {
@@ -53,27 +34,17 @@ class Cluster: Error {
             , "Set Port error ")
         return self
     }
-    /*
-     public func setSsl(_ ssl: OpaquePointer?) -> Cluster {
-     cass_cluster_set_ssl(cluster, ssl)
-     return self
-     }
-     */
-    public func setAuthenticatorCallbacks(
-            initial initial_: InitialCallback_f? = nil,
-            challenge challenge_: ChallengeCallback_f? = nil,
-            success success_: SuccessCallback_f? = nil,
-            cleanup cleanup_: CleanupCallback_f? = nil,
-            data_cleanup data_cleanup_: DataCleanupCallback_f? = nil,
-            data data_: UnsafeMutableRawPointer? = nil
-        ) -> Cluster {
-        var exchange_callbacks = CassAuthenticatorCallbacks(
-            initial_callback: default_inital_callback,
-            challenge_callback: default_challenge_callback,
-            success_callback: default_success_callback,
-            cleanup_callback: default_cleanup_callback)
+    func setSsl(_ ssl: OpaquePointer?) -> Cluster {
+         cass_cluster_set_ssl(cluster, ssl)
+         return self
+    }
+    public func setAuthenticatorCallbacks(_ authenticatorCallbacks: AuthenticatorCallbacks) -> Cluster {
+        let data = UnsafeMutablePointer<AuthenticatorCallbacks>.allocate(capacity: 1)
+        data.initialize(to: authenticatorCallbacks)
+        var exchange_callbacks = default_exchange_callbacks
         error = message(cass_cluster_set_authenticator_callbacks(cluster, &exchange_callbacks
-            , default_data_cleanup_callback, data_),"Set Authenticator Callbacks error ")
+            , default_data_cleanup_callback, data)
+            ,"Set Authenticator Callbacks error ")
         return self
     }
     public func setProtocolVersion(_ protocol_version: Int = 4) -> Cluster {
@@ -95,10 +66,6 @@ class Cluster: Error {
             , "Set Queue Size Event error ")
         return self
     }
-//    public func setQueueSizeLog(_ queue_size: UInt = 8192) -> Cluster {
-//        error = message(cass_cluster_set_queue_size_log(cluster, UInt32(queue_size)), "Set Queue Size Log error ")
-//        return self
-//    }
     public func setCoreConnectionsPerHost(_ num_connections: UInt = 1) -> Cluster {
         error = message(cass_cluster_set_core_connections_per_host(cluster, UInt32(num_connections))
             , "Set Core Connections Per Host error ")
