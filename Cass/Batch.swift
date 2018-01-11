@@ -12,18 +12,14 @@ class Batch: Status {
     let batch: OpaquePointer
     init(_ type: CassBatchType) {
         batch = cass_batch_new(type)
-        print("init Batch \(batch) \(type(of: batch))")
         super.init()
     }
     deinit {
-        print("deinit Batch \(batch) \(type(of: batch))")
         cass_batch_free(batch)
     }
     public func addStatement(_ statement: Statement) -> Batch {
-        print("Batch: add statement... \(statement.statement) \(type(of: statement.statement))")
         statements.append(statement)
         cass_batch_add_statement(batch, statement.statement)
-        print("Batch: ...add statement")
         return self
     }
     public func setConsistencyAny() -> Batch {

@@ -23,12 +23,9 @@ class Future {
     fileprivate var error_code_: Error?
     fileprivate var error_message_: String?
     init(_ future: OpaquePointer) {
-        print("init Future \(future)")
         self.future = future
     }
     deinit {
-        print("deinit Future \(future)")
-        print("@@@@ cass_future_free(future) \(future)")
         cass_future_free(future)
     }
     public var ready: Bool {
@@ -70,10 +67,7 @@ class Future {
      */
     public var errorCode: Error {
         if nil == error_code_ {
-            print("Future \(future)")
-            print("@@@@ cass_future_error_code(future) \(future)")
             let rc = cass_future_error_code(future)
-            print("Future \(future) rc=\(rc)")
             error_code_ = Error(rc)
         }
         return error_code_!
@@ -90,7 +84,6 @@ class Future {
     }
     public var prepared: Prepared {
         if let prepared = cass_future_get_prepared(future) {
-            print("@@@@ cass_future_get_prepared(future) \(prepared)")
             return Prepared(prepared)
         }
         fatalError("Ne devrait pas arriver")
@@ -117,4 +110,3 @@ class StatementFuture: Future {
     deinit {
     }
 }
-

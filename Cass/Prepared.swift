@@ -11,12 +11,9 @@
 public class Prepared {
     let prepared: OpaquePointer
     init(_ prepared: OpaquePointer) {
-        print("init Prepared")
         self.prepared = prepared
     }
     deinit {
-        print("deinit Prepared")
-        print("@@@@ cass_prepared_free(prepared) \(prepared)")
         cass_prepared_free(prepared)
     }
     public var statement: PreparedStatement {

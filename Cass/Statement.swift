@@ -11,14 +11,12 @@ public class Statement {
     var error_code_: Error? = nil
     fileprivate init(_ statement_: OpaquePointer?) {
         if let statement = statement_ {
-        print("init Statement \(statement)")
         self.statement = statement
         } else {
             fatalError("Ne devrait pas arriver")
         }
     }
     deinit {
-        print("deinit Statement \(statement)")
     }
     public func addKeyIndex(_ index: Int) -> Statement {
         error_code_ = Error(cass_statement_add_key_index(statement, index))
@@ -81,19 +79,14 @@ public class Statement {
 
 public class SimpleStatement: Statement {
     public init(_ query: String,_ values: Any?...) {
-        print("init SimpleStatement")
         super.init(cass_statement_new(query, values.count))
-        print("@@@@ cass_statement_new(query, parameter_count) \(statement)")
         error_code_ = Error(bind_lst(statement, lst: values))
     }
     public init(_ query: String, map: [String: Any?]) {
         super.init(cass_statement_new(query, map.count))
-        print("@@@@ cass_statement_new(query, parameter_count) \(statement)")
         error_code_ = Error(bind_map(statement, map: map))
     }
     deinit {
-        print("deinit SimpleStatement")
-        print("@@@@ cass_statement_free(statement) \(statement)")
         cass_statement_free(statement)
     }
 }
@@ -101,10 +94,8 @@ public class SimpleStatement: Statement {
 public class PreparedStatement: Statement {
     override init(_ statement_: OpaquePointer?) {
         super.init(statement_)
-        print("init PreparedStatement \(statement)")
     }
     deinit {
-        print("deinit PreparedStatement")
     }
     public func bind(_ values: Any?...) -> PreparedStatement {
         error_code_ = Error(bind_lst(statement, lst: values))

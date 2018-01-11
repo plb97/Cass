@@ -10,7 +10,6 @@ public
 class Result {
     let result: OpaquePointer
     init(_ future: OpaquePointer) {
-        print("init Result: future=\(future)")
         if let rs = cass_future_get_result(future) {
             result = rs
         } else {
@@ -18,7 +17,6 @@ class Result {
         }
     }
     deinit {
-        print("deinit Result: result=\(result)")
         cass_result_free(result)
     }
     public var count: Int {

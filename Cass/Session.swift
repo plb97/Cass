@@ -10,14 +10,10 @@ public
 class Session {
     let session: OpaquePointer
     public init(_ session: OpaquePointer = cass_session_new()) {
-        print("init Session: \(session)")
-        print("@@@@ cass_session_new() \(session)")
         self.session = session
     }
     deinit {
-        print("deinit Session: \(session)")
         cass_session_free(session)
-        print("@@@@ cass_session_free(session) \(session)")
     }
     public func connect(_ cluster: Cluster, keyspace keyspace_: String? = nil) -> Future {
         var future_: OpaquePointer?
@@ -48,8 +44,6 @@ class Session {
     }
     public func connect(_ cluster: Cluster, listener: Listener) {
         if let future = cass_session_connect(session, cluster.cluster) {
-            print()
-            print("@@@@ cass_session_connect(session, cluster) listener \(future)")
             Listener.setCallback(future: future, listener: listener)
         } else {
             fatalError("Ne devrait pas arriver")
@@ -57,8 +51,6 @@ class Session {
     }
     public func execute(_ statement: Statement, listener: Listener) {
         if let future = cass_session_execute(session, statement.statement) {
-            print()
-            print("@@@@ cass_session_execute(session, statement) listener \(future)")
             Listener.setCallback(future: future, listener: listener)
         } else {
             fatalError("Ne devrait pas arriver")

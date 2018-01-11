@@ -33,7 +33,6 @@ struct Authenticator {
         set (exchange_data) { cass_authenticator_set_exchange_data(auth, exchange_data) }
     }
     public func setResponse(response resp_: Array<UInt8>?) -> () {
-        print("setResponse...")
         if let resp = resp_ {
             let ptr = UnsafeMutableRawPointer(UnsafeMutablePointer<UInt8>(mutating: resp))
                 .bindMemory(to: Int8.self, capacity: resp.count)
@@ -42,7 +41,6 @@ struct Authenticator {
             }
             cass_authenticator_set_response(auth, ptr, resp.count)
         }
-        print("...setResponse")
     }
     func setError(_ error: String) -> () {
         cass_authenticator_set_error(auth, error)
