@@ -6,8 +6,6 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-//import Foundation
-
 public
 struct TableMeta {
     let table_meta: OpaquePointer

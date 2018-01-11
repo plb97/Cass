@@ -6,10 +6,8 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-//import Foundation
-
 public
-class ErrorResult: Error {
+class ErrorResult: Status {
     let error_result: OpaquePointer
     init(_ error_result: OpaquePointer) {
         self.error_result = error_result

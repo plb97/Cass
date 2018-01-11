@@ -6,8 +6,6 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-//import Foundation
-
 public
 struct Duration {
     public var months: Int32

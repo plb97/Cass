@@ -2,43 +2,36 @@
 //  Error.swift
 //  Cass
 //
-//  Created by Philippe on 23/12/2017.
-//  Copyright © 2017 PLHB. All rights reserved.
+//  Created by Philippe on 03/01/2018.
+//  Copyright © 2018 PLHB. All rights reserved.
 //
 
-//import Foundation
-
-public typealias Checker_f = (Error?) -> Bool
-
-func checkError(_ err_: Error?) -> Bool {
-    if let err = err_?.error {
+func default_checker(_ err: Error) -> Bool {
+    if !err.ok {
         print(err)
-        fatalError(err)
+        fatalError(err.description)
     }
     return true
 }
 
-func message(_ rc: CassError,_ pfx: String = "") ->  String? {
-    if CASS_OK == rc {
-        return nil
-    } else {
-        return pfx+rc.description
-    }
-}
-
 public
-class Error {
-    var msg_: String?
-    init(_ msg_: String? = nil) {
-        self.msg_ = msg_
+struct Error: CustomStringConvertible {
+    let rc: CassError
+    init(_ rc: CassError) {
+        self.rc = rc
     }
-    public var error: String? {
-        get { return msg_}
-        set (msg_) { self.msg_ = msg_}
+    public var description: String {
+        if ok {
+            return "Ok"
+        } else {
+            return "**** Error: \(rc.rawValue) \(rc.description)"
+        }
     }
-    public func check(checker: Checker_f = checkError) -> Bool {
+    public var ok: Bool {
+        return CASS_OK == rc
+    }
+    @discardableResult
+    public func check(checker: ((_ err: Error) -> Bool) = default_checker) -> Bool {
         return checker(self)
     }
 }
-
-

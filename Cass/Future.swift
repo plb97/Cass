@@ -6,83 +6,115 @@
 //  Copyright © 2017 PLB. All rights reserved.
 //
 
-//import Foundation
-
-func error_message(_ future_: OpaquePointer?) -> String? {
-    if let future = future_ {
-        var text: UnsafePointer<Int8>?
-        var len: Int = 0
-        cass_future_error_message(future, &text, &len)
-        if 0 < len {
-            return utf8_string(text: text, len: len)
-        } else {
-            return nil
-        }
+private func future_error_message(_ future: OpaquePointer) -> String {
+    var text: UnsafePointer<Int8>?
+    var len: Int = 0
+    cass_future_error_message(future, &text, &len)
+    if let str = utf8_string(text: text, len: len) {
+        return str
+    } else {
+        return ""
     }
-    return nil
 }
 
 public
-class Future: Error {
-    static func setCallback(_ future: OpaquePointer,_ listener: Listener) -> () {
-        let ptr = UnsafeMutablePointer<Listener>.allocate(capacity: MemoryLayout<Listener>.stride)
-        ptr.initialize(to: listener)
-        cass_future_set_callback(future, callback_f, ptr)
-    }
-    var future: OpaquePointer
+class Future {
+    let future: OpaquePointer
+    fileprivate var error_code_: Error?
+    fileprivate var error_message_: String?
     init(_ future: OpaquePointer) {
+        print("init Future \(future)")
         self.future = future
-        super.init(error_message(future))
     }
     deinit {
+        print("deinit Future \(future)")
+        print("@@@@ cass_future_free(future) \(future)")
         cass_future_free(future)
     }
     public var ready: Bool {
         return cass_true == cass_future_ready(future)
     }
+    public func wait(micros: UInt64) -> Bool { // microsecondes
+        return cass_false == cass_future_wait_timed(future, micros)
+    }
+    public func wait(millis: UInt64) -> Bool { // millisecondes
+        return wait(micros: millis * 1_000)
+    }
+    public func wait(sec: UInt64) -> Bool { // secondes
+        return wait(micros: sec * 1_000_000)
+    }
+    /*
+     public var customPayloadItemCount: Int {
+     return cass_future_custom_payload_item_count(future)
+     }
+     public func payloadCustom(index: Int) -> CustomPayload? {
+     var name: UnsafePointer<Int8>?
+     var name_length: Int = 0
+     var value: UnsafePointer<UInt8>?
+     var value_size: Int = 0
+     error_code = Error(cass_future_custom_payload_item(future, index, &name, &name_length, &value, &value_size))
+     if error_code.ok {
+     return CustomPayload(name: utf8_string(text: name, len: name_length)!, value: value, value_size: value_size)
+     } else {
+     return nil
+     }
+     }
+     */
+    /*
+     public var errorResult: ErrorResult {
+     if nil == error_result_ {
+     error_result_ = ErrorResult(cass_future_get_error_result(future))
+     }
+     return error_result_!
+     }
+     */
+    public var errorCode: Error {
+        if nil == error_code_ {
+            print("Future \(future)")
+            print("@@@@ cass_future_error_code(future) \(future)")
+            let rc = cass_future_error_code(future)
+            print("Future \(future) rc=\(rc)")
+            error_code_ = Error(rc)
+        }
+        return error_code_!
+    }
+    public var errorMessage: String {
+        if nil == error_message_ {
+            error_message_ = errorCode.ok ? "" : future_error_message(future)
+        }
+        return error_message_!
+    }
+    @discardableResult
+    public func check(checker: ((_ err: Error) -> Bool) = default_checker) -> Bool {
+        return errorCode.check(checker:checker)
+    }
+    public var prepared: Prepared {
+        if let prepared = cass_future_get_prepared(future) {
+            print("@@@@ cass_future_get_prepared(future) \(prepared)")
+            return Prepared(prepared)
+        }
+        fatalError("Ne devrait pas arriver")
+    }
+    @discardableResult
     public func wait() -> Future {
         cass_future_wait(future)
         return self
     }
-    public func wait(micros: UInt64) -> Future { // microsecondes
-        let timedout = cass_false == cass_future_wait_timed(future, micros)
-        if timedout {
-            msg_ = "TIMED OUT"
-        }
-        return self
-    }
-    public func wait(millis: UInt64) -> Future { // millisecondes
-        return wait(micros: millis * 1_000)
-    }
-    public func wait(sec: UInt64) -> Future { // secondes
-        return wait(micros: sec * 1_000_000)
-    }
     public var result: Result {
         return Result(future)
     }
-    public var errorResult: ErrorResult {
-        return ErrorResult(cass_future_get_error_result(future))
+}
+
+class BatchFuture : Future {
+}
+
+class StatementFuture: Future {
+    let statement: Statement // garde une reference sur le 'statement' durant toute la vie du 'future'
+    init(statement: Statement, future: OpaquePointer) {
+        self.statement = statement
+        super.init(future)
     }
-    var errorCode: CassError {
-        return cass_future_error_code(future)
-    }
-    public var errorMessage: String? {
-        return error_message(future)
-    }
-    public var customPayloadItemCount: Int {
-        return cass_future_custom_payload_item_count(future)
-    }
-    public func payloadCustom(index: Int) -> CustomPayload? {
-        var name: UnsafePointer<Int8>?
-        var name_length: Int = 0
-        var value: UnsafePointer<UInt8>?
-        var value_size: Int = 0
-        msg_ = message(cass_future_custom_payload_item(future, index, &name, &name_length, &value, &value_size))
-        if nil == msg_ {
-            return CustomPayload(name: utf8_string(text: name, len: name_length)!, value: value, value_size: value_size)
-        } else {
-            return nil
-        }
+    deinit {
     }
 }
 

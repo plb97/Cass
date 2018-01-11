@@ -6,10 +6,8 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-//import Foundation
-
 public
-class Iterator: Error {
+class Iterator: Status {
     let iterator_: OpaquePointer?
     fileprivate init(rowsFromResult meta_: OpaquePointer?) {
         if let meta = meta_ {

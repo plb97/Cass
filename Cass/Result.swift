@@ -6,50 +6,40 @@
 //  Copyright © 2017 PLB. All rights reserved.
 //
 
-//import Foundation
-
 public
-class Result: Error {
-    let result_: OpaquePointer?
+class Result {
+    let result: OpaquePointer
     init(_ future: OpaquePointer) {
-        let rc = cass_future_error_code(future)
-        if CASS_OK == rc {
-            result_ = cass_future_get_result(future)
-            super.init()
+        print("init Result: future=\(future)")
+        if let rs = cass_future_get_result(future) {
+            result = rs
         } else {
-            result_ = nil
-            super.init(error_message(future))
+            fatalError("Ne devrait pas arriver")
         }
     }
     deinit {
-        if let result = result_ {
-            cass_result_free(result)
-        }
+        print("deinit Result: result=\(result)")
+        cass_result_free(result)
     }
-    public func count() -> Int {
-        if let result = result_ {
-            let ctr = cass_result_row_count(result)
-            return ctr
-        }
-        return 0
+    public var count: Int {
+        let ctr = cass_result_row_count(result)
+        return ctr
     }
-    public func column_count() -> Int {
-        if let result = result_ {
-            let ctr = cass_result_column_count(result)
-            return ctr
-        }
-        return 0
+    public var columnCount: Int {
+        let ctr = cass_result_column_count(result)
+        return ctr
     }
-    public func first() -> Row? {
-        if let result = result_ {
-            if let row = cass_result_first_row(result) {
-                return Row(row)
-            }
+    public var hasMorePages: Bool {
+        return cass_true == cass_result_has_more_pages(result)
+    }
+    public var first: Row? {
+        if let row = cass_result_first_row(result) {
+            return Row(row)
         }
         return nil
     }
-    public func rows() -> RowIterator {
-        return RowIterator(result_)
+    public var rows: RowIterator {
+        return RowIterator(result)
     }
 }
 

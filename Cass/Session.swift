@@ -6,62 +6,78 @@
 //  Copyright © 2017 PLB. All rights reserved.
 //
 
-//import Foundation
-
 public
 class Session {
     let session: OpaquePointer
     public init(_ session: OpaquePointer = cass_session_new()) {
+        print("init Session: \(session)")
+        print("@@@@ cass_session_new() \(session)")
         self.session = session
     }
     deinit {
+        print("deinit Session: \(session)")
         cass_session_free(session)
+        print("@@@@ cass_session_free(session) \(session)")
     }
     public func connect(_ cluster: Cluster, keyspace keyspace_: String? = nil) -> Future {
+        var future_: OpaquePointer?
         if let keyspace = keyspace_ {
-            return Future(cass_session_connect_keyspace(session, cluster.cluster, keyspace))
+            future_ = cass_session_connect_keyspace(session, cluster.cluster, keyspace)
         } else {
-            return Future(cass_session_connect(session, cluster.cluster))
+            future_ = cass_session_connect(session, cluster.cluster)
+        }
+        if let future = future_ {
+            return Future(future)
+        } else {
+            fatalError("Ne devrait pas arriver")
         }
     }
-    public func execute(_ statement: SimpleStatement) -> Future {
-        return Future(cass_session_execute(session, statement.stmt()))
-    }
-    public func connect(_ cluster: Cluster, listener: Listener) -> () {
-        Future.setCallback(cass_session_connect(session, cluster.cluster), listener)
-    }
-    public func execute(_ statement: SimpleStatement, listener: Listener) -> () {
-        Future.setCallback(cass_session_execute(session, statement.stmt()), listener)
-    }
-    public func prepare(_ query: String) -> PreparedStatement {
-        let stmt = PreparedStatement(cass_session_prepare(session, query))
-        return stmt
+    public func execute(_ statement: Statement) -> Future {
+        if let future = cass_session_execute(session, statement.statement) {
+            return StatementFuture(statement: statement, future: future)
+        } else {
+            fatalError("Ne devrait pas arriver")
+        }
     }
     public func execute(batch: Batch) -> Future {
-        return Future(cass_session_execute_batch(session, batch.batch))
-    }
-    public func execute(prepared: PreparedStatement,_ values: Any?...) -> Future {
-        if let statement = prepared.stmt(values) {
-            defer {
-                cass_statement_free(statement)
-            }
-            return Future(cass_session_execute(session, statement))
+        if let future = cass_session_execute_batch(session, batch.batch) {
+            return BatchFuture(future)
+        } else {
+            fatalError("Ne devrait pas arriver")
         }
-        fatalError("Ne devrait pas arriver")
     }
-    public func execute(prepared: PreparedStatement, map: [String: Any?]) -> Future {
-        if let statement = prepared.stmt(map: map) {
-            defer {
-                cass_statement_free(statement)
-            }
-            return Future(cass_session_execute(session, statement))
+    public func connect(_ cluster: Cluster, listener: Listener) {
+        if let future = cass_session_connect(session, cluster.cluster) {
+            print()
+            print("@@@@ cass_session_connect(session, cluster) listener \(future)")
+            Listener.setCallback(future: future, listener: listener)
+        } else {
+            fatalError("Ne devrait pas arriver")
         }
-        fatalError("Ne devrait pas arriver")
     }
-
+    public func execute(_ statement: Statement, listener: Listener) {
+        if let future = cass_session_execute(session, statement.statement) {
+            print()
+            print("@@@@ cass_session_execute(session, statement) listener \(future)")
+            Listener.setCallback(future: future, listener: listener)
+        } else {
+            fatalError("Ne devrait pas arriver")
+        }
+    }
+    public func prepare(_ query: String) -> Future {
+        if let future = cass_session_prepare(session, query) {
+            return Future(future)
+        } else {
+            fatalError("Ne devrait pas arriver")
+        }
+    }
     public var schemaMeta: SchemaMeta { get {return SchemaMeta(cass_session_get_schema_meta(session))} }
     public func close() -> Future {
-        return Future(cass_session_close(session))
+        if let future = cass_session_close(session) {
+            return Future(future)
+        } else {
+            fatalError("Ne devrait pas arriver")
+        }
     }
 }
 

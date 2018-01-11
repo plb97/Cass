@@ -6,8 +6,6 @@
 //  Copyright © 2017 PLB. All rights reserved.
 //
 
-//import Foundation
-
 public
 struct Authenticator {
     let auth: OpaquePointer

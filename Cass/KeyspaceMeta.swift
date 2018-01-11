@@ -6,8 +6,6 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-//import Foundation
-
 public
 struct KeyspaceMeta {
     let keyspace_meta: OpaquePointer

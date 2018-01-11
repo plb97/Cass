@@ -6,10 +6,8 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-//import Foundation
-
 public
-class FunctionMeta: Error {
+class FunctionMeta: Status {
     let function_meta: OpaquePointer
     init?(_ function_meta_: OpaquePointer?) {
         if let function_meta = function_meta_ {

@@ -6,10 +6,8 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-//import Foundation
-
 public
-class DataType: Error {
+class DataType: Status {
     let data_type: OpaquePointer
     init?(_ data_type_: OpaquePointer?) {
         if let data_type = data_type_ {

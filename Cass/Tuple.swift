@@ -6,10 +6,8 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-import Foundation
-
 public
-class Tuple: Error {
+class Tuple: Status {
     let tuple: OpaquePointer
     public init(itemCount: Int) {
         tuple = cass_tuple_new(itemCount)

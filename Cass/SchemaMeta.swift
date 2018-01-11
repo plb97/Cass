@@ -6,8 +6,6 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-//import Foundation
-
 public
 class SchemaMeta {
     let schema_meta: OpaquePointer
