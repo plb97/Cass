@@ -42,16 +42,16 @@ class Session {
             fatalError("Ne devrait pas arriver")
         }
     }
-    public func connect(_ cluster: Cluster, listener: Listener) {
+    public func connect(_ cluster: Cluster, callback: Callback) {
         if let future = cass_session_connect(session, cluster.cluster) {
-            Listener.setCallback(future: future, listener: listener)
+            Callback.setCallback(future: future, callback: callback)
         } else {
             fatalError("Ne devrait pas arriver")
         }
     }
-    public func execute(_ statement: Statement, listener: Listener) {
+    public func execute(_ statement: Statement, callback: Callback) {
         if let future = cass_session_execute(session, statement.statement) {
-            Listener.setCallback(future: future, listener: listener)
+            Callback.setCallback(future: future, callback: callback)
         } else {
             fatalError("Ne devrait pas arriver")
         }
