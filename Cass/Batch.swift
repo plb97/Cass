@@ -67,7 +67,7 @@ class Batch: Status {
         return self
     }
     public func setTimestamp(_ date: Date) -> Batch {
-        error = message(cass_batch_set_timestamp(batch, date2Timestamp(date: date)))
+        error = message(cass_batch_set_timestamp(batch, date.timestamp))
         return self
     }
     public func setRequestTimeout(_ timeout_ms: UInt64) -> Batch {

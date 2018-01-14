@@ -19,14 +19,10 @@ struct Authenticator {
         return addr
     }
     public var hostname: String {
-        var length: Int = 0
-        let data: UnsafePointer<Int8>? = cass_authenticator_hostname(auth, &length)
-        return utf8_string(text: data, len: length)!
+        return String(cass_authenticator_hostname, ptr: auth)!
     }
     public var className: String {
-        var length: Int = 0
-        let data: UnsafePointer<Int8>? = cass_authenticator_class_name(auth, &length)
-        return utf8_string(text: data, len: length)!
+        return String(cass_authenticator_class_name, ptr: auth)!
     }
     var exchangeData: UnsafeMutableRawPointer? {
         get { return cass_authenticator_exchange_data(auth) }

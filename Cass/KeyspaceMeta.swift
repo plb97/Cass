@@ -17,10 +17,7 @@ struct KeyspaceMeta {
         }
     }
     public var name: String {
-        var name: UnsafePointer<Int8>?
-        var length: Int = 0
-        cass_keyspace_meta_name(keyspace_meta, &name, &length)
-        if let str = utf8_string(text: name, len: length) {
+        if let str = String(f: cass_keyspace_meta_name, ptr: keyspace_meta) {
             return str
         } else {
             fatalError("Ne devrait pas arriver")

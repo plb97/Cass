@@ -41,7 +41,7 @@ class DataType: Status {
             var name: UnsafePointer<Int8>?
             var name_length: Int = 0
             cass_data_type_type_name(data_type, &name, &name_length)
-            return utf8_string(text: name, len: name_length)!
+            return String(f: cass_data_type_type_name, ptr: data_type)!
         }
         set (type_name) {
             cass_data_type_set_type_name(data_type, type_name)
@@ -52,7 +52,7 @@ class DataType: Status {
             var name: UnsafePointer<Int8>?
             var name_length: Int = 0
             cass_data_type_keyspace(data_type, &name, &name_length)
-            return utf8_string(text: name, len: name_length)!
+            return String(f: cass_data_type_keyspace, ptr: data_type)!
         }
         set (keyspace) {
             cass_data_type_set_keyspace(data_type, keyspace)
@@ -60,10 +60,7 @@ class DataType: Status {
     }
     public var class_name: String {
         get {
-            var name: UnsafePointer<Int8>?
-            var name_length: Int = 0
-            cass_data_type_class_name(data_type, &name, &name_length)
-            return utf8_string(text: name, len: name_length)!
+            return String(f: cass_data_type_class_name, ptr: data_type)!
         }
         set (class_name) {
             cass_data_type_set_class_name(data_type, class_name)
@@ -79,10 +76,7 @@ class DataType: Status {
         return DataType(cass_data_type_sub_data_type_by_name(data_type, name))
     }
     public func subTypeName(index: Int) -> String {
-        var name: UnsafePointer<Int8>?
-        var name_length: Int = 0
-        cass_data_type_sub_type_name(data_type, index, &name, &name_length)
-        return utf8_string(text: name, len: name_length)!
+        return String(f: cass_data_type_sub_type_name, ptr: data_type, index: index)!
     }
     public func addSubType(_ subDataType: DataType) -> DataType {
         msg_ = message(cass_data_type_add_sub_type(data_type, subDataType.data_type))

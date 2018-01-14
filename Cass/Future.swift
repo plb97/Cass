@@ -7,10 +7,7 @@
 //
 
 private func future_error_message(_ future: OpaquePointer) -> String {
-    var text: UnsafePointer<Int8>?
-    var len: Int = 0
-    cass_future_error_message(future, &text, &len)
-    if let str = utf8_string(text: text, len: len) {
+    if let str = String(f: cass_future_error_message, ptr: future) {
         return str
     } else {
         return ""
@@ -40,31 +37,11 @@ class Future {
     public func wait(sec: UInt64) -> Bool { // secondes
         return wait(micros: sec * 1_000_000)
     }
-    /*
-     public var customPayloadItemCount: Int {
-     return cass_future_custom_payload_item_count(future)
-     }
-     public func payloadCustom(index: Int) -> CustomPayload? {
-     var name: UnsafePointer<Int8>?
-     var name_length: Int = 0
-     var value: UnsafePointer<UInt8>?
-     var value_size: Int = 0
-     error_code = Error(cass_future_custom_payload_item(future, index, &name, &name_length, &value, &value_size))
-     if error_code.ok {
-     return CustomPayload(name: utf8_string(text: name, len: name_length)!, value: value, value_size: value_size)
-     } else {
-     return nil
-     }
-     }
-     */
-    /*
-     public var errorResult: ErrorResult {
-     if nil == error_result_ {
-     error_result_ = ErrorResult(cass_future_get_error_result(future))
-     }
-     return error_result_!
-     }
-     */
+
+    //public
+    var errorResult: ErrorResult {
+       return ErrorResult(cass_future_get_error_result(future))
+    }
     public var errorCode: Error {
         if nil == error_code_ {
             let rc = cass_future_error_code(future)
@@ -96,9 +73,23 @@ class Future {
     public var result: Result {
         return Result(future)
     }
-}
-
-class BatchFuture : Future {
+    /*
+     public var customPayloadItemCount: Int {
+     return cass_future_custom_payload_item_count(future)
+     }
+     public func payloadCustom(index: Int) -> CustomPayload? {
+     var name: UnsafePointer<Int8>?
+     var name_length: Int = 0
+     var value: UnsafePointer<UInt8>?
+     var value_size: Int = 0
+     error_code = Error(cass_future_custom_payload_item(future, index, &name, &name_length, &value, &value_size))
+     if error_code.ok {
+     return CustomPayload(name: utf8_string(text: name, len: name_length)!, value: value, value_size: value_size)
+     } else {
+     return nil
+     }
+     }
+     */
 }
 
 class StatementFuture: Future {

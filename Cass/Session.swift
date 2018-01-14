@@ -15,6 +15,7 @@ class Session {
     deinit {
         cass_session_free(session)
     }
+    public var schemaMeta: SchemaMeta {return SchemaMeta(cass_session_get_schema_meta(session))}
     public func connect(_ cluster: Cluster, keyspace keyspace_: String? = nil) -> Future {
         var future_: OpaquePointer?
         if let keyspace = keyspace_ {
@@ -23,6 +24,13 @@ class Session {
             future_ = cass_session_connect(session, cluster.cluster)
         }
         if let future = future_ {
+            return Future(future)
+        } else {
+            fatalError("Ne devrait pas arriver")
+        }
+    }
+    public func prepare(_ query: String) -> Future {
+        if let future = cass_session_prepare(session, query) {
             return Future(future)
         } else {
             fatalError("Ne devrait pas arriver")
@@ -37,7 +45,7 @@ class Session {
     }
     public func execute(batch: Batch) -> Future {
         if let future = cass_session_execute_batch(session, batch.batch) {
-            return BatchFuture(future)
+            return Future(future)
         } else {
             fatalError("Ne devrait pas arriver")
         }
@@ -56,14 +64,7 @@ class Session {
             fatalError("Ne devrait pas arriver")
         }
     }
-    public func prepare(_ query: String) -> Future {
-        if let future = cass_session_prepare(session, query) {
-            return Future(future)
-        } else {
-            fatalError("Ne devrait pas arriver")
-        }
-    }
-    public var schemaMeta: SchemaMeta { get {return SchemaMeta(cass_session_get_schema_meta(session))} }
+    @discardableResult
     public func close() -> Future {
         if let future = cass_session_close(session) {
             return Future(future)

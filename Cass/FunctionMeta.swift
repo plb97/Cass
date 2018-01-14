@@ -18,40 +18,28 @@ class FunctionMeta: Status {
         }
     }
     public var name: String {
-        var name: UnsafePointer<Int8>?
-        var name_length: Int = 0
-        cass_function_meta_name(function_meta, &name, &name_length)
-        if let str = utf8_string(text: name, len: name_length) {
+        if let str = String(f: cass_function_meta_name, ptr: function_meta) {
             return str
         } else {
             fatalError("Ne devrait pas arriver")
         }
     }
     public var fullName: String {
-        var name: UnsafePointer<Int8>?
-        var name_length: Int = 0
-        cass_function_meta_full_name(function_meta, &name, &name_length)
-        if let str = utf8_string(text: name, len: name_length) {
+        if let str = String(f: cass_function_meta_full_name, ptr: function_meta) {
             return str
         } else {
             fatalError("Ne devrait pas arriver")
         }
     }
     public var body: String {
-        var text: UnsafePointer<Int8>?
-        var text_length: Int = 0
-        cass_function_meta_body(function_meta, &text, &text_length)
-        if let str = utf8_string(text: text, len: text_length) {
+        if let str = String(f: cass_function_meta_body, ptr: function_meta) {
             return str
         } else {
             fatalError("Ne devrait pas arriver")
         }
     }
     public var language: String {
-        var name: UnsafePointer<Int8>?
-        var name_length: Int = 0
-        cass_function_meta_language(function_meta, &name, &name_length)
-        if let str = utf8_string(text: name, len: name_length) {
+        if let str = String(f: cass_function_meta_language, ptr: function_meta) {
             return str
         } else {
             fatalError("Ne devrait pas arriver")
@@ -68,7 +56,7 @@ class FunctionMeta: Status {
         var name_length: Int = 0
         var type : OpaquePointer?
         msg_ = message(cass_function_meta_argument(function_meta, index, &name, &name_length, &type))
-        if let str = utf8_string(text: name, len: name_length) {
+        if let str = String(text: name, len: name_length) {
             return (name: str, type: DataType(type)!)
         } else {
             fatalError("Ne devrait pas arriver")

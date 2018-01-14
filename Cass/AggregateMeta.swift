@@ -17,16 +17,10 @@ struct AggregateMeta {
         }
     }
     public var name: String {
-        var name: UnsafePointer<Int8>?
-        var name_length: Int = 0
-        cass_aggregate_meta_name(aggregate_meta, &name, &name_length)
-        return utf8_string(text: name, len: name_length)!
+        return String(f: cass_aggregate_meta_name, ptr: aggregate_meta)!
     }
     public var fullName: String {
-        var full_name: UnsafePointer<Int8>?
-        var full_name_length: Int = 0
-        cass_aggregate_meta_full_name(aggregate_meta, &full_name, &full_name_length)
-        return utf8_string(text: full_name, len: full_name_length)!
+        return String(f: cass_aggregate_meta_full_name, ptr: aggregate_meta)!
     }
     public var argumentCount: Int {
         return cass_aggregate_meta_argument_count(aggregate_meta)

@@ -16,10 +16,7 @@ public struct ColumnMeta {
         }
     }
     public var name: String {
-        var name: UnsafePointer<Int8>?
-        var name_length: Int = 0
-        cass_column_meta_name(column_meta, &name, &name_length)
-        if let str = utf8_string(text: name, len: name_length) {
+        if let str = String(f: cass_column_meta_name, ptr: column_meta) {
             return str
         } else {
             fatalError("Ne devrait pas arriver")

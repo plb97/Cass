@@ -59,7 +59,7 @@ struct Value {
             var len: Int = 0
             let rc = cass_value_get_string(value, &data, &len)
             if CASS_OK == rc {
-                let res = utf8_string(text: data, len: len)
+                let res = String(text: data, len: len)
                 return res!
             }
             //return nil
@@ -107,18 +107,21 @@ struct Value {
             var cass_uuid = CassUuid()
             let rc = cass_value_get_uuid(value, &cass_uuid)
             if CASS_OK == rc {
-                let res = CassUuid2UUID(cass_uuid: &cass_uuid)
+                let res = UUID(cass_uuid: &cass_uuid)
                 return res
             }
             //return nil
             fatalError("Invalid argument: error code=\(rc)")
+        case CASS_VALUE_TYPE_TUPLE:
+            let res = Tuple(tuple: value)
+            return res
         case CASS_VALUE_TYPE_BLOB:
             var data: UnsafePointer<UInt8>?
             var len: Int = 0
             let rc = cass_value_get_bytes(value, &data, &len)
             if CASS_OK == rc {
                 let res = Array(UnsafeBufferPointer(start: data, count: len))
-                return res
+                return res // BLOB=Array<UInt32>
             }
             //return nil
             fatalError("Invalid argument: error code=\(rc)")
@@ -126,7 +129,7 @@ struct Value {
             var timestamp: Int64 = 0
             let rc = cass_value_get_int64(value, &timestamp)
             if CASS_OK == rc {
-                let res = timestamp2Date(timestamp: timestamp)
+                let res = Date(timestamp: timestamp)
                 return res
             }
             //return nil
@@ -147,20 +150,8 @@ struct Value {
              var scale: Int32 = 0
              let rc = cass_value_get_decimal(value, &data, &len, &scale)
              if CASS_OK == rc {
-                 let buf = Array(UnsafeBufferPointer(start: data, count: len).reversed())
-                 let bytesPointer = UnsafeMutableRawPointer.allocate(bytes: 8, alignedTo: 8)
-                 defer {
-                    bytesPointer.deallocate(bytes: 8, alignedTo: 8)
-                 }
-                 bytesPointer.initializeMemory(as: UInt64.self, to: 0)
-                 bytesPointer.copyBytes(from: buf, count: len)
-                 let f = Int64(1 << (8*len))
-                 let pu = bytesPointer.bindMemory(to: Int64.self, capacity: 1)
-                 let u = pu.pointee  > f >> 1 ? pu.pointee - f : pu.pointee
-                 let res = 0 > u
-                 ? Decimal(sign:.minus, exponent: -Int(scale), significand: Decimal(-u))
-                 : Decimal(sign:.plus, exponent: -Int(scale), significand: Decimal(u))
-                 return res
+                let res = Decimal(ptr: data,length: len, scale: scale)
+                return res
              }
              //return nil
              fatalError("Invalid argument: error code=\(rc)")
@@ -196,7 +187,7 @@ struct Value {
             return res
         case CASS_VALUE_TYPE_LIST:
             let sub_type = cass_value_primary_sub_type(value)
-            var res: Array<AnyHashable>
+            var res: Array<Any>
             switch sub_type {
             case CASS_VALUE_TYPE_TEXT, CASS_VALUE_TYPE_ASCII, CASS_VALUE_TYPE_VARCHAR:
                 res = Array<String>()
@@ -220,7 +211,7 @@ struct Value {
             }
             let it = CollectionIterator(value)
             for v in it {
-                res.append(v as! AnyHashable)
+                res.append(v)
             }
             return res
         case CASS_VALUE_TYPE_MAP:

@@ -25,6 +25,14 @@ class Iterator: Status {
         }
         super.init()
     }
+    fileprivate init(valuesFromTuple tuple_: OpaquePointer?) {
+        if let tuple = tuple_ {
+            iterator_ = cass_iterator_from_tuple(tuple)
+        } else {
+            iterator_ = nil
+        }
+        super.init()
+    }
     fileprivate init(itemsFromMap meta_: OpaquePointer?) {
         if let meta = meta_ {
             iterator_ = cass_iterator_from_map(meta)
@@ -155,10 +163,7 @@ class Iterator: Status {
     }
     var userTypeField: (name: String, value: Value?)? {
         if hasNext() {
-            var name: UnsafePointer<Int8>?
-            var name_length: Int = 0
-            msg_ = message(cass_iterator_get_user_type_field_name(iterator_!, &name, &name_length))
-            if let str = utf8_string(text: name, len: name_length) {
+            if let str = String(f: cass_iterator_get_user_type_field_name, ptr: iterator_!) {
                 return (name: str, value: Value(cass_iterator_get_user_type_field_value(iterator_!)))
             }
         }
@@ -214,10 +219,7 @@ class Iterator: Status {
     }
     var metaField: (name: String, value: Any?)? {
         if hasNext() {
-            var name: UnsafePointer<Int8>?
-            var name_length: Int = 0
-            msg_ = message(cass_iterator_get_meta_field_name(iterator_!, &name, &name_length))
-            if let str = utf8_string(text: name, len: name_length) {
+            if let str = String(f: cass_iterator_get_meta_field_name, ptr: iterator_!) {
                 return (name: str, value: Value(cass_iterator_get_meta_field_value(iterator_!))?.any)
             }
         }
@@ -268,6 +270,17 @@ class CollectionIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = Any
     init(_ collection: OpaquePointer) {
         super.init(valuesFromCollection: collection)
+    }
+    public func next() -> Any? {
+        return value?.any
+    }
+}
+
+public
+class TupleIterator: Iterator, Sequence, IteratorProtocol {
+    public typealias Element = Any
+    init(_ tuple: OpaquePointer) {
+        super.init(valuesFromTuple: tuple)
     }
     public func next() -> Any? {
         return value?.any

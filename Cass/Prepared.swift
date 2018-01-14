@@ -20,14 +20,7 @@ public class Prepared {
         return PreparedStatement(cass_prepared_bind(prepared)!)
     }
     public func parameterName(index: Int) -> String? {
-        var name: UnsafePointer<Int8>?
-        var name_length: Int = 0
-        let rc = cass_prepared_parameter_name(prepared, index, &name, &name_length)
-        if CASS_OK == rc {
-            return utf8_string(text: name, len: name_length)!
-        } else {
-            return nil
-        }
+        return String(f: cass_prepared_parameter_name, ptr: prepared, index: index)
     }
     public func dataType(index: Int) -> DataType? {
         // TODO : Do not free this reference as it is bound to the lifetime of the prepared.

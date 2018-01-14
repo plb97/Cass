@@ -46,7 +46,7 @@ func default_challenge_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRa
             if let challengeCallback = authenticatorCallbacks.challengeCallback_ {
                 let authenticator = Authenticator(auth: auth)
                 let response = authenticatorCallbacks.response
-                let token = utf8_string(text: token_, len: token_length)
+                let token = String(text: token_, len: token_length)
                 challengeCallback(authenticator, response, token)
             }
         } else {
@@ -63,7 +63,7 @@ func default_success_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawP
             if let successCallback = authenticatorCallbacks.successCallback_ {
                 let authenticator = Authenticator(auth: auth)
                 let response = authenticatorCallbacks.response
-                let token = utf8_string(text: token_, len: token_length)
+                let token = String(text: token_, len: token_length)
                 successCallback(authenticator, response, token)
             }
         } else {
