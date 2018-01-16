@@ -33,10 +33,10 @@ func default_inital_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPo
                 initialCallback(authenticator, response)
             }
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     } else {
-        fatalError("Ne devrait pas arriver")
+        fatalError(FATAL_ERROR_MESSAGE)
     }
 }
 func default_challenge_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>? = nil, _ token_length: Int = 0) -> () {
@@ -50,10 +50,10 @@ func default_challenge_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRa
                 challengeCallback(authenticator, response, token)
             }
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     } else {
-        fatalError("Ne devrait pas arriver")
+        fatalError(FATAL_ERROR_MESSAGE)
     }
 }
 func default_success_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>? = nil, _ token_length: Int = 0) -> () {
@@ -67,10 +67,10 @@ func default_success_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawP
                 successCallback(authenticator, response, token)
             }
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     } else {
-        fatalError("Ne devrait pas arriver")
+        fatalError(FATAL_ERROR_MESSAGE)
     }
 }
 func default_cleanup_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) -> () {
@@ -83,10 +83,10 @@ func default_cleanup_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawP
                 cleanupCallback(authenticator, response)
             }
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     } else {
-        fatalError("Ne devrait pas arriver")
+        fatalError(FATAL_ERROR_MESSAGE)
     }
 }
 func default_data_cleanup_callback(_ data_: UnsafeMutableRawPointer?) -> () {
@@ -96,7 +96,7 @@ func default_data_cleanup_callback(_ data_: UnsafeMutableRawPointer?) -> () {
             dataCleanupCallback(authenticatorCallbacks.response)
         }
     } else {
-        fatalError("Ne devrait pas arriver")
+        fatalError(FATAL_ERROR_MESSAGE)
     }
 }
 

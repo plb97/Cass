@@ -228,33 +228,10 @@ class Iterator: Status {
     var type: CassIteratorType {
         return cass_iterator_type(iterator_!)
     }
-
-//    public func next() -> Any? {
-//        switch type {
-//        case CASS_ITERATOR_TYPE_RESULT: return row
-//        case CASS_ITERATOR_TYPE_ROW: return column
-//        case CASS_ITERATOR_TYPE_COLLECTION: return value
-//        case CASS_ITERATOR_TYPE_MAP: return keyValue
-//        //case CASS_ITERATOR_TYPE_TUPLE: return tuple
-//        case CASS_ITERATOR_TYPE_USER_TYPE_FIELD: return userTypeField
-//        case CASS_ITERATOR_TYPE_META_FIELD: return metaField
-//        case CASS_ITERATOR_TYPE_KEYSPACE_META: return keyspaceMeta
-//        case CASS_ITERATOR_TYPE_TABLE_META: return tableMeta
-//       // case CASS_ITERATOR_TYPE_TYPE_META: return typeMeta
-//        case CASS_ITERATOR_TYPE_FUNCTION_META: return functionMeta
-//        case CASS_ITERATOR_TYPE_AGGREGATE_META: return aggregateMeta
-//        case CASS_ITERATOR_TYPE_COLUMN_META: return columnMeta
-//        case CASS_ITERATOR_TYPE_INDEX_META: return indexMeta
-//        case CASS_ITERATOR_TYPE_MATERIALIZED_VIEW_META: return materializedViewMeta
-//        default:
-//            fatalError()
-//            //return nil
-//        }
-//    }
 }
 
 public
-class RowIterator: Iterator, Sequence, IteratorProtocol {
+class ResultIterator: Iterator, Sequence, IteratorProtocol {
     public typealias Element = Row
     init(_ result_: OpaquePointer?) {
         super.init(rowsFromResult: result_)

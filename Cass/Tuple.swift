@@ -5,39 +5,82 @@
 //  Created by Philippe on 27/12/2017.
 //  Copyright © 2017 PLHB. All rights reserved.
 //
-
-public typealias Tuple = Array<Any?>
-extension Array where Array.Element == Any?  {
+public class Tuple: Collection {
+    public typealias Element = Any?
+    var array: Array<Element>
+    var tuple_: OpaquePointer?
     public init(count: Int) {
-        self.init(repeating: nil, count: count)
+        self.array = Array(repeating: nil, count: count)
     }
-    public init(_ values: Any?...) {
-        self.init(values)
+    public init(_ values: Element...) {
+        self.array = Array(values)
     }
     init(tuple: OpaquePointer) {
-        print("init Tuple \(tuple)")
-        // ATTENTION : ne pas appeler 'cass_tuple_free'
-        self.init()
+        // ATTENTION : ne pas conserver 'tuple' pour ne pas appeler cass_tuple_free dans 'deinit'
+        self.array = Array()
         for v in TupleIterator(tuple) {
-            self.append(v)
+            self.array.append(v)
         }
     }
-    public init(dataType: DataType) {
-        self.init(tuple: cass_tuple_new_from_data_type(dataType.data_type))
-    }
-    // ATTENTION : c'est la responsabilite de l'appelant de liberer le 'tuple'
-    var tuple: OpaquePointer {
-        let res = cass_tuple_new(self.count)!
-        let rc = set_lst(res, lst: self)
-        if CASS_OK == rc {
-            return res
+    init(dataType: DataType) {
+        if let tuple = cass_tuple_new_from_data_type(dataType.data_type) {
+            self.tuple_ = tuple
+            self.array = Array()
+            for v in TupleIterator(tuple) {
+                self.array.append(v)
+            }
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
-    // REMARQUE : il ne faut pas liberer le 'tuple' associe au dataType
+    deinit {
+        if let tuple = tuple_ {
+            cass_tuple_free(tuple)
+        }
+    }
+    var tuple: OpaquePointer {
+        print("tuple_ \(String(describing: tuple_))")
+        if let tuple = tuple_ {
+            return tuple
+        } else {
+            if let tuple = cass_tuple_new(self.count) {
+                print("new tuple \(tuple)")
+                let rc = set_lst(tuple, lst: array)
+                if CASS_OK == rc {
+                    tuple_ = tuple
+                    return tuple
+                }
+            }
+        }
+        fatalError(FATAL_ERROR_MESSAGE)
+    }
     public var dataType: DataType {
-        return DataType(cass_tuple_data_type(self.tuple))!
+        if let tuple = cass_tuple_new(array.count) {
+            let rc = set_lst(tuple, lst: array)
+            if CASS_OK == rc {
+                if let data_type = DataType(cass_tuple_data_type(tuple)) {
+                    return data_type
+                }
+            }
+        }
+        fatalError(FATAL_ERROR_MESSAGE)
+    }
+    // minimum requis pour satisfaire le protocole 'Collection'
+    public var startIndex: Int { return 0 }
+    public var endIndex: Int   { return array.count }
+    public func index(after i: Int) -> Int {
+        precondition(i < array.count, "Can't advance beyond endIndex")
+        return i + 1
+    }
+    public subscript(index: Int) -> Element {
+        get {
+            precondition(0 <= index && index < array.count, "index out of bounds")
+            return array[index]
+        }
+        set (newValue) {
+            precondition(0 <= index && index < array.count, "index out of bounds")
+            array[index] = newValue
+        }
     }
 }
 
@@ -55,9 +98,9 @@ fileprivate func set_lst(_ tuple: OpaquePointer, lst: [Any?]) -> CassError {
             rc = cass_tuple_set_string(tuple, idx,v)
         case let v as Bool:
             rc = cass_tuple_set_bool(tuple, idx, (v ? cass_true : cass_false))
-        case let v as Float32/*, case let v as Float*/:
+        case let v as Float/*, case let v as Float32*/:
             rc = cass_tuple_set_float(tuple, idx, v)
-        case let v as Float64/*, let v as Double*/:
+        case let v as Double/*, let v as Float64*/:
             rc = cass_tuple_set_double(tuple, idx, v)
         case let v as Int8 /*, let v as Int*/:
             rc = cass_tuple_set_int8(tuple, idx, v)
@@ -71,9 +114,6 @@ fileprivate func set_lst(_ tuple: OpaquePointer, lst: [Any?]) -> CassError {
             rc = cass_tuple_set_int64(tuple, idx, v)
         case let v as Tuple:
             let tuple = v.tuple
-            defer {
-                cass_tuple_free(tuple)
-            }
             rc = cass_tuple_set_tuple(tuple, idx, tuple)
         case let v as BLOB:
             rc = cass_tuple_set_bytes(tuple, idx, v, v.count)
@@ -103,83 +143,38 @@ fileprivate func set_lst(_ tuple: OpaquePointer, lst: [Any?]) -> CassError {
 }
 
 // autre approche possible...
-// manque les tout ce qui apport des modifications (cass_tuple_set_...)
-class TupleCollection: Collection {
-    public typealias Element = Any?
-    var tuple_: OpaquePointer?
-    var array: Array<Element>
+typealias TupleArray = Array<Any?>
+extension Array where Array.Element == Any?  {
     public init(count: Int) {
-        print("init Tuple count")
-        self.array = Array(repeating: nil, count: count)
+        self.init(repeating: nil, count: count)
     }
-    public init(_ values: Element...) {
-        print("init Tuple _")
-        self.array = Array(values)
+    public init(_ values: Any?...) {
+        self.init(values)
     }
     init(tuple: OpaquePointer) {
-        print("init Tuple tuple")
-        // ATTENTION : ne pas conserver 'tuple' pour ne pas appeler cass_tuple_free dans 'deinit'
-        self.array = Array()
+        print("init Tuple \(tuple)")
+        // ATTENTION : ne pas conserver 'tuple' pour ne pas appeler 'cass_tuple_free(tuple)' dans 'deinit'
+        self.init()
         for v in TupleIterator(tuple) {
-            self.array.append(v)
+            self.append(v)
         }
     }
-    init(dataType: DataType) {
-        print("init Tuple dataType")
-        if let tuple = cass_tuple_new_from_data_type(dataType.data_type) {
-            self.tuple_ = tuple
-            self.array = Array()
-            for v in TupleIterator(tuple) {
-                self.array.append(v)
-            }
-        } else {
-            fatalError("Ne devrait pas arriver")
-        }
+    public init(dataType: DataType) {
+        self.init(tuple: cass_tuple_new_from_data_type(dataType.data_type))
     }
-    deinit {
-        print("deinit Tuple")
-        if let tuple = tuple_ {
-            cass_tuple_free(tuple)
-        }
-    }
+    // ATTENTION : c'est la responsabilite de l'appelant de liberer le 'tuple' avec 'cass_tuple_free(tuple)'
     var tuple: OpaquePointer {
-        print("tuple_ \(String(describing: tuple_))")
-        if let tuple = tuple_ {
-            return tuple
+        let res = cass_tuple_new(self.count)!
+        let rc = set_lst(res, lst: self)
+        if CASS_OK == rc {
+            return res
         } else {
-            if let tuple = cass_tuple_new(self.count) {
-                print("new tuple \(tuple)")
-                let rc = set_lst(tuple, lst: array)
-                if CASS_OK == rc {
-                    tuple_ = tuple
-                    return tuple
-                }
-            }
+            fatalError(FATAL_ERROR_MESSAGE)
         }
-        fatalError("Ne devrait pas arriver")
     }
+    // REMARQUE : il ne faut pas liberer le 'tuple' associe au dataType
     public var dataType: DataType {
-        if let tuple = cass_tuple_new(array.count) {
-            let rc = set_lst(tuple, lst: array)
-            if CASS_OK == rc {
-                if let data_type = DataType(cass_tuple_data_type(tuple)) {
-                    return data_type
-                }
-            }
-        }
-        fatalError("Ne devrait pas arriver")
-    }
-    // minimum requis pour satisfaire le protocole 'Collection'
-    public var startIndex: Int { return 0 }
-    public var endIndex: Int   { return array.count }
-    public subscript(index: Int) -> Element {
-        precondition(0 <= index && index < array.count, "index out of bounds")
-        return array[index]
-    }
-    public func index(after i: Int) -> Int {
-        precondition(i < array.count, "Can't advance beyond endIndex")
-        return i + 1
+        return DataType(cass_tuple_data_type(self.tuple))!
     }
 }
-
 

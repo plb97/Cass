@@ -78,6 +78,6 @@ fileprivate func default_callback(future_: OpaquePointer?, data_: UnsafeMutableR
             callback.callback(CallbackData(future: future, data: callback.data_))
         }
     } else {
-        fatalError("Ne devrait pas arriver")
+        fatalError(FATAL_ERROR_MESSAGE)
     }
 }

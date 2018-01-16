@@ -51,7 +51,7 @@ class Future {
     }
     public var errorMessage: String {
         if nil == error_message_ {
-            error_message_ = errorCode.ok ? "" : future_error_message(future)
+            error_message_ = .ok == errorCode ? "" : future_error_message(future)
         }
         return error_message_!
     }
@@ -63,7 +63,7 @@ class Future {
         if let prepared = cass_future_get_prepared(future) {
             return Prepared(prepared)
         }
-        fatalError("Ne devrait pas arriver")
+        fatalError(FATAL_ERROR_MESSAGE)
     }
     @discardableResult
     public func wait() -> Future {

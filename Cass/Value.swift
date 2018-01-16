@@ -6,6 +6,8 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
+public typealias BLOB = Array<UInt8>
+
 public
 struct Value {
     let value: OpaquePointer

@@ -6,9 +6,22 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-public
-class SchemaMeta {
+public class SchemaMeta {
+    public struct KeyspaceMetaSubscript {
+        let schemaMeta: SchemaMeta
+        init(_ schemaMeta: SchemaMeta) {
+            self.schemaMeta = schemaMeta
+        }
+        public typealias Element = KeyspaceMeta?
+        public subscript(keyspace: String) -> Element {
+            get {
+                let km = cass_schema_meta_keyspace_by_name(schemaMeta.schema_meta, keyspace)
+                return KeyspaceMeta(km)
+            }
+        }
+    }
     let schema_meta: OpaquePointer
+    lazy public var keyspaceMeta: KeyspaceMetaSubscript = KeyspaceMetaSubscript(self)
     init(_ schema_meta: OpaquePointer) {
         self.schema_meta = schema_meta
     }

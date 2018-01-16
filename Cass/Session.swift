@@ -26,42 +26,42 @@ class Session {
         if let future = future_ {
             return Future(future)
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     public func prepare(_ query: String) -> Future {
         if let future = cass_session_prepare(session, query) {
             return Future(future)
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     public func execute(_ statement: Statement) -> Future {
         if let future = cass_session_execute(session, statement.statement) {
             return StatementFuture(statement: statement, future: future)
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     public func execute(batch: Batch) -> Future {
         if let future = cass_session_execute_batch(session, batch.batch) {
             return Future(future)
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     public func connect(_ cluster: Cluster, callback: Callback) {
         if let future = cass_session_connect(session, cluster.cluster) {
             Callback.setCallback(future: future, callback: callback)
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     public func execute(_ statement: Statement, callback: Callback) {
         if let future = cass_session_execute(session, statement.statement) {
             Callback.setCallback(future: future, callback: callback)
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     @discardableResult
@@ -69,7 +69,7 @@ class Session {
         if let future = cass_session_close(session) {
             return Future(future)
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
 }

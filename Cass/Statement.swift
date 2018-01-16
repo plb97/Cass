@@ -15,7 +15,7 @@ public class Statement {
         if let statement = statement_ {
         self.statement = statement
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     deinit {
@@ -32,48 +32,12 @@ public class Statement {
         error_code_ = Error(cass_statement_set_keyspace(statement, keyspace))
         return self
     }
-    public func setConsistencyAny() -> Statement {
-        error_code_ = Error(cass_statement_set_consistency(statement, CASS_CONSISTENCY_ANY))
+    public func setConsistency(_ consistency: Consistency) -> Statement {
+        error_code_ = Error(cass_statement_set_consistency(statement, consistency.cass))
         return self
     }
-    public func setConsistencyOne() -> Statement {
-        error_code_ = Error(cass_statement_set_consistency(statement, CASS_CONSISTENCY_ONE))
-        return self
-    }
-    public func setConsistencyTwo() -> Statement {
-        error_code_ = Error(cass_statement_set_consistency(statement, CASS_CONSISTENCY_TWO))
-        return self
-    }
-    public func setConsistencyThree() -> Statement {
-        error_code_ = Error(cass_statement_set_consistency(statement, CASS_CONSISTENCY_THREE))
-        return self
-    }
-    public func setConsistencyQuorum() -> Statement {
-        error_code_ = Error(cass_statement_set_consistency(statement, CASS_CONSISTENCY_QUORUM))
-        return self
-    }
-    public func setConsistencyAll() -> Statement {
-        error_code_ = Error(cass_statement_set_consistency(statement, CASS_CONSISTENCY_ALL))
-        return self
-    }
-    public func setConsistencyLocalQuorum() -> Statement {
-        error_code_ = Error(cass_statement_set_consistency(statement, CASS_CONSISTENCY_LOCAL_QUORUM))
-        return self
-    }
-    public func setConsistencyEachQuorum() -> Statement {
-        error_code_ = Error(cass_statement_set_consistency(statement, CASS_CONSISTENCY_EACH_QUORUM))
-        return self
-    }
-    public func setConsistencyLocalOne() -> Statement {
-        error_code_ = Error(cass_statement_set_consistency(statement, CASS_CONSISTENCY_LOCAL_ONE))
-        return self
-    }
-    func setSerialConsistencySerial(_ serialConsistency: CassConsistency) -> Statement {
-        error_code_ = Error(cass_statement_set_serial_consistency(statement, CASS_CONSISTENCY_SERIAL))
-        return self
-    }
-    func setSerialConsistencyLocalSerial(_ serialConsistency: CassConsistency) -> Statement {
-        error_code_ = Error(cass_statement_set_serial_consistency(statement, CASS_CONSISTENCY_LOCAL_SERIAL))
+    func setSerialConsistency(_ consistency: SerialConsistency) -> Statement {
+        error_code_ = Error(cass_statement_set_serial_consistency(statement, consistency.cass))
         return self
     }
     public func setPagingSize(_ size: Int32) -> Statement {
@@ -107,7 +71,7 @@ public class Statement {
     public func hasMorePages(result: Result) -> Bool {
         if result.hasMorePages {
             error_code_ = Error(cass_statement_set_paging_state(statement, result.result))
-            return error_code_!.ok
+            return .ok == error_code_
         }
         return false
     }
@@ -173,9 +137,6 @@ fileprivate func bind_lst(_ statement: OpaquePointer, lst: [Any?]) -> CassError 
             rc = cass_statement_bind_int64(statement, idx, v)
         case let v as Tuple:
             let tuple = v.tuple
-            defer {
-                cass_tuple_free(tuple)
-            }
             rc = cass_statement_bind_tuple(statement, idx, tuple)
         case let v as BLOB:
             rc = cass_statement_bind_bytes(statement, idx, v, v.count)

@@ -22,48 +22,12 @@ class Batch: Status {
         cass_batch_add_statement(batch, statement.statement)
         return self
     }
-    public func setConsistencyAny() -> Batch {
-        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_ANY))
+    public func setConsistency(_ consistency: Consistency) -> Batch {
+        error = message(cass_batch_set_consistency(batch, consistency.cass))
         return self
     }
-    public func setConsistencyOne() -> Batch {
-        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_ONE))
-        return self
-    }
-    public func setConsistencyTwo() -> Batch {
-        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_TWO))
-        return self
-    }
-    public func setConsistencyThree() -> Batch {
-        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_THREE))
-        return self
-    }
-    public func setConsistencyQuorum() -> Batch {
-        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_QUORUM))
-        return self
-    }
-    public func setConsistencyAll() -> Batch {
-        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_ALL))
-        return self
-    }
-    public func setConsistencyLocalQuorum() -> Batch {
-        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_LOCAL_QUORUM))
-        return self
-    }
-    public func setConsistencyEachQuorum() -> Batch {
-        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_EACH_QUORUM))
-        return self
-    }
-    public func setConsistencyLocalOne() -> Batch {
-        error = message(cass_batch_set_consistency(batch, CASS_CONSISTENCY_LOCAL_ONE))
-        return self
-    }
-    public func setConsistencySerial() -> Batch {
-        error = message(cass_batch_set_serial_consistency(batch, CASS_CONSISTENCY_SERIAL))
-        return self
-    }
-    public func setConsistencyLocalSerial() -> Batch {
-        error = message(cass_batch_set_serial_consistency(batch, CASS_CONSISTENCY_LOCAL_SERIAL))
+    public func setSerialConsistency(_ consistency: SerialConsistency) -> Batch {
+        error = message(cass_batch_set_serial_consistency(batch, consistency.cass))
         return self
     }
     public func setTimestamp(_ date: Date) -> Batch {

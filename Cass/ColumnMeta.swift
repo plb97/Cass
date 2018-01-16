@@ -6,8 +6,21 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-public struct ColumnMeta {
+public class ColumnMeta {
+    public struct FieldSubscript {
+        let columnMeta: ColumnMeta
+        init(_ columnMeta: ColumnMeta) {
+            self.columnMeta = columnMeta
+        }
+        public typealias Element = Value?
+        public subscript(name: String) -> Element {
+            get {
+                return Value(cass_column_meta_field_by_name(columnMeta.column_meta, name))
+            }
+        }
+    }
     let column_meta: OpaquePointer
+    lazy public var field = FieldSubscript(self)
     init?(_ column_meta_: OpaquePointer?) {
         if let column_meta = column_meta_ {
             self.column_meta = column_meta
@@ -19,7 +32,7 @@ public struct ColumnMeta {
         if let str = String(f: cass_column_meta_name, ptr: column_meta) {
             return str
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     var type: CassColumnType {
@@ -28,10 +41,11 @@ public struct ColumnMeta {
     public var dataType: DataType {
         return DataType(cass_column_meta_data_type(column_meta))!
     }
-    public func field(name: String) -> Value? {
-        return Value(cass_column_meta_field_by_name(column_meta, name))
-    }
     public var fields: FieldColumnIterator {
         return FieldColumnIterator(column_meta)
     }
+    public func field(name: String) -> Value? {
+        return Value(cass_column_meta_field_by_name(column_meta, name))
+    }
+
 }

@@ -13,7 +13,7 @@ class Result {
         if let rs = cass_future_get_result(future) {
             result = rs
         } else {
-            fatalError("Ne devrait pas arriver")
+            fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     deinit {
@@ -36,8 +36,8 @@ class Result {
         }
         return nil
     }
-    public var rows: RowIterator {
-        return RowIterator(result)
+    public var rows: ResultIterator {
+        return ResultIterator(result)
     }
 }
 

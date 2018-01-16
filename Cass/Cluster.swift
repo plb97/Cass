@@ -37,48 +37,48 @@ class Cluster: Status {
         var exchange_callbacks = default_exchange_callbacks
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_authenticator_callbacks(cluster, &exchange_callbacks, default_data_cleanup_callback, data))
-            error = message(error_code_!.rc, "Set Authenticator Callbacks error ")
+            error = message(error_code_!.cass, "Set Authenticator Callbacks error ")
         }
         return self
     }
-    public func setProtocolVersion(_ protocol_version: Int = 4) -> Cluster {
+    public func setProtocolVersion(_ protocol_version: ProtocolVersion = .v4) -> Cluster {
         if nil == error_code_ {
-            error_code_ = Error(cass_cluster_set_protocol_version(cluster, Int32(protocol_version)))
-            error = message(error_code_!.rc, "Set Protocol Version error ")
+            error_code_ = Error(cass_cluster_set_protocol_version(cluster, Int32(protocol_version.cass.rawValue)))
+            error = message(error_code_!.cass, "Set Protocol Version error ")
         }
         return self
     }
     public func setNumThreadsIo(_ num_threads: UInt = 1) -> Cluster {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_num_threads_io(cluster, UInt32(num_threads)))
-            error = message(error_code_!.rc, "Set Num Threads IO error ")
+            error = message(error_code_!.cass, "Set Num Threads IO error ")
         }
         return self
     }
     public func setQueueSizeIo(_ queue_size: UInt = 8192) {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_queue_size_io(cluster, UInt32(queue_size)))
-            error = message(error_code_!.rc, "Set Queue Size IO error ")
+            error = message(error_code_!.cass, "Set Queue Size IO error ")
         }
     }
     public func setQueueSizeEvent(_ queue_size: UInt = 8192) -> Cluster {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_queue_size_event(cluster, UInt32(queue_size)))
-            error = message(error_code_!.rc, "Set Queue Size Event error ")
+            error = message(error_code_!.cass, "Set Queue Size Event error ")
         }
         return self
     }
     public func setCoreConnectionsPerHost(_ num_connections: UInt = 1) -> Cluster {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_core_connections_per_host(cluster, UInt32(num_connections)))
-            error = message(error_code_!.rc, "Set Core Connections Per Host error ")
+            error = message(error_code_!.cass, "Set Core Connections Per Host error ")
         }
         return self
     }
     public func setMaxConnectionsPerHost(_ num_connections: UInt = 2) -> Cluster {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_max_connections_per_host(cluster, UInt32(num_connections)))
-            error = message(error_code_!.rc, "Set Max Connections Per Host error ")
+            error = message(error_code_!.cass, "Set Max Connections Per Host error ")
         }
         return self
     }
@@ -89,14 +89,14 @@ class Cluster: Status {
     public func setMaxConcurrentCreation(_ num_connections: UInt = 1) -> Cluster {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_max_concurrent_creation(cluster, UInt32(num_connections)))
-            error = message(error_code_!.rc, "Set Max Concurrent Creation error ")
+            error = message(error_code_!.cass, "Set Max Concurrent Creation error ")
         }
         return self
     }
     public func setMaxConcurrentRequestsThreshold(_ num_requests: UInt = 100) -> Cluster {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_max_concurrent_requests_threshold(cluster, UInt32(num_requests)))
-            error = message(error_code_!.rc, "Set Max Concurrent Requests Threshold error ")
+            error = message(error_code_!.cass, "Set Max Concurrent Requests Threshold error ")
         }
         return self
     }
@@ -156,7 +156,7 @@ class Cluster: Status {
     public func setLoadBalanceDcAware(local_dc: String = "local", used_hosts_per_remote_dc: UInt = 1, allow_remote_dcs_for_local_cl: Bool = false) -> Cluster {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_load_balance_dc_aware(cluster, local_dc, UInt32(used_hosts_per_remote_dc), allow_remote_dcs_for_local_cl ? cass_true : cass_false))
-            error = message(error_code_!.rc, "Set Load Balance DC Aware ")
+            error = message(error_code_!.cass, "Set Load Balance DC Aware ")
         }
         return self
     }
@@ -223,14 +223,14 @@ class Cluster: Status {
     public func setUseHostnameResolution(_ enabled: Bool = false) -> Cluster {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_use_hostname_resolution(cluster, enabled ? cass_true : cass_false))
-            error = message(error_code_!.rc, "Set Use Hostname Resolution ")
+            error = message(error_code_!.cass, "Set Use Hostname Resolution ")
         }
         return self
     }
     public func setRandomizedContactPoint(_ enabled: Bool = true) -> Cluster {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_use_randomized_contact_points(cluster, enabled ? cass_true : cass_false))
-            error = message(error_code_!.rc, "Set Randomized Contact Point ")
+            error = message(error_code_!.cass, "Set Randomized Contact Point ")
         }
         return self
     }
@@ -238,14 +238,14 @@ class Cluster: Status {
         -> Cluster {
             if nil == error_code_ {
                 error_code_ = Error(cass_cluster_set_constant_speculative_execution_policy(cluster, constant_delay_ms, Int32(max_speculative_executions)))
-                error = message(error_code_!.rc, "Set Constant Speculative Execution Policy ")
+                error = message(error_code_!.cass, "Set Constant Speculative Execution Policy ")
             }
             return self
     }
     public func setNoSpeculativeExecutionPolicy() -> Cluster {
         if nil == error_code_ {
             error_code_ = Error(cass_cluster_set_no_speculative_execution_policy(cluster))
-            error = message(error_code_!.rc, "Set No Speculative Execution Policy ")
+            error = message(error_code_!.cass, "Set No Speculative Execution Policy ")
         }
         return self
     }

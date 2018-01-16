@@ -6,9 +6,59 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-public
-class DataType: Status {
+public class DataType: Status {
+    public struct SubTypeCollection: Collection {
+        let dataType: DataType
+        init(_ dataType: DataType) {
+            self.dataType = dataType
+        }
+        // minimum requis pour satisfaire le protocole 'Collection'
+        public typealias Element = DataType?
+        public var startIndex: Int { return 0 }
+        public var endIndex: Int   { return cass_data_type_sub_type_count(dataType.data_type) }
+        public func index(after i: Int) -> Int {
+            precondition(i < endIndex, "Can't advance beyond endIndex")
+            return i + 1
+        }
+        public subscript(index: Int) -> Element {
+            get {
+                //precondition(0 <= index && index < endIndex, "index out of bounds")
+                return DataType(cass_data_type_sub_data_type(dataType.data_type, index))
+            }
+        }
+        public func append(_ subDataType: Element) {
+            let rc = cass_data_type_add_sub_type(dataType.data_type, subDataType?.data_type)
+            if CASS_OK != rc {
+                fatalError(rc.description) // TODO
+            }
+        }
+        public subscript(name: String) -> Element {
+            get {
+                return DataType(cass_data_type_sub_data_type_by_name(dataType.data_type, name))
+            }
+            set (subDataType) {
+                let rc = cass_data_type_add_sub_type_by_name(dataType.data_type, name, subDataType?.data_type)
+                if CASS_OK != rc {
+                    fatalError(rc.description) // TODO
+                }
+            }
+        }
+    }
+    public class NameSubscript {
+        let dataType: DataType
+        init(_ dataType: DataType) {
+            self.dataType = dataType
+        }
+        public typealias Element = String?
+        public subscript(index: Int) -> Element {
+            get {
+                return String(f: cass_data_type_sub_type_name, ptr: dataType.data_type, index: index)
+            }
+        }
+    }
     let data_type: OpaquePointer
+    lazy public var nameType = NameSubscript(self)
+    lazy public var subType = SubTypeCollection(self)
     init?(_ data_type_: OpaquePointer?) {
         if let data_type = data_type_ {
             self.data_type = data_type
@@ -26,12 +76,10 @@ class DataType: Status {
         data_type = cass_data_type_new_udt(itemCount)
     }
     deinit {
-        defer {
-            cass_data_type_free(data_type)
-        }
+        cass_data_type_free(data_type)
     }
-    var type: CassValueType {
-        return cass_data_type_type(data_type)
+    public var type: ValueType {
+        return ValueType(cass_data_type_type(data_type))
     }
     public var isFrozen: Bool {
         return cass_true == cass_data_type_is_frozen(data_type)
