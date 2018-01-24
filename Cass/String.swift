@@ -28,7 +28,7 @@ extension String {
         if let ptr = ptr_ {
             var name_length: Int = 0
             let name = f(ptr, &name_length)
-            self.init(text: name, len: name_length)!
+            self.init(ptr: name, len: name_length)!
         } else {
             return nil
         }
@@ -38,7 +38,7 @@ extension String {
             var name: UnsafePointer<Int8>?
             var name_length: Int = 0
             f(ptr, &name, &name_length)
-            self.init(text: name, len: name_length)!
+            self.init(ptr: name, len: name_length)!
         } else {
             return nil
         }
@@ -49,7 +49,7 @@ extension String {
             var name_length: Int = 0
             let rc = f(ptr, &name, &name_length)
             if CASS_OK == rc {
-                self.init(text: name, len: name_length)!
+                self.init(ptr: name, len: name_length)!
             } else {
                 return nil
             }
@@ -63,7 +63,7 @@ extension String {
             var name_length: Int = 0
             let rc = f(ptr, index, &name, &name_length)
             if CASS_OK == rc {
-                self.init(text: name, len: name_length)!
+                self.init(ptr: name, len: name_length)!
             } else {
                 return nil
             }
@@ -71,8 +71,8 @@ extension String {
             return nil
         }
     }
-    init?(text: UnsafePointer<Int8>? = nil, len: Int = 0) {
-        if nil == text || 0 > len {
+    init?(ptr: UnsafePointer<Int8>? = nil, len: Int = 0) {
+        if nil == ptr || 0 > len {
             return nil
         }
         let size = len + 1
@@ -81,7 +81,7 @@ extension String {
             p.deallocate(capacity: size)
         }
         p.initialize(to: 0, count:size)
-        strncpy(p, text, len)
+        strncpy(p, ptr, len)
         self.init(validatingUTF8: p)
     }
 }

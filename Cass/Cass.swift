@@ -6,7 +6,3 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-import Foundation
-
-let FATAL_ERROR_MESSAGE = "Ne devrait pas arriver"
-

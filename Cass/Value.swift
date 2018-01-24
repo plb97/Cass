@@ -6,8 +6,6 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-public typealias BLOB = Array<UInt8>
-
 public
 struct Value {
     let value: OpaquePointer
@@ -61,7 +59,7 @@ struct Value {
             var len: Int = 0
             let rc = cass_value_get_string(value, &data, &len)
             if CASS_OK == rc {
-                let res = String(text: data, len: len)
+                let res = String(ptr: data, len: len)
                 return res!
             }
             //return nil
@@ -75,7 +73,7 @@ struct Value {
             //return nil
             fatalError("Invalid argument: error code=\(rc)")
         case CASS_VALUE_TYPE_FLOAT:
-            var res: Float32 = 0
+            var res: Float = 0
             let rc = cass_value_get_float(value, &res)
             if CASS_OK == rc {
                 return res
@@ -83,7 +81,7 @@ struct Value {
             //return nil
             fatalError("Invalid argument: error code=\(rc)")
         case CASS_VALUE_TYPE_DOUBLE:
-            var res: Float64 = 0
+            var res: Double = 0
             let rc = cass_value_get_double(value, &res)
             if CASS_OK == rc {
                 return res
@@ -109,21 +107,17 @@ struct Value {
             var cass_uuid = CassUuid()
             let rc = cass_value_get_uuid(value, &cass_uuid)
             if CASS_OK == rc {
-                let res = UUID(cass_uuid: &cass_uuid)
+                let res = UUID(cass: &cass_uuid)
                 return res
             }
             //return nil
             fatalError("Invalid argument: error code=\(rc)")
-        case CASS_VALUE_TYPE_TUPLE:
-            let res = Tuple(tuple: value)
-            return res
-        case CASS_VALUE_TYPE_BLOB:
-            var data: UnsafePointer<UInt8>?
-            var len: Int = 0
-            let rc = cass_value_get_bytes(value, &data, &len)
+        case CASS_VALUE_TYPE_INET:
+            var cass_inet = CassInet()
+            let rc = cass_value_get_inet(value, &cass_inet)
             if CASS_OK == rc {
-                let res = Array(UnsafeBufferPointer(start: data, count: len))
-                return res // BLOB=Array<UInt32>
+                let res = Inet(cass: cass_inet)
+                return res
             }
             //return nil
             fatalError("Invalid argument: error code=\(rc)")
@@ -158,6 +152,23 @@ struct Value {
              //return nil
              fatalError("Invalid argument: error code=\(rc)")
 
+        case CASS_VALUE_TYPE_TUPLE:
+            let res = Tuple(cass: value)
+            return res
+        case CASS_VALUE_TYPE_UDT:
+            let res = UserType(cass: value)
+            return res
+
+        case CASS_VALUE_TYPE_BLOB:
+            var data: UnsafePointer<UInt8>?
+            var len: Int = 0
+            let rc = cass_value_get_bytes(value, &data, &len)
+            if CASS_OK == rc {
+                let res = BLOB(ptr: data, len: len)
+                return res
+            }
+            //return nil
+            fatalError("Invalid argument: error code=\(rc)")
         case CASS_VALUE_TYPE_SET:
             let sub_type = cass_value_primary_sub_type(value)
             var res: Set<AnyHashable>
@@ -167,9 +178,13 @@ struct Value {
             case CASS_VALUE_TYPE_BOOLEAN:
                 res = Set<Bool>()
             case CASS_VALUE_TYPE_FLOAT:
-                res = Set<Float32>()
+                res = Set<Float>()
             case CASS_VALUE_TYPE_DOUBLE:
-                res = Set<Float64>()
+                res = Set<Double>()
+            case CASS_VALUE_TYPE_TINY_INT:
+                res = Set<Int8>()
+            case CASS_VALUE_TYPE_SMALL_INT:
+                res = Set<Int16>()
             case CASS_VALUE_TYPE_INT:
                 res = Set<Int32>()
             case CASS_VALUE_TYPE_BIGINT:
@@ -178,8 +193,13 @@ struct Value {
                 res = Set<UUID>()
             case CASS_VALUE_TYPE_TIMESTAMP:
                 res = Set<Date>()
+            case CASS_VALUE_TYPE_TUPLE:
+                res = Set<Tuple>()
+            case CASS_VALUE_TYPE_UDT:
+                res = Set<UserType>()
             default:
                 //return nil
+                print("*** Invalid argument: sub type=\(sub_type) value=\(value)")
                 fatalError("Invalid argument: sub type=\(sub_type) value=\(value)")
             }
             let it = CollectionIterator(value)
@@ -196,9 +216,13 @@ struct Value {
             case CASS_VALUE_TYPE_BOOLEAN:
                 res = Array<Bool>()
             case CASS_VALUE_TYPE_FLOAT:
-                res = Array<Float32>()
+                res = Array<Float>()
             case CASS_VALUE_TYPE_DOUBLE:
-                res = Array<Float64>()
+                res = Array<Double>()
+            case CASS_VALUE_TYPE_TINY_INT:
+                res = Array<Int8>()
+            case CASS_VALUE_TYPE_SMALL_INT:
+                res = Array<Int16>()
             case CASS_VALUE_TYPE_INT:
                 res = Array<Int32>()
             case CASS_VALUE_TYPE_BIGINT:
@@ -207,6 +231,10 @@ struct Value {
                 res = Array<UUID>()
             case CASS_VALUE_TYPE_TIMESTAMP:
                 res = Array<Date>()
+            case CASS_VALUE_TYPE_TUPLE:
+                res = Array<Tuple>()
+            case CASS_VALUE_TYPE_UDT:
+                res = Array<UserType>()
             default:
                 //return nil
                 fatalError("Invalid argument: sub type=\(sub_type) value=\(value)")
@@ -228,9 +256,13 @@ struct Value {
                 case CASS_VALUE_TYPE_BOOLEAN:
                     res = Dictionary<String, Bool?>()
                 case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<String, Float32?>()
+                    res = Dictionary<String, Float?>()
                 case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<String, Float64?>()
+                    res = Dictionary<String, Double?>()
+                case CASS_VALUE_TYPE_TINY_INT:
+                    res = Dictionary<String, Int8?>()
+                case CASS_VALUE_TYPE_SMALL_INT:
+                    res = Dictionary<String, Int16?>()
                 case CASS_VALUE_TYPE_INT:
                     res = Dictionary<String, Int32?>()
                 case CASS_VALUE_TYPE_BIGINT:
@@ -239,6 +271,10 @@ struct Value {
                     res = Dictionary<String, UUID?>()
                 case CASS_VALUE_TYPE_TIMESTAMP:
                     res = Dictionary<String, Date?>()
+                case CASS_VALUE_TYPE_TUPLE:
+                    res = Dictionary<String, Tuple?>()
+                case CASS_VALUE_TYPE_UDT:
+                    res = Dictionary<String, UserType?>()
                 default:
                     //return nil
                     fatalError("Invalid argument: value type=\(val_type) value=\(value)")
@@ -250,9 +286,13 @@ struct Value {
                 case CASS_VALUE_TYPE_BOOLEAN:
                     res = Dictionary<Bool, Bool?>()
                 case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Bool, Float32?>()
+                    res = Dictionary<Bool, Float?>()
                 case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Bool, Float64?>()
+                    res = Dictionary<Bool, Double?>()
+                case CASS_VALUE_TYPE_TINY_INT:
+                    res = Dictionary<Bool, Int8?>()
+                case CASS_VALUE_TYPE_SMALL_INT:
+                    res = Dictionary<Bool, Int16?>()
                 case CASS_VALUE_TYPE_INT:
                     res = Dictionary<Bool, Int32?>()
                 case CASS_VALUE_TYPE_BIGINT:
@@ -261,6 +301,10 @@ struct Value {
                     res = Dictionary<Bool, UUID?>()
                 case CASS_VALUE_TYPE_TIMESTAMP:
                     res = Dictionary<Bool, Date?>()
+                case CASS_VALUE_TYPE_TUPLE:
+                    res = Dictionary<Bool, Tuple?>()
+                case CASS_VALUE_TYPE_UDT:
+                    res = Dictionary<Bool, UserType?>()
                 default:
                     //return nil
                     fatalError("Invalid argument: value type=\(val_type) value=\(value)")
@@ -272,9 +316,13 @@ struct Value {
                 case CASS_VALUE_TYPE_BOOLEAN:
                     res = Dictionary<Float, Bool?>()
                 case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Float, Float32?>()
+                    res = Dictionary<Float, Float?>()
                 case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Float, Float64?>()
+                    res = Dictionary<Float, Double?>()
+                case CASS_VALUE_TYPE_TINY_INT:
+                    res = Dictionary<Float, Int8?>()
+                case CASS_VALUE_TYPE_SMALL_INT:
+                    res = Dictionary<Float, Int16?>()
                 case CASS_VALUE_TYPE_INT:
                     res = Dictionary<Float, Int32?>()
                 case CASS_VALUE_TYPE_BIGINT:
@@ -283,6 +331,10 @@ struct Value {
                     res = Dictionary<Float, UUID?>()
                 case CASS_VALUE_TYPE_TIMESTAMP:
                     res = Dictionary<Float, Date?>()
+                case CASS_VALUE_TYPE_TUPLE:
+                    res = Dictionary<Float, Tuple?>()
+                case CASS_VALUE_TYPE_UDT:
+                    res = Dictionary<Float, UserType?>()
                 default:
                     //return nil
                     fatalError("Invalid argument: value type=\(val_type) value=\(value)")
@@ -294,9 +346,13 @@ struct Value {
                 case CASS_VALUE_TYPE_BOOLEAN:
                     res = Dictionary<Double, Bool?>()
                 case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Double, Float32?>()
+                    res = Dictionary<Double, Float?>()
                 case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Double, Float64?>()
+                    res = Dictionary<Double, Double?>()
+                case CASS_VALUE_TYPE_TINY_INT:
+                    res = Dictionary<Double, Int8?>()
+                case CASS_VALUE_TYPE_SMALL_INT:
+                    res = Dictionary<Double, Int16?>()
                 case CASS_VALUE_TYPE_INT:
                     res = Dictionary<Double, Int32?>()
                 case CASS_VALUE_TYPE_BIGINT:
@@ -305,6 +361,70 @@ struct Value {
                     res = Dictionary<Double, UUID?>()
                 case CASS_VALUE_TYPE_TIMESTAMP:
                     res = Dictionary<Double, Date?>()
+                case CASS_VALUE_TYPE_TUPLE:
+                    res = Dictionary<Double, Tuple?>()
+                case CASS_VALUE_TYPE_UDT:
+                    res = Dictionary<Double, UserType?>()
+                default:
+                    //return nil
+                    fatalError("Invalid argument: value type=\(val_type) value=\(value)")
+                }
+            case CASS_VALUE_TYPE_TINY_INT:
+                switch val_type {
+                case CASS_VALUE_TYPE_TEXT, CASS_VALUE_TYPE_ASCII, CASS_VALUE_TYPE_VARCHAR:
+                    res = Dictionary<Int8, String?>()
+                case CASS_VALUE_TYPE_BOOLEAN:
+                    res = Dictionary<Int8, Bool?>()
+                case CASS_VALUE_TYPE_FLOAT:
+                    res = Dictionary<Int8, Float?>()
+                case CASS_VALUE_TYPE_DOUBLE:
+                    res = Dictionary<Int8, Double?>()
+                case CASS_VALUE_TYPE_TINY_INT:
+                    res = Dictionary<Int8, Int8?>()
+                case CASS_VALUE_TYPE_SMALL_INT:
+                    res = Dictionary<Int8, Int16?>()
+                case CASS_VALUE_TYPE_INT:
+                    res = Dictionary<Int8, Int32?>()
+                case CASS_VALUE_TYPE_BIGINT:
+                    res = Dictionary<Int8, Int64?>()
+                case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
+                    res = Dictionary<Int8, UUID?>()
+                case CASS_VALUE_TYPE_TIMESTAMP:
+                    res = Dictionary<Int8, Date?>()
+                case CASS_VALUE_TYPE_TUPLE:
+                    res = Dictionary<Int8, Tuple?>()
+                case CASS_VALUE_TYPE_UDT:
+                    res = Dictionary<Int8, UserType?>()
+                default:
+                    //return nil
+                    fatalError("Invalid argument: value type=\(val_type) value=\(value)")
+                }
+            case CASS_VALUE_TYPE_SMALL_INT:
+                switch val_type {
+                case CASS_VALUE_TYPE_TEXT, CASS_VALUE_TYPE_ASCII, CASS_VALUE_TYPE_VARCHAR:
+                    res = Dictionary<Int16, String?>()
+                case CASS_VALUE_TYPE_BOOLEAN:
+                    res = Dictionary<Int16, Bool?>()
+                case CASS_VALUE_TYPE_FLOAT:
+                    res = Dictionary<Int16, Float?>()
+                case CASS_VALUE_TYPE_DOUBLE:
+                    res = Dictionary<Int16, Double?>()
+                case CASS_VALUE_TYPE_TINY_INT:
+                    res = Dictionary<Int16, Int8?>()
+                case CASS_VALUE_TYPE_SMALL_INT:
+                    res = Dictionary<Int16, Int16?>()
+                case CASS_VALUE_TYPE_INT:
+                    res = Dictionary<Int16, Int32?>()
+                case CASS_VALUE_TYPE_BIGINT:
+                    res = Dictionary<Int16, Int64?>()
+                case CASS_VALUE_TYPE_TIMEUUID, CASS_VALUE_TYPE_UUID:
+                    res = Dictionary<Int16, UUID?>()
+                case CASS_VALUE_TYPE_TIMESTAMP:
+                    res = Dictionary<Int16, Date?>()
+                case CASS_VALUE_TYPE_TUPLE:
+                    res = Dictionary<Int16, Tuple?>()
+                case CASS_VALUE_TYPE_UDT:
+                    res = Dictionary<Int16, UserType?>()
                 default:
                     //return nil
                     fatalError("Invalid argument: value type=\(val_type) value=\(value)")
@@ -316,9 +436,13 @@ struct Value {
                 case CASS_VALUE_TYPE_BOOLEAN:
                     res = Dictionary<Int32, Bool?>()
                 case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Int32, Float32?>()
+                    res = Dictionary<Int32, Float?>()
                 case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Int32, Float64?>()
+                    res = Dictionary<Int32, Double?>()
+                case CASS_VALUE_TYPE_TINY_INT:
+                    res = Dictionary<Int32, Int8?>()
+                case CASS_VALUE_TYPE_SMALL_INT:
+                    res = Dictionary<Int32, Int16?>()
                 case CASS_VALUE_TYPE_INT:
                     res = Dictionary<Int32, Int32?>()
                 case CASS_VALUE_TYPE_BIGINT:
@@ -327,6 +451,10 @@ struct Value {
                     res = Dictionary<Int32, UUID?>()
                 case CASS_VALUE_TYPE_TIMESTAMP:
                     res = Dictionary<Int32, Date?>()
+                case CASS_VALUE_TYPE_TUPLE:
+                    res = Dictionary<Int32, Tuple?>()
+                case CASS_VALUE_TYPE_UDT:
+                    res = Dictionary<Int32, UserType?>()
                 default:
                     //return nil
                     fatalError("Invalid argument: value type=\(val_type) value=\(value)")
@@ -338,9 +466,13 @@ struct Value {
                 case CASS_VALUE_TYPE_BOOLEAN:
                     res = Dictionary<Int64, Bool?>()
                 case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Int64, Float32?>()
+                    res = Dictionary<Int64, Float?>()
                 case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Int64, Float64?>()
+                    res = Dictionary<Int64, Double?>()
+                case CASS_VALUE_TYPE_TINY_INT:
+                    res = Dictionary<Int64, Int8?>()
+                case CASS_VALUE_TYPE_SMALL_INT:
+                    res = Dictionary<Int64, Int16?>()
                 case CASS_VALUE_TYPE_INT:
                     res = Dictionary<Int64, Int32?>()
                 case CASS_VALUE_TYPE_BIGINT:
@@ -349,6 +481,10 @@ struct Value {
                     res = Dictionary<Int64, UUID?>()
                 case CASS_VALUE_TYPE_TIMESTAMP:
                     res = Dictionary<Int64, Date?>()
+                case CASS_VALUE_TYPE_TUPLE:
+                    res = Dictionary<Int64, Tuple?>()
+                case CASS_VALUE_TYPE_UDT:
+                    res = Dictionary<Int64, UserType?>()
                 default:
                     //return nil
                     fatalError("Invalid argument: value type=\(val_type) value=\(value)")
@@ -360,9 +496,13 @@ struct Value {
                 case CASS_VALUE_TYPE_BOOLEAN:
                     res = Dictionary<UUID, Bool?>()
                 case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<UUID, Float32?>()
+                    res = Dictionary<UUID, Float?>()
                 case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<UUID, Float64?>()
+                    res = Dictionary<UUID, Double?>()
+                case CASS_VALUE_TYPE_TINY_INT:
+                    res = Dictionary<UUID, Int8?>()
+                case CASS_VALUE_TYPE_SMALL_INT:
+                    res = Dictionary<UUID, Int16?>()
                 case CASS_VALUE_TYPE_INT:
                     res = Dictionary<UUID, Int32?>()
                 case CASS_VALUE_TYPE_BIGINT:
@@ -371,6 +511,10 @@ struct Value {
                     res = Dictionary<UUID, UUID?>()
                 case CASS_VALUE_TYPE_TIMESTAMP:
                     res = Dictionary<UUID, Date?>()
+                case CASS_VALUE_TYPE_TUPLE:
+                    res = Dictionary<UUID, Tuple?>()
+                case CASS_VALUE_TYPE_UDT:
+                    res = Dictionary<UUID, UserType?>()
                 default:
                     //return nil
                     fatalError("Invalid argument: value type=\(val_type) value=\(value)")
@@ -382,9 +526,13 @@ struct Value {
                 case CASS_VALUE_TYPE_BOOLEAN:
                     res = Dictionary<Date, Bool?>()
                 case CASS_VALUE_TYPE_FLOAT:
-                    res = Dictionary<Date, Float32?>()
+                    res = Dictionary<Date, Float?>()
                 case CASS_VALUE_TYPE_DOUBLE:
-                    res = Dictionary<Date, Float64?>()
+                    res = Dictionary<Date, Double?>()
+                case CASS_VALUE_TYPE_TINY_INT:
+                    res = Dictionary<Date, Int8?>()
+                case CASS_VALUE_TYPE_SMALL_INT:
+                    res = Dictionary<Date, Int16?>()
                 case CASS_VALUE_TYPE_INT:
                     res = Dictionary<Date, Int32?>()
                 case CASS_VALUE_TYPE_BIGINT:
@@ -393,6 +541,10 @@ struct Value {
                     res = Dictionary<Date, UUID?>()
                 case CASS_VALUE_TYPE_TIMESTAMP:
                     res = Dictionary<Date, Date?>()
+                case CASS_VALUE_TYPE_TUPLE:
+                    res = Dictionary<Date, Tuple?>()
+                case CASS_VALUE_TYPE_UDT:
+                    res = Dictionary<Date, UserType?>()
                 default:
                     //return nil
                     fatalError("Invalid argument: value type=\(val_type) value=\(value)")

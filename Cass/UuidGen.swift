@@ -16,18 +16,18 @@ class UuidGen {
     static public func minFromTime(millis: UInt64) -> UUID {
         var cass_uuid = CassUuid(time_and_version: 0,clock_seq_and_node: 0)
         cass_uuid_min_from_time(millis, &cass_uuid)
-        return UUID(cass_uuid: &cass_uuid)
+        return UUID(cass: &cass_uuid)
     }
     static public func maxFromTime(millis: UInt64) -> UUID {
         var cass_uuid = CassUuid(time_and_version: 0,clock_seq_and_node: 0)
         cass_uuid_max_from_time(millis, &cass_uuid)
-        return UUID(cass_uuid: &cass_uuid)
+        return UUID(cass: &cass_uuid)
     }
     static public func fromString(_ str: String) -> UUID? {
         var cass_uuid = CassUuid(time_and_version: 0,clock_seq_and_node: 0)
         let rc = cass_uuid_from_string(str, &cass_uuid)
         if CASS_OK == rc {
-            return UUID(cass_uuid: &cass_uuid)
+            return UUID(cass: &cass_uuid)
         } else {
             return nil
         }
@@ -45,17 +45,17 @@ class UuidGen {
     public var time: UUID {
         var cass_uuid = CassUuid(time_and_version: 0,clock_seq_and_node: 0)
         cass_uuid_gen_time(uuid_gen, &cass_uuid)
-        return UUID(cass_uuid: &cass_uuid)
+        return UUID(cass: &cass_uuid)
     }
     public var random: UUID {
         var cass_uuid = CassUuid(time_and_version: 0,clock_seq_and_node: 0)
         cass_uuid_gen_random(uuid_gen, &cass_uuid)
-        return UUID(cass_uuid: &cass_uuid)
+        return UUID(cass: &cass_uuid)
     }
     public func fromTime(millis: UInt64) -> UUID {
         var cass_uuid = CassUuid(time_and_version: 0,clock_seq_and_node: 0)
         cass_uuid_gen_from_time(uuid_gen, millis, &cass_uuid)
-        return UUID(cass_uuid: &cass_uuid)
+        return UUID(cass: &cass_uuid)
     }
 }
 

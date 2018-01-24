@@ -16,4 +16,7 @@ extension Date {
     public var timestamp: Int64 {
         return Int64(self.timeIntervalSince1970 * 1000)
     }
+    public var cass: Int64 {
+        return timestamp
+    }
 }

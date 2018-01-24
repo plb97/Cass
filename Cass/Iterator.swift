@@ -7,7 +7,8 @@
 //
 
 public
-class Iterator: Status {
+class Iterator {
+    var error_code_: Error?
     let iterator_: OpaquePointer?
     fileprivate init(rowsFromResult meta_: OpaquePointer?) {
         if let meta = meta_ {
@@ -15,7 +16,6 @@ class Iterator: Status {
         } else {
             iterator_ = nil
         }
-        super.init()
     }
     fileprivate init(valuesFromCollection meta_: OpaquePointer?) {
         if let meta = meta_ {
@@ -23,23 +23,27 @@ class Iterator: Status {
         } else {
             iterator_ = nil
         }
-        super.init()
     }
-    fileprivate init(valuesFromTuple tuple_: OpaquePointer?) {
-        if let tuple = tuple_ {
-            iterator_ = cass_iterator_from_tuple(tuple)
-        } else {
-            iterator_ = nil
-        }
-        super.init()
-    }
+    //fileprivate init(valuesFromTuple tuple_: OpaquePointer?) {
+    //    if let tuple = tuple_ {
+    //        iterator_ = cass_iterator_from_tuple(tuple)
+    //    } else {
+    //        iterator_ = nil
+    //    }
+    //}
+    //fileprivate init(fieldsFromUserType user_type_: OpaquePointer?) {
+    //    if let user_type = user_type_ {
+    //        iterator_ = cass_iterator_fields_from_user_type(user_type)
+    //    } else {
+    //        iterator_ = nil
+    //    }
+    //}
     fileprivate init(itemsFromMap meta_: OpaquePointer?) {
         if let meta = meta_ {
             iterator_ = cass_iterator_from_map(meta)
         } else {
             iterator_ = nil
         }
-        super.init()
     }
     fileprivate init(fieldsFromKeyspaceMeta meta_: OpaquePointer?) {
         if let meta = meta_ {
@@ -47,7 +51,6 @@ class Iterator: Status {
         } else {
             iterator_ = nil
         }
-        super.init()
     }
     fileprivate init(fieldsFromAggregateMeta meta_: OpaquePointer?) {
         if let meta = meta_ {
@@ -55,7 +58,6 @@ class Iterator: Status {
         } else {
             iterator_ = nil
         }
-        super.init()
     }
     fileprivate init(fieldsFromTableMeta meta_: OpaquePointer?) {
         if let meta = meta_ {
@@ -63,7 +65,6 @@ class Iterator: Status {
         } else {
             iterator_ = nil
         }
-        super.init()
     }
     fileprivate init(fieldsFromFunctionMeta meta_: OpaquePointer?) {
         if let meta = meta_ {
@@ -71,7 +72,6 @@ class Iterator: Status {
         } else {
             iterator_ = nil
         }
-        super.init()
     }
     fileprivate init(fieldsFromColumnMeta meta_: OpaquePointer?) {
         if let meta = meta_ {
@@ -79,7 +79,6 @@ class Iterator: Status {
         } else {
             iterator_ = nil
         }
-        super.init()
     }
     fileprivate init(tablesFromKeyspaceMeta meta_: OpaquePointer?) {
         if let meta = meta_ {
@@ -155,20 +154,33 @@ class Iterator: Status {
     var keyValue: (key: AnyHashable, value: Any?)? {
         if hasNext() {
             if let key = Value(cass_iterator_get_map_key(iterator_!))?.anyHashable {
-                let val = Value(cass_iterator_get_map_value(iterator_!))?.any
-                return (key: key, value: val)
+                let val = Value(cass_iterator_get_map_value(iterator_!))
+                return (key: key, value: val?.any)
             }
         }
         return nil
     }
-    var userTypeField: (name: String, value: Value?)? {
-        if hasNext() {
-            if let str = String(f: cass_iterator_get_user_type_field_name, ptr: iterator_!) {
-                return (name: str, value: Value(cass_iterator_get_user_type_field_value(iterator_!)))
-            }
-        }
-        return nil
-    }
+    //var tuple: Tuple.Element {
+    //    if let val = value {
+    //        print("tuple: \(val)")
+    //        return val.anyHashable
+    //    }
+    //    return nil
+    //}
+    //var keyValueField: UserType.Element? {
+    //    if hasNext() {
+    //        if let iterator = iterator_ {
+    //            if let str = String(f: cass_iterator_get_user_type_field_name, ptr: iterator) {
+    //                if let val = Value(cass_iterator_get_user_type_field_value(iterator)) {
+    //                    return (name: str, value: val.anyHashable)
+    //                } else {
+    //                    return (name: str, value: nil)
+    //                }
+    //            }
+    //        }
+    //    }
+    //    return nil
+    //}
     var keyspaceMeta: KeyspaceMeta? {
         if hasNext() {
             return KeyspaceMeta(cass_iterator_get_keyspace_meta(iterator_!))
@@ -253,16 +265,25 @@ class CollectionIterator: Iterator, Sequence, IteratorProtocol {
     }
 }
 
-public
-class TupleIterator: Iterator, Sequence, IteratorProtocol {
-    public typealias Element = Any
-    init(_ tuple: OpaquePointer) {
-        super.init(valuesFromTuple: tuple)
-    }
-    public func next() -> Any? {
-        return value?.any
-    }
-}
+//public class TupleIterator: Iterator, Sequence, IteratorProtocol {
+//    public typealias Element = Tuple.Element
+//    init(_ tuple: OpaquePointer) {
+//        super.init(valuesFromTuple: tuple)
+//    }
+//    public func next() -> Tuple.Element? {
+//        return tuple
+//    }
+//}
+
+//public class UserTypeIterator: Iterator, Sequence, IteratorProtocol {
+//    public typealias Element = UserType.Element
+//    init(_ user_type: OpaquePointer) {
+//        super.init(fieldsFromUserType: user_type)
+//    }
+//    public func next() -> UserType.Element? {
+//        return keyValueField
+//    }
+//}
 
 public
 class MapIterator: Iterator, Sequence, IteratorProtocol {

@@ -6,6 +6,8 @@
 //  Copyright © 2018 PLHB. All rights reserved.
 //
 
+let FATAL_ERROR_MESSAGE = "Ne devrait pas arriver"
+
 func default_checker(_ err: Error) -> Bool {
     if .ok != err {
         print(err)

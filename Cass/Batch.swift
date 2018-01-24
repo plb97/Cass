@@ -7,15 +7,22 @@
 //
 
 public
-class Batch: Status {
+class Batch {
+    var error_code_: Error?
     var statements = Array<Statement>() // garde une reference de chaque 'statement' ajoute durany toute la vie du 'batch'
     let batch: OpaquePointer
-    init(_ type: CassBatchType) {
-        batch = cass_batch_new(type)
-        super.init()
+    public init(_ type: BatchType) {
+        batch = cass_batch_new(type.cass)
     }
     deinit {
         cass_batch_free(batch)
+    }
+    @discardableResult
+    public func check(checker: ((_ err: Error) -> Bool) = default_checker) -> Bool {
+        if let error_code = error_code_ {
+            return error_code.check(checker: checker)
+        }
+        return true
     }
     public func addStatement(_ statement: Statement) -> Batch {
         statements.append(statement)
@@ -23,47 +30,28 @@ class Batch: Status {
         return self
     }
     public func setConsistency(_ consistency: Consistency) -> Batch {
-        error = message(cass_batch_set_consistency(batch, consistency.cass))
+        error_code_ = Error(cass_batch_set_consistency(batch, consistency.cass))
         return self
     }
     public func setSerialConsistency(_ consistency: SerialConsistency) -> Batch {
-        error = message(cass_batch_set_serial_consistency(batch, consistency.cass))
+        error_code_ = Error(cass_batch_set_serial_consistency(batch, consistency.cass))
         return self
     }
     public func setTimestamp(_ date: Date) -> Batch {
-        error = message(cass_batch_set_timestamp(batch, date.timestamp))
+        error_code_ = Error(cass_batch_set_timestamp(batch, date.timestamp))
         return self
     }
     public func setRequestTimeout(_ timeout_ms: UInt64) -> Batch {
-        error = message(cass_batch_set_request_timeout(batch, timeout_ms))
+        error_code_ = Error(cass_batch_set_request_timeout(batch, timeout_ms))
         return self
     }
     public func setIsIdempotent(_ is_idempotent: Bool) -> Batch {
-        error = message(cass_batch_set_is_idempotent(batch, is_idempotent ? cass_true : cass_false ))
+        error_code_ = Error(cass_batch_set_is_idempotent(batch, is_idempotent ? cass_true : cass_false ))
         return self
     }
     public func setRetryPolicy(_ retry_policy: RetryPolicy) -> Batch {
-        error = message(cass_batch_set_retry_policy(batch, retry_policy.policy))
+        error_code_ = Error(cass_batch_set_retry_policy(batch, retry_policy.policy))
         return self
-    }
-}
-
-public
-class BatchLogged: Batch {
-    public init() {
-        super.init(CASS_BATCH_TYPE_LOGGED)
-    }
-}
-public
-class BatchUnLogged: Batch {
-    public init() {
-        super.init(CASS_BATCH_TYPE_UNLOGGED)
-    }
-}
-public
-class BatchCounter: Batch {
-    public init() {
-        super.init(CASS_BATCH_TYPE_COUNTER)
     }
 }
 

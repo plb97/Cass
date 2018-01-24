@@ -28,7 +28,7 @@ extension Decimal {
             self.init(sign:.plus, exponent: -Int(scale), significand: Decimal(u))
         }
     }
-    public var decimal: (varint: UnsafePointer<UInt8>, varint_size: Int, int32: Int32) {
+    public var cass: (varint: UnsafePointer<UInt8>, varint_size: Int, scale: Int32) {
         let exp = Int32(self.exponent)
         let u = NSDecimalNumber(decimal: self.significand).int64Value
         var ptr = UnsafeMutableRawPointer.allocate(bytes: 8, alignedTo: 8)
@@ -47,8 +47,8 @@ extension Decimal {
         let dec = ia[0..<varint_size]
         let rdec = Array(dec.reversed())
         let varint = UnsafeRawPointer(rdec).bindMemory(to: UInt8.self, capacity: varint_size)
-        let int32 = -exp
-        print("A revoir decimal=\(self.description) varint=\(varint) varint_size=\(varint_size) int32=\(int32)") // TODO
-        return (varint, varint_size, int32)
+        let scale = -exp
+        print("A revoir decimal=\(self.description) varint=\(varint) varint_size=\(varint_size) scale=\(scale)") // TODO
+        return (varint, varint_size, scale)
     }
 }

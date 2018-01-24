@@ -29,8 +29,8 @@ class FunctionMeta {
                 var type : OpaquePointer?
                 let rc = cass_function_meta_argument(functionMeta.function_meta, index, &name, &name_length, &type)
                 if CASS_OK == rc {
-                    if let str = String(text: name, len: name_length) {
-                        return (name: str, type: DataType(type)!)
+                    if let str = String(ptr: name, len: name_length) {
+                        return (name: str, type: DataType(type))
                     }
                 }
                 fatalError(FATAL_ERROR_MESSAGE)
@@ -104,7 +104,7 @@ class FunctionMeta {
         return cass_true == cass_function_meta_called_on_null_input(function_meta )
     }
     public var returnType: DataType {
-        return DataType(cass_function_meta_return_type(function_meta))!
+        return DataType(cass_function_meta_return_type(function_meta))
     }
     public var fields: FieldFunctionIterator {
         return FieldFunctionIterator(function_meta)
@@ -118,8 +118,8 @@ class FunctionMeta {
         var type : OpaquePointer?
         let rc = cass_function_meta_argument(function_meta, index, &name, &name_length, &type)
         if CASS_OK == rc {
-            if let str = String(text: name, len: name_length) {
-                return (name: str, type: DataType(type)!)
+            if let str = String(ptr: name, len: name_length) {
+                return (name: str, type: DataType(type))
             }
         }
         fatalError("Ne devrait pas arriver")

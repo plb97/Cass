@@ -7,22 +7,22 @@
 //
 
 public
-struct Inet: CustomStringConvertible {
-    let addr: CassInet
-    init(_ addr: CassInet) {
-        self.addr = addr
+struct Inet: CustomStringConvertible, Hashable {
+    let cass: CassInet
+    init(cass: CassInet) {
+        self.cass = cass
     }
     init(v4: Array<UInt8>) {
-        self.init(cass_inet_init_v4(v4))
+        self.init(cass: cass_inet_init_v4(v4))
     }
     init(v6: Array<UInt8>) {
-        self.init(cass_inet_init_v6(v6))
+        self.init(cass: cass_inet_init_v6(v6))
     }
     init(fromString str: String) {
         var output = CassInet()
         let rc = cass_inet_from_string(str, &output)
         if CASS_OK == rc {
-            self.init(output)
+            self.init(cass: output)
         } else {
             fatalError(CASS_OK.description)
         }
@@ -35,7 +35,15 @@ struct Inet: CustomStringConvertible {
             str.deallocate(capacity: len)
         }
         str.initialize(to: 0, count: len)
-        cass_inet_string(addr,str)
+        cass_inet_string(cass,str)
         return String(validatingUTF8: str)!
     }
+    public var hashValue: Int {
+        return description.hashValue
+    }
+
+    public static func ==(lhs: Inet, rhs: Inet) -> Bool {
+        return lhs.description == rhs.description
+    }
+
 }

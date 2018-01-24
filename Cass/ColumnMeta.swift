@@ -39,7 +39,7 @@ public class ColumnMeta {
         return cass_column_meta_type(column_meta)
     }
     public var dataType: DataType {
-        return DataType(cass_column_meta_data_type(column_meta))!
+        return DataType(cass_column_meta_data_type(column_meta))
     }
     public var fields: FieldColumnIterator {
         return FieldColumnIterator(column_meta)

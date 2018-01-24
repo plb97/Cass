@@ -40,9 +40,9 @@ public class KeyspaceMeta {
             self.keyspaceMeta = keyspaceMeta
         }
         public typealias Element = DataType?
-        public subscript(type: String) -> Element {
+        public subscript(name: String) -> Element {
             get {
-                return DataType(cass_keyspace_meta_user_type_by_name(keyspaceMeta.keyspace_meta, type))
+                return DataType(cass_keyspace_meta_user_type_by_name(keyspaceMeta.keyspace_meta, name))
             }
         }
     }
@@ -124,8 +124,9 @@ public class KeyspaceMeta {
     public func materializedViewMeta(view: String) -> MaterializedViewMeta? {
         return MaterializedViewMeta(cass_keyspace_meta_materialized_view_by_name(keyspace_meta, view))
     }
-    public func userType(type: String) -> DataType? {
-        return DataType(cass_keyspace_meta_user_type_by_name(keyspace_meta, type))
+    public func userType(name: String) -> DataType {
+        let type = cass_keyspace_meta_user_type_by_name(keyspace_meta, name)
+        return DataType(type)
     }
     public func functionMeta(name: String, arguments: String) -> FunctionMeta? {
         return FunctionMeta(cass_keyspace_meta_function_by_name(keyspace_meta, name, arguments))

@@ -10,8 +10,8 @@ import Foundation
 public typealias UUID = Foundation.UUID
 
 extension UUID {
-    init(cass_uuid: inout CassUuid) {
-        self.init(time_and_version: cass_uuid.time_and_version,clock_seq_and_node: cass_uuid.clock_seq_and_node)
+    init(cass: inout CassUuid) {
+        self.init(time_and_version: cass.time_and_version,clock_seq_and_node: cass.clock_seq_and_node)
     }
     public init(time_and_version: UInt64 = 0, clock_seq_and_node: UInt64 = 0) {
         var cass_uuid = CassUuid(time_and_version: time_and_version,clock_seq_and_node: clock_seq_and_node)
@@ -40,7 +40,7 @@ extension UUID {
             (pu+8).pointee)
         )
     }
-    var cassUuid: CassUuid {
+    var cass: CassUuid {
         let a = [self.uuid.3,
                  self.uuid.2,
                  self.uuid.1,
@@ -66,16 +66,16 @@ extension UUID {
         return pu.pointee
     }
     public var time_and_version: UInt64 {
-        return self.cassUuid.time_and_version
+        return self.cass.time_and_version
     }
     public var clock_seq_and_node: UInt64 {
-        return self.cassUuid.clock_seq_and_node
+        return self.cass.clock_seq_and_node
     }
     public var timestamp: UInt64 { // millisecondes
-        return cass_uuid_timestamp(self.cassUuid)
+        return cass_uuid_timestamp(self.cass)
     }
     public var version: UInt8 {
-        return cass_uuid_version(self.cassUuid)
+        return cass_uuid_version(self.cass)
     }
     public var string: String {
         let len = Int(CASS_UUID_STRING_LENGTH)
@@ -84,7 +84,7 @@ extension UUID {
             p.deallocate(capacity: len)
         }
         p.initialize(to: 0, count:len)
-        cass_uuid_string(self.cassUuid,p)
+        cass_uuid_string(self.cass,p)
         return String(validatingUTF8: p)!
     }
 }

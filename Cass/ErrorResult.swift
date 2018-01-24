@@ -7,11 +7,11 @@
 //
 
 //public
-class ErrorResult: Status {
+class ErrorResult {
+    var error_code_: Error?
     let error_result: OpaquePointer
     init(_ error_result: OpaquePointer) {
         self.error_result = error_result
-        super.init()
     }
     deinit {
         cass_error_result_free(error_result)

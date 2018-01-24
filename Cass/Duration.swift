@@ -16,4 +16,5 @@ struct Duration {
         self.days = days
         self.nanos = nanos
     }
+    var cass: (months: Int32, days: Int32, nanos: Int64) { return (months, days, nanos) }
 }

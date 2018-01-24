@@ -22,7 +22,6 @@
 		372627F51FED1EB70064A392 /* Value.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372627F41FED1EB60064A392 /* Value.swift */; };
 		372627FB1FED38860064A392 /* Row.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372627FA1FED38860064A392 /* Row.swift */; };
 		372627FD1FED4B370064A392 /* Iterator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372627FC1FED4B370064A392 /* Iterator.swift */; };
-		372628011FEE37960064A392 /* Status.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372628001FEE37960064A392 /* Status.swift */; };
 		372628041FEEADF90064A392 /* Inet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372628031FEEADF90064A392 /* Inet.swift */; };
 		372628061FEED6750064A392 /* UuidGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372628051FEED6750064A392 /* UuidGen.swift */; };
 		3726280C1FEFAE3E0064A392 /* RetryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3726280B1FEFAE3E0064A392 /* RetryPolicy.swift */; };
@@ -46,7 +45,7 @@
 		37A0B8EF200A55A600CB3F1C /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B8EE200A55A600CB3F1C /* Date.swift */; };
 		37A0B8F1200A57BC00CB3F1C /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B8F0200A57BC00CB3F1C /* String.swift */; };
 		37A0B8F3200B492100CB3F1C /* Decimal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B8F2200B492100CB3F1C /* Decimal.swift */; };
-		37A0B8F6200CACFB00CB3F1C /* Udt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B8F5200CACFB00CB3F1C /* Udt.swift */; };
+		37A0B8F6200CACFB00CB3F1C /* UserType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B8F5200CACFB00CB3F1C /* UserType.swift */; };
 		37A0B8F8200CEA4000CB3F1C /* IndexType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B8F7200CEA4000CB3F1C /* IndexType.swift */; };
 		37A0B8FA200D05CB00CB3F1C /* ClusteringOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B8F9200D05CB00CB3F1C /* ClusteringOrder.swift */; };
 		37A0B8FC200D308900CB3F1C /* ValueType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B8FB200D308900CB3F1C /* ValueType.swift */; };
@@ -60,6 +59,7 @@
 		37A0B90C200E0EC700CB3F1C /* SslVerifyFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B90B200E0EC700CB3F1C /* SslVerifyFlags.swift */; };
 		37A0B90E200E105900CB3F1C /* ProtocolVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B90D200E105900CB3F1C /* ProtocolVersion.swift */; };
 		37A0B910200E12E100CB3F1C /* ErrorSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B90F200E12E100CB3F1C /* ErrorSource.swift */; };
+		37EE0B4A20189EB8004808DC /* BLOB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37EE0B4920189EB8004808DC /* BLOB.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -81,7 +81,6 @@
 		372627F41FED1EB60064A392 /* Value.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Value.swift; sourceTree = "<group>"; };
 		372627FA1FED38860064A392 /* Row.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Row.swift; sourceTree = "<group>"; };
 		372627FC1FED4B370064A392 /* Iterator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Iterator.swift; sourceTree = "<group>"; };
-		372628001FEE37960064A392 /* Status.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Status.swift; sourceTree = "<group>"; };
 		372628031FEEADF90064A392 /* Inet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Inet.swift; sourceTree = "<group>"; };
 		372628051FEED6750064A392 /* UuidGen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UuidGen.swift; sourceTree = "<group>"; };
 		3726280B1FEFAE3E0064A392 /* RetryPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryPolicy.swift; sourceTree = "<group>"; };
@@ -108,7 +107,7 @@
 		37A0B8EE200A55A600CB3F1C /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
 		37A0B8F0200A57BC00CB3F1C /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		37A0B8F2200B492100CB3F1C /* Decimal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Decimal.swift; sourceTree = "<group>"; };
-		37A0B8F5200CACFB00CB3F1C /* Udt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Udt.swift; sourceTree = "<group>"; };
+		37A0B8F5200CACFB00CB3F1C /* UserType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserType.swift; sourceTree = "<group>"; };
 		37A0B8F7200CEA4000CB3F1C /* IndexType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndexType.swift; sourceTree = "<group>"; };
 		37A0B8F9200D05CB00CB3F1C /* ClusteringOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClusteringOrder.swift; sourceTree = "<group>"; };
 		37A0B8FB200D308900CB3F1C /* ValueType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValueType.swift; sourceTree = "<group>"; };
@@ -122,6 +121,7 @@
 		37A0B90B200E0EC700CB3F1C /* SslVerifyFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SslVerifyFlags.swift; sourceTree = "<group>"; };
 		37A0B90D200E105900CB3F1C /* ProtocolVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolVersion.swift; sourceTree = "<group>"; };
 		37A0B90F200E12E100CB3F1C /* ErrorSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorSource.swift; sourceTree = "<group>"; };
+		37EE0B4920189EB8004808DC /* BLOB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLOB.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,17 +201,17 @@
 				373FD3A11FE94C9100B14377 /* Session.swift */,
 				37A0B90B200E0EC700CB3F1C /* SslVerifyFlags.swift */,
 				373FD3A41FE94C9100B14377 /* Statement.swift */,
-				372628001FEE37960064A392 /* Status.swift */,
 				37A0B8F0200A57BC00CB3F1C /* String.swift */,
 				372627EA1FED0A5E0064A392 /* TableMeta.swift */,
 				372628151FF3E9D20064A392 /* Tuple.swift */,
-				37A0B8F5200CACFB00CB3F1C /* Udt.swift */,
+				37A0B8F5200CACFB00CB3F1C /* UserType.swift */,
 				37A0B8EC200A54F200CB3F1C /* Uuid.swift */,
 				372628051FEED6750064A392 /* UuidGen.swift */,
 				372627F41FED1EB60064A392 /* Value.swift */,
 				37A0B8FB200D308900CB3F1C /* ValueType.swift */,
 				372627E81FECFFCC0064A392 /* Version.swift */,
 				37A0B8FF200DFCB500CB3F1C /* WriteType.swift */,
+				37EE0B4920189EB8004808DC /* BLOB.swift */,
 			);
 			path = Cass;
 			sourceTree = "<group>";
@@ -286,7 +286,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3726280C1FEFAE3E0064A392 /* RetryPolicy.swift in Sources */,
-				37A0B8F6200CACFB00CB3F1C /* Udt.swift in Sources */,
+				37A0B8F6200CACFB00CB3F1C /* UserType.swift in Sources */,
 				3726280E1FEFB33B0064A392 /* CustomPayload.swift in Sources */,
 				37A0B8FA200D05CB00CB3F1C /* ClusteringOrder.swift in Sources */,
 				372627F31FED1D620064A392 /* AggregateMeta.swift in Sources */,
@@ -305,6 +305,7 @@
 				372627E91FECFFCC0064A392 /* Version.swift in Sources */,
 				373FD3A91FE94C9100B14377 /* Session.swift in Sources */,
 				37A0B906200E053500CB3F1C /* BatchType.swift in Sources */,
+				37EE0B4A20189EB8004808DC /* BLOB.swift in Sources */,
 				37A0B8E72006440200CB3F1C /* Prepared.swift in Sources */,
 				37A0B90C200E0EC700CB3F1C /* SslVerifyFlags.swift in Sources */,
 				372627ED1FED130F0064A392 /* MaterializedViewMeta.swift in Sources */,
@@ -317,7 +318,6 @@
 				3708E5781FE93DF600365543 /* Cass.swift in Sources */,
 				372627E31FECFA7E0064A392 /* SchemaMeta.swift in Sources */,
 				372628221FF78FFD0064A392 /* AuthenticatorCallbacks.swift in Sources */,
-				372628011FEE37960064A392 /* Status.swift in Sources */,
 				37A0B90A200E08E100CB3F1C /* LogLevel.swift in Sources */,
 				372628161FF3E9D20064A392 /* Tuple.swift in Sources */,
 				372628061FEED6750064A392 /* UuidGen.swift in Sources */,

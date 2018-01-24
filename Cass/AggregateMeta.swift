@@ -64,18 +64,10 @@ public class AggregateMeta {
         }
     }
     public var returnType: DataType {
-        if let res = DataType(cass_aggregate_meta_state_type(aggregate_meta)) {
-            return res
-        } else {
-            fatalError(FATAL_ERROR_MESSAGE)
-        }
+        return DataType(cass_aggregate_meta_state_type(aggregate_meta))
     }
     public var stateType: DataType {
-        if let res = DataType(cass_aggregate_meta_state_type(aggregate_meta)) {
-            return res
-        } else {
-            fatalError(FATAL_ERROR_MESSAGE)
-        }
+        return DataType(cass_aggregate_meta_state_type(aggregate_meta))
     }
     public var stateFunc: FunctionMeta {
         if let res = FunctionMeta(cass_aggregate_meta_state_func(aggregate_meta)) {

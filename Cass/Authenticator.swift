@@ -15,7 +15,7 @@ struct Authenticator {
     public var address: Inet {
         let ptr = UnsafeMutablePointer<CassInet>.allocate(capacity: 1)
         cass_authenticator_address(auth, ptr)
-        let addr = Inet(ptr.pointee)
+        let addr = Inet(cass: ptr.pointee)
         return addr
     }
     public var hostname: String {
