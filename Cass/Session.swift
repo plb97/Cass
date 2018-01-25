@@ -18,6 +18,7 @@ class Session {
         cass_session_free(session)
     }
     public var schemaMeta: SchemaMeta {return SchemaMeta(cass_session_get_schema_meta(session))}
+    @discardableResult
     public func connect(_ cluster: Cluster, keyspace keyspace_: String? = nil) -> Future {
         var future_: OpaquePointer?
         if let keyspace = keyspace_ {

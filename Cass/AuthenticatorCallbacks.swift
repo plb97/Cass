@@ -100,7 +100,7 @@ func default_data_cleanup_callback(_ data_: UnsafeMutableRawPointer?) -> () {
     }
 }
 
-let default_exchange_callbacks = CassAuthenticatorCallbacks(
+var default_exchange_callbacks = CassAuthenticatorCallbacks(
     initial_callback: default_inital_callback,
     challenge_callback: default_challenge_callback,
     success_callback: default_success_callback,

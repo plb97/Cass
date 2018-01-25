@@ -21,7 +21,7 @@
  Dans un cas plus complexe, il faut etre conscient que l'ARC (Automatic Reference Counting) est contourne, mais c'est justemnt ce qui etait voulu...
  TODO : tester beaucoup plus severement pour etre sur que cette approche reste correcte en general.
  */
-fileprivate func toPointer<T>(_ p_: T?) -> UnsafeMutableRawPointer? {
+func toPointer<T>(_ p_: T?) -> UnsafeMutableRawPointer? {
     if let p = p_ {
         let ptr = UnsafeMutableRawPointer.allocate(bytes: MemoryLayout<T>.stride, alignedTo:MemoryLayout<T>.alignment)
         ptr.storeBytes(of: p, as: type(of: p))
