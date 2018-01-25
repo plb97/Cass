@@ -21,13 +21,21 @@
  Dans un cas plus complexe, il faut etre conscient que l'ARC (Automatic Reference Counting) est contourne, mais c'est justemnt ce qui etait voulu...
  TODO : tester beaucoup plus severement pour etre sur que cette approche reste correcte en general.
  */
-func toPointer<T>(_ p_: T?) -> UnsafeMutableRawPointer? {
+func allocPointer<T>(_ p_: T?) -> UnsafeMutableRawPointer? {
     if let p = p_ {
         let ptr = UnsafeMutableRawPointer.allocate(bytes: MemoryLayout<T>.stride, alignedTo:MemoryLayout<T>.alignment)
         ptr.storeBytes(of: p, as: type(of: p))
         return ptr
     }
     return nil
+}
+func deallocPointer<T>(_ ptr_: UnsafeMutableRawPointer?, as type : T) {
+    deallocPointer(ptr_, bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment)
+}
+func deallocPointer(_ ptr_: UnsafeMutableRawPointer?, bytes: Int, alignedTo: Int) {
+    if let ptr = ptr_ {
+        ptr.deallocate(bytes: bytes, alignedTo: alignedTo)
+    }
 }
 
 public struct CallbackData {
@@ -50,7 +58,7 @@ public typealias CallbackFunction = (CallbackData) -> ()
 
 public struct Callback {
     static func setCallback(future: OpaquePointer, callback: Callback) {
-        cass_future_set_callback(future, default_callback, toPointer(callback))
+        cass_future_set_callback(future, default_callback, allocPointer(callback))
     }
     fileprivate let callback: CallbackFunction
     fileprivate let data_: UnsafeMutableRawPointer?
@@ -58,7 +66,7 @@ public struct Callback {
     fileprivate let data_alignment: Int
     public init<T>(callback: @escaping CallbackFunction, data p_: T? = nil) {
         self.callback = callback
-        self.data_ = toPointer(p_)
+        self.data_ = allocPointer(p_)
         self.data_bytes = MemoryLayout<T>.stride
         self.data_alignment = MemoryLayout<T>.alignment
     }
@@ -66,13 +74,13 @@ public struct Callback {
 
 //fileprivate typealias callback_t = @convention(c) (OpaquePointer?, UnsafeMutableRawPointer?) -> ()
 fileprivate func default_callback(future_: OpaquePointer?, data_: UnsafeMutableRawPointer?) -> () {
+    defer {
+        deallocPointer(data_, as: Callback.self)
+    }
     if let data = data_ {
         let callback = data.bindMemory(to: Callback.self, capacity: 1).pointee
         defer {
-            if let ptr = callback.data_ {
-                ptr.deallocate(bytes: callback.data_bytes, alignedTo: callback.data_alignment)
-            }
-            data.deallocate(bytes: MemoryLayout<Callback>.stride, alignedTo: MemoryLayout<Callback>.alignment)
+            deallocPointer(callback.data_, bytes: callback.data_bytes, alignedTo: callback.data_alignment)
         }
         if let future = future_ {
             callback.callback(CallbackData(future: future, data: callback.data_))

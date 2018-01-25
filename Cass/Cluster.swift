@@ -33,7 +33,7 @@ class Cluster {
          return self
     }
     public func setAuthenticatorCallbacks(_ authenticatorCallbacks: AuthenticatorCallbacks) -> Cluster {
-        let data = toPointer(authenticatorCallbacks)
+        let data = allocPointer(authenticatorCallbacks)
         if nil == error_code_ || .ok == error_code_ {
             error_code_ = Error(cass_cluster_set_authenticator_callbacks(cluster, &default_exchange_callbacks, default_data_cleanup_callback, data))
         }

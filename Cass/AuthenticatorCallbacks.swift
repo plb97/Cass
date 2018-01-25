@@ -90,6 +90,9 @@ func default_cleanup_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawP
     }
 }
 func default_data_cleanup_callback(_ data_: UnsafeMutableRawPointer?) -> () {
+    defer {
+        deallocPointer(data_, as: AuthenticatorCallbacks.self)
+    }
     if let data = data_ {
         let authenticatorCallbacks = data.bindMemory(to: AuthenticatorCallbacks.self, capacity: 1).pointee
         if let dataCleanupCallback = authenticatorCallbacks.dataCleanupCallback_ {
