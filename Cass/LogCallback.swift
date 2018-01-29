@@ -10,25 +10,16 @@ import Dispatch
 
 public typealias LogCallbackFunction = (LogCallbackData) -> ()
 public struct LogCallback {
-    static public func setLevel(_ level: LogLevel = .warn) {
-        cass_log_set_level(level.cass)
-    }
-    static public func setCallback(_ callback: LogCallback) -> UnsafeMutableRawPointer? {
-        print("setCallback")
-        let ptr = allocPointer(callback)
-        cass_log_set_callback(default_log_callback, ptr)
-        return ptr
-    }
     fileprivate let function: LogCallbackFunction
     fileprivate let data_: UnsafeMutableRawPointer?
-    public init<T>(callback: @escaping LogCallbackFunction, data data_: T? = nil) {
-        self.function = callback
+    public init<T>(function: @escaping LogCallbackFunction, data data_: T? = nil) {
+        self.function = function
         print("LogCallback init")
         self.data_ = allocPointer(data_)
     }
-    public func free<T>(_ ptr_: UnsafeMutableRawPointer?, as type: T) {
-        deallocPointer(data_, as: type)
-        deallocPointer(ptr_, as: LogCallback.self)
+    public func dealloc<T>(_ log_callback_ptr: UnsafeMutableRawPointer?,_ data_type: T) {
+        deallocPointer(data_, as: data_type)
+        deallocPointer(log_callback_ptr, as: LogCallback.self)
     }
 }
 public struct LogCallbackData {
@@ -40,9 +31,6 @@ public struct LogCallbackData {
     }
     public func data<T>(as type: T.Type) -> T? {
         return data_?.bindMemory(to: type, capacity: 1).pointee
-    }
-    public func free<T>(as type: T) {
-        deallocPointer(data_, as: type)
     }
 }
 func default_log_callback(_ log_message_: UnsafePointer<CassLogMessage>?,_ data_: UnsafeMutableRawPointer?) {

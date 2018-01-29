@@ -7,6 +7,15 @@
 //
 
 public struct LogMessage: CustomStringConvertible {
+    static public func setLevel(_ level: LogLevel = .warn) {
+        cass_log_set_level(level.cass)
+    }
+    static public func setCallback(_ callback: LogCallback) -> UnsafeMutableRawPointer? {
+        let ptr = allocPointer(callback)
+        cass_log_set_callback(default_log_callback, ptr)
+        return ptr
+    }
+
     public let date: Date
     public let severity: LogLevel
     public let file: String
@@ -23,6 +32,6 @@ public struct LogMessage: CustomStringConvertible {
         message = String(ptr: &msg.0, len: MemoryLayout.size(ofValue: msg)) ?? ""
     }
     public var description: String {
-        return "LogMessage\n  date:\(date)\n  severity=\(severity)\n  file=\(file)\n  line=\(line)\n  function=\(function)\n  message=\(message)"
+        return "\(date) \(severity) \(file) \(line) \(function) \(message)"
     }
 }

@@ -3,7 +3,7 @@
 //  Cass
 //
 //  Created by Philippe on 16/12/2017.
-//  Copyright © 2017 PLB. All rights reserved.
+//  Copyright © 2017 PLHB. All rights reserved.
 //
 
 public
@@ -53,18 +53,16 @@ class Session {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
-    @discardableResult
-    public func connect(_ cluster: Cluster, callback: Callback) -> UnsafeMutableRawPointer? {
+    public func connect(_ cluster: Cluster, callback: Callback) {
         if let future = cass_session_connect(session, cluster.cluster) {
-            return Callback.setCallback(future: future, callback: callback)
+            Callback.setCallback(future: future, callback: callback)
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
-    @discardableResult
-    public func execute(_ statement: Statement, callback: Callback) -> UnsafeMutableRawPointer? {
+    public func execute(_ statement: Statement, callback: Callback) {
         if let future = cass_session_execute(session, statement.statement) {
-            return Callback.setCallback(future: future, callback: callback)
+            Callback.setCallback(future: future, callback: callback)
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
         }

@@ -3,7 +3,7 @@
 //  Cass
 //
 //  Created by Philippe on 16/12/2017.
-//  Copyright © 2017 PLB. All rights reserved.
+//  Copyright © 2017 PLHB. All rights reserved.
 //
 
 private func future_error_message(_ future: OpaquePointer) -> String {

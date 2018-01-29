@@ -28,14 +28,14 @@ func allocPointer<T>(_ p_: T?) -> UnsafeMutableRawPointer? {
         let ptr = UnsafeMutableRawPointer.allocate(bytes: MemoryLayout<T>.stride, alignedTo:MemoryLayout<T>.alignment)
         //ptr.initializeMemory(as: type(of: p), to: p) // cree une reference sur 'p_: T?'
         ptr.storeBytes(of: p, as: T.self) // ne cree pas de reference sur 'p_: T?' mais ATTENTION peut ne pas fonctionner dans le cas general
-        print("allocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
+        //print("allocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
         return ptr
     }
     return nil
 }
 func deallocPointer<T>(_ p_: UnsafeMutableRawPointer?, as type : T) {
     if let ptr = p_ {
-        print("deallocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
+        //print("deallocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
         //ptr.bindMemory(to: T.self, capacity: 1)
         //    .deinitialize(count: 1)
         //    .deallocate(bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment) // garde la reference sur 'p_:  T?'
