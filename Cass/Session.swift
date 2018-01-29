@@ -53,16 +53,18 @@ class Session {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
-    public func connect(_ cluster: Cluster, callback: Callback) {
+    @discardableResult
+    public func connect(_ cluster: Cluster, callback: Callback) -> UnsafeMutableRawPointer? {
         if let future = cass_session_connect(session, cluster.cluster) {
-            Callback.setCallback(future: future, callback: callback)
+            return Callback.setCallback(future: future, callback: callback)
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
-    public func execute(_ statement: Statement, callback: Callback) {
+    @discardableResult
+    public func execute(_ statement: Statement, callback: Callback) -> UnsafeMutableRawPointer? {
         if let future = cass_session_execute(session, statement.statement) {
-            Callback.setCallback(future: future, callback: callback)
+            return Callback.setCallback(future: future, callback: callback)
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
         }

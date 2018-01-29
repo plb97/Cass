@@ -100,7 +100,7 @@ public class KeyspaceMeta {
         }
     }
     public var name: String {
-        if let str = String(f: cass_keyspace_meta_name, ptr: keyspace_meta) {
+        if let str = String(function: cass_keyspace_meta_name, ptr: keyspace_meta) {
             return str
         } else {
             fatalError(FATAL_ERROR_MESSAGE)

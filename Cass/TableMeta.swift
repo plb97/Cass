@@ -163,7 +163,7 @@ public class TableMeta {
         }
     }
     public var name: String {
-        if let str = String(f: cass_table_meta_name, ptr: table_meta) {
+        if let str = String(function: cass_table_meta_name, ptr: table_meta) {
             return str
         } else {
             fatalError(FATAL_ERROR_MESSAGE)

@@ -29,7 +29,7 @@ public class IndexMeta {
         }
     }
     public var name: String {
-        if let str = String(f: cass_index_meta_name, ptr: index_meta) {
+        if let str = String(function: cass_index_meta_name, ptr: index_meta) {
             return str
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
@@ -39,7 +39,7 @@ public class IndexMeta {
         return IndexType(cass_index_meta_type(index_meta))
     }
     public var target: String {
-        if let res = String(f:cass_index_meta_target, ptr: index_meta) {
+        if let res = String(function:cass_index_meta_target, ptr: index_meta) {
             return res
         } else {
             fatalError(FATAL_ERROR_MESSAGE)

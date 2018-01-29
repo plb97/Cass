@@ -50,14 +50,14 @@ public class AggregateMeta {
         }
     }
     public var name: String {
-        if let res = String(f: cass_aggregate_meta_name, ptr: aggregate_meta) {
+        if let res = String(function: cass_aggregate_meta_name, ptr: aggregate_meta) {
             return res
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     public var fullName: String {
-        if let res = String(f: cass_aggregate_meta_full_name, ptr: aggregate_meta) {
+        if let res = String(function: cass_aggregate_meta_full_name, ptr: aggregate_meta) {
             return res
         } else {
             fatalError(FATAL_ERROR_MESSAGE)

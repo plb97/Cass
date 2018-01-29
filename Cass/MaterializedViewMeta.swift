@@ -112,7 +112,7 @@ public class MaterializedViewMeta {
         }
     }
     public var name: String {
-        if let res = String(f: cass_materialized_view_meta_name, ptr: view_meta) {
+        if let res = String(function: cass_materialized_view_meta_name, ptr: view_meta) {
             return res
         } else {
             fatalError(FATAL_ERROR_MESSAGE)

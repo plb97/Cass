@@ -14,8 +14,9 @@ public typealias MAP = Dictionary<AnyHashable, Any?>
 
 public class Statement {
     let statement: OpaquePointer
-    var error_code_: Error? = nil
+    var error_code: Error
     fileprivate init(_ statement_: OpaquePointer?) {
+        error_code = Error()
         if let statement = statement_ {
         self.statement = statement
         } else {
@@ -25,57 +26,57 @@ public class Statement {
     deinit {
     }
     public func addKeyIndex(_ index: Int) -> Statement {
-        error_code_ = Error(cass_statement_add_key_index(statement, index))
+        error_code = Error(cass_statement_add_key_index(statement, index))
         return self
     }
     public func resetParameters(_ count: Int) -> Statement {
-        error_code_ = Error(cass_statement_reset_parameters(statement, count))
+        error_code = Error(cass_statement_reset_parameters(statement, count))
         return self
     }
     public func setKeyspace(_ keyspace: String) -> Statement {
-        error_code_ = Error(cass_statement_set_keyspace(statement, keyspace))
+        error_code = Error(cass_statement_set_keyspace(statement, keyspace))
         return self
     }
     public func setConsistency(_ consistency: Consistency) -> Statement {
-        error_code_ = Error(cass_statement_set_consistency(statement, consistency.cass))
+        error_code = Error(cass_statement_set_consistency(statement, consistency.cass))
         return self
     }
     func setSerialConsistency(_ consistency: SerialConsistency) -> Statement {
-        error_code_ = Error(cass_statement_set_serial_consistency(statement, consistency.cass))
+        error_code = Error(cass_statement_set_serial_consistency(statement, consistency.cass))
         return self
     }
     public func setPagingSize(_ size: Int32) -> Statement {
-        error_code_ = Error(cass_statement_set_paging_size(statement, size))
+        error_code = Error(cass_statement_set_paging_size(statement, size))
         return self
     }
     public func setPagingState(_ result: Result) -> Statement {
-        error_code_ = Error(cass_statement_set_paging_state(statement, result.result))
+        error_code = Error(cass_statement_set_paging_state(statement, result.result))
         return self
     }
     public func setPagingState(_ token: String) -> Statement {
-        error_code_ = Error(cass_statement_set_paging_state_token(statement, token,token.count))
+        error_code = Error(cass_statement_set_paging_state_token(statement, token,token.count))
         return self
     }
     public func setTimestamp(_ timestamp: Int64) -> Statement {
-        error_code_ = Error(cass_statement_set_timestamp(statement, timestamp))
+        error_code = Error(cass_statement_set_timestamp(statement, timestamp))
         return self
     }
     public func setRequestTimeoutMillis(_ timeout: UInt64) -> Statement {
-        error_code_ = Error(cass_statement_set_request_timeout(statement, timeout))
+        error_code = Error(cass_statement_set_request_timeout(statement, timeout))
         return self
     }
     public func setIsIdempotent(_ idempotent: Bool) -> Statement {
-        error_code_ = Error(cass_statement_set_is_idempotent(statement, idempotent ? cass_true : cass_false))
+        error_code = Error(cass_statement_set_is_idempotent(statement, idempotent ? cass_true : cass_false))
         return self
     }
     public func setCustomPayload(_ payload: CustomPayload) -> Statement {
-        error_code_ = Error(cass_statement_set_custom_payload(statement, payload.payload))
+        error_code = Error(cass_statement_set_custom_payload(statement, payload.payload))
         return self
     }
     public func hasMorePages(result: Result) -> Bool {
         if result.hasMorePages {
-            error_code_ = Error(cass_statement_set_paging_state(statement, result.result))
-            return .ok == error_code_
+            error_code = Error(cass_statement_set_paging_state(statement, result.result))
+            return .ok == error_code
         }
         return false
     }
@@ -84,11 +85,11 @@ public class Statement {
 public class SimpleStatement: Statement {
     public init(_ query: String,_ values: Any?...) {
         super.init(cass_statement_new(query, values.count))
-        error_code_ = Error(bind_lst(statement, lst: values))
+        error_code = Error(bind_lst(statement, lst: values))
     }
     public init(_ query: String, map: [String: Any?]) {
         super.init(cass_statement_new(query, map.count))
-        error_code_ = Error(bind_map(statement, map: map))
+        error_code = Error(bind_map(statement, map: map))
     }
     deinit {
         cass_statement_free(statement)
@@ -102,11 +103,11 @@ public class PreparedStatement: Statement {
     deinit {
     }
     public func bind(_ values: Any?...) -> PreparedStatement {
-        error_code_ = Error(bind_lst(statement, lst: values))
+        error_code = Error(bind_lst(statement, lst: values))
         return self
     }
     public func bind(map: [String: Any?]) -> PreparedStatement {
-        error_code_ = Error(bind_map(statement, map: map))
+        error_code = Error(bind_map(statement, map: map))
         return self
     }
 }

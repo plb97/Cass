@@ -75,7 +75,6 @@ public enum LogLevel: CustomStringConvertible {
     }
 }
 
-
 extension CassLogLevel: CustomStringConvertible {
     public var description: String {
         if let str = String(validatingUTF8: cass_log_level_string(self)) {

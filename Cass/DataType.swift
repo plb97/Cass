@@ -7,7 +7,7 @@
 //
 
 public class DataType {
-    var error_code_: Error?
+    var error_code: Error
     /*
     public struct SubTypeCollection: Collection {
         let dataType: DataType
@@ -64,6 +64,7 @@ public class DataType {
     let data_type: OpaquePointer
     let must_be_freed: Bool
     init(_ data_type_: OpaquePointer?) {
+        error_code = Error()
        if let data_type = data_type_ {
             must_be_freed = false
             self.data_type = data_type
@@ -73,6 +74,7 @@ public class DataType {
         }
     }
     init(fromExisting type: DataType) {
+        error_code = Error()
         if let data_type = cass_data_type_new_from_existing(type.data_type) {
             must_be_freed = true
             self.data_type = data_type
@@ -82,6 +84,7 @@ public class DataType {
         }
     }
     init(tuple itemCount: Int) {
+        error_code = Error()
         if let data_type = cass_data_type_new_tuple(itemCount) {
             must_be_freed = true
             self.data_type = data_type
@@ -91,6 +94,7 @@ public class DataType {
         }
     }
     init(udt itemCount: Int) {
+        error_code = Error()
         if let data_type = cass_data_type_new_udt(itemCount) {
             must_be_freed = true
             self.data_type = data_type
@@ -115,7 +119,7 @@ public class DataType {
             var name: UnsafePointer<Int8>?
             var name_length: Int = 0
             cass_data_type_type_name(data_type, &name, &name_length)
-            return String(f: cass_data_type_type_name, ptr: data_type)!
+            return String(function: cass_data_type_type_name, ptr: data_type)!
         }
         set (type_name) {
             cass_data_type_set_type_name(data_type, type_name)
@@ -126,7 +130,7 @@ public class DataType {
             var name: UnsafePointer<Int8>?
             var name_length: Int = 0
             cass_data_type_keyspace(data_type, &name, &name_length)
-            return String(f: cass_data_type_keyspace, ptr: data_type)!
+            return String(function: cass_data_type_keyspace, ptr: data_type)!
         }
         set (keyspace) {
             cass_data_type_set_keyspace(data_type, keyspace)
@@ -134,7 +138,7 @@ public class DataType {
     }
     public var class_name: String {
         get {
-            return String(f: cass_data_type_class_name, ptr: data_type)!
+            return String(function: cass_data_type_class_name, ptr: data_type)!
         }
         set (class_name) {
             cass_data_type_set_class_name(data_type, class_name)
@@ -150,22 +154,22 @@ public class DataType {
         return DataType(cass_data_type_sub_data_type_by_name(data_type, name))
     }
     public func subTypeName(index: Int) -> String {
-        return String(f: cass_data_type_sub_type_name, ptr: data_type, index: index)!
+        return String(function: cass_data_type_sub_type_name, ptr: data_type, index: index)!
     }
     public func addSubType(_ subDataType: DataType) -> DataType {
-        error_code_ = Error(cass_data_type_add_sub_type(data_type, subDataType.data_type))
+        error_code = Error(cass_data_type_add_sub_type(data_type, subDataType.data_type))
         return self
     }
     public func addSubType(name: String,_ subDataType: DataType) -> DataType {
-        error_code_ = Error(cass_data_type_add_sub_type_by_name(data_type, name, subDataType.data_type))
+        error_code = Error(cass_data_type_add_sub_type_by_name(data_type, name, subDataType.data_type))
         return self
     }
     func addSubValueType(_ subValueType: CassValueType) -> DataType {
-        error_code_ = Error(cass_data_type_add_sub_value_type(data_type, subValueType))
+        error_code = Error(cass_data_type_add_sub_value_type(data_type, subValueType))
         return self
     }
     func addSubValueType(name: String,_ subValueType: CassValueType) -> DataType {
-        error_code_ = Error(cass_data_type_add_sub_value_type_by_name(data_type, name, subValueType))
+        error_code = Error(cass_data_type_add_sub_value_type_by_name(data_type, name, subValueType))
         return self
     }
 }

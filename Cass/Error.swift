@@ -75,7 +75,7 @@ public enum Error: CustomStringConvertible {
     case SslInvalidPeerCert
     case SslIdentityMismatch
     case SslProtocolError
-    init(_ cass: CassError) {
+    init(_ cass: CassError = CASS_OK) {
         self = Error.fromCass(cass)
     }
     public var description: String {

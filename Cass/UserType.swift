@@ -9,7 +9,7 @@
 public class UserType: MutableCollection, Hashable, CustomStringConvertible {
     public typealias Element = (name: String, value: Any?)?
     var array: Array<Element>
-    var error_code_: Error? = nil
+    var error_code: Error
     var user_type_: OpaquePointer?
     let must_be_freed: Bool
     var dataType: DataType
@@ -18,7 +18,7 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
         let iterator_ = cass_iterator_fields_from_user_type(user_type)
         if let iterator = iterator_ {
             while cass_true == cass_iterator_next(iterator) {
-                if let str = String(f: cass_iterator_get_user_type_field_name, ptr: iterator) {
+                if let str = String(function: cass_iterator_get_user_type_field_name, ptr: iterator) {
                     if let val = Value(cass_iterator_get_user_type_field_value(iterator)) {
                         array.append((name: str, value: val.anyHashable))
                     } else {
@@ -33,16 +33,19 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
     }
 
     public init(dataType: DataType, count: Int = 0) {
+        error_code = Error()
         self.dataType = dataType
         self.array = Array(repeating: nil, count: count)
         self.must_be_freed = true
     }
     public init(dataType: DataType,_ values: Element...) {
+        error_code = Error()
         self.dataType = dataType
         self.array = Array(values)
         self.must_be_freed = true
     }
     init(cass user_type: OpaquePointer) {
+        error_code = Error()
         self.user_type_ = user_type
         self.must_be_freed = false
         if let data_type = cass_user_type_data_type(user_type) {
@@ -163,182 +166,182 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
     @discardableResult
     private func setNull(_ index: Int) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_null(user_type, index))
+            error_code = Error(cass_user_type_set_null(user_type, index))
         }
         return self
     }
     @discardableResult
     private func setNull(name: String) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_null_by_name(user_type, name))
+            error_code = Error(cass_user_type_set_null_by_name(user_type, name))
         }
         return self
     }
     @discardableResult
     private func setInt8(_ index: Int,_ value: Int8) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_int8(user_type, index, value))
+            error_code = Error(cass_user_type_set_int8(user_type, index, value))
         }
         return self
     }
     @discardableResult
     private func setInt8(name: String,_ value: Int8) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_int8_by_name(user_type, name, value))
+            error_code = Error(cass_user_type_set_int8_by_name(user_type, name, value))
         }
         return self
     }
     @discardableResult
     private func setInt16(_ index: Int,_ value: Int16) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_int16(user_type, index, value))
+            error_code = Error(cass_user_type_set_int16(user_type, index, value))
         }
         return self
     }
     @discardableResult
     private func setInt16(name: String,_ value: Int16) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_int16_by_name(user_type, name, value))
+            error_code = Error(cass_user_type_set_int16_by_name(user_type, name, value))
         }
         return self
     }
     @discardableResult
     private func setInt32(_ index: Int,_ value: Int32) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_int32(user_type, index, value))
+            error_code = Error(cass_user_type_set_int32(user_type, index, value))
         }
         return self
     }
     @discardableResult
     private func setInt32(name: String,_ value: Int32) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_int32_by_name(user_type, name, value))
+            error_code = Error(cass_user_type_set_int32_by_name(user_type, name, value))
         }
         return self
     }
     @discardableResult
     private func setUInt32(_ index: Int,_ value: UInt32) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_uint32(user_type, index, value))
+            error_code = Error(cass_user_type_set_uint32(user_type, index, value))
         }
         return self
     }
     @discardableResult
     private func setUInt32(name: String,_ value: UInt32) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_uint32_by_name(user_type, name, value))
+            error_code = Error(cass_user_type_set_uint32_by_name(user_type, name, value))
         }
         return self
     }
     @discardableResult
     private func setInt64(_ index: Int,_ value: Int64) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_int64(user_type, index, value))
+            error_code = Error(cass_user_type_set_int64(user_type, index, value))
         }
         return self
     }
     @discardableResult
     private func setInt64(name: String,_ value: Int64) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_int64_by_name(user_type, name, value))
+            error_code = Error(cass_user_type_set_int64_by_name(user_type, name, value))
         }
         return self
     }
     @discardableResult
     private func setFloat(_ index: Int,_ value: Float) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_float(user_type, index, value))
+            error_code = Error(cass_user_type_set_float(user_type, index, value))
         }
         return self
     }
     @discardableResult
     private func setFloat(name: String,_ value: Float) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_float_by_name(user_type, name, value))
+            error_code = Error(cass_user_type_set_float_by_name(user_type, name, value))
         }
         return self
     }
     @discardableResult
     private func setDouble(_ index: Int,_ value: Double) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_double(user_type, index, value))
+            error_code = Error(cass_user_type_set_double(user_type, index, value))
         }
         return self
     }
     @discardableResult
     private func setDouble(name: String,_ value: Double) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_double_by_name(user_type, name, value))
+            error_code = Error(cass_user_type_set_double_by_name(user_type, name, value))
         }
         return self
     }
     @discardableResult
     private func setBool(_ index: Int,_ value: Bool) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_bool(user_type, index, value ? cass_true : cass_false))
+            error_code = Error(cass_user_type_set_bool(user_type, index, value ? cass_true : cass_false))
         }
         return self
     }
     @discardableResult
     private func setBool(name: String,_ value: Bool) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_bool_by_name(user_type, name, value ? cass_true : cass_false))
+            error_code = Error(cass_user_type_set_bool_by_name(user_type, name, value ? cass_true : cass_false))
         }
         return self
     }
     @discardableResult
     private func setString(_ index: Int,_ value: String) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_string(user_type, index, value))
+            error_code = Error(cass_user_type_set_string(user_type, index, value))
         }
         return self
     }
     @discardableResult
     private func setString(name: String,_ value: String) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_string_by_name(user_type, name, value))
+            error_code = Error(cass_user_type_set_string_by_name(user_type, name, value))
         }
         return self
     }
     @discardableResult
     private func setBytes(_ index: Int,_ value: BLOB) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_bytes(user_type, index, value.array, value.array.count))
+            error_code = Error(cass_user_type_set_bytes(user_type, index, value.array, value.array.count))
         }
         return self
     }
     @discardableResult
     private func setBytes(name: String,_ value: BLOB) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_bytes_by_name(user_type, name, value.array, value.array.count))
+            error_code = Error(cass_user_type_set_bytes_by_name(user_type, name, value.array, value.array.count))
         }
         return self
     }
     @discardableResult
     private func setUuid(_ index: Int,_ value: UUID) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_uuid(user_type, index, value.cass))
+            error_code = Error(cass_user_type_set_uuid(user_type, index, value.cass))
         }
         return self
     }
     @discardableResult
     private func setUuid(name: String,_ value: UUID) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_uuid_by_name(user_type, name, value.cass))
+            error_code = Error(cass_user_type_set_uuid_by_name(user_type, name, value.cass))
         }
         return self
     }
     @discardableResult
     private func setInet(_ index: Int,_ value: Inet) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_inet(user_type, index, value.cass))
+            error_code = Error(cass_user_type_set_inet(user_type, index, value.cass))
         }
         return self
     }
     @discardableResult
     private func setInet(name: String,_ value: Inet) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_inet_by_name(user_type, name, value.cass))
+            error_code = Error(cass_user_type_set_inet_by_name(user_type, name, value.cass))
         }
         return self
     }
@@ -346,7 +349,7 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
     private func setDecimal(_ index: Int,_ value: Decimal) -> UserType {
         if let user_type = user_type_ {
             let (varint, varint_size, scale) = value.cass
-            error_code_ = Error(cass_user_type_set_decimal(user_type, index, varint, varint_size, scale))
+            error_code = Error(cass_user_type_set_decimal(user_type, index, varint, varint_size, scale))
         }
         return self
     }
@@ -354,49 +357,49 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
     private func setDecimal(name: String,_ value: Decimal) -> UserType {
         if let user_type = user_type_ {
             let (varint, varint_size, scale) = value.cass
-            error_code_ = Error(cass_user_type_set_decimal_by_name(user_type, name, varint, varint_size, scale))
+            error_code = Error(cass_user_type_set_decimal_by_name(user_type, name, varint, varint_size, scale))
         }
         return self
     }
     @discardableResult
     private func setDuration(_ index: Int,_ value: Duration) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_duration(user_type, index, value.months, value.days, value.nanos))
+            error_code = Error(cass_user_type_set_duration(user_type, index, value.months, value.days, value.nanos))
         }
         return self
     }
     @discardableResult
     private func setDuration(name: String,_ value: Duration) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_duration_by_name(user_type, name, value.months, value.days, value.nanos))
+            error_code = Error(cass_user_type_set_duration_by_name(user_type, name, value.months, value.days, value.nanos))
         }
         return self
     }
     @discardableResult
     private func setTuple(_ index: Int,_ value: Tuple) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_tuple(user_type, index, value.cass))
+            error_code = Error(cass_user_type_set_tuple(user_type, index, value.cass))
         }
         return self
     }
     @discardableResult
     private func setTuple(name: String,_ value: Tuple) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_tuple_by_name(user_type, name, value.cass))
+            error_code = Error(cass_user_type_set_tuple_by_name(user_type, name, value.cass))
         }
         return self
     }
     @discardableResult
     private func setUserType(_ index: Int,_ value: UserType) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_user_type(user_type, index, value.cass))
+            error_code = Error(cass_user_type_set_user_type(user_type, index, value.cass))
         }
         return self
     }
     @discardableResult
     private func setUserType(name: String,_ value: UserType) -> UserType {
         if let user_type = user_type_ {
-            error_code_ = Error(cass_user_type_set_user_type_by_name(user_type, name, value.cass))
+            error_code = Error(cass_user_type_set_user_type_by_name(user_type, name, value.cass))
         }
         return self
     }
@@ -407,7 +410,7 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
             defer {
                 cass_collection_free(collection)
             }
-            error_code_ = Error(cass_user_type_set_collection(user_type, index, collection))
+            error_code = Error(cass_user_type_set_collection(user_type, index, collection))
         }
         return self
     }
@@ -418,7 +421,7 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
             defer {
                 cass_collection_free(collection)
             }
-            error_code_ = Error(cass_user_type_set_collection_by_name(user_type, name, collection))
+            error_code = Error(cass_user_type_set_collection_by_name(user_type, name, collection))
         }
         return self
     }
@@ -429,7 +432,7 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
             defer {
                 cass_collection_free(collection)
             }
-            error_code_ = Error(cass_user_type_set_collection(user_type, index, collection))
+            error_code = Error(cass_user_type_set_collection(user_type, index, collection))
         }
         return self
     }
@@ -440,7 +443,7 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
             defer {
                 cass_collection_free(collection)
             }
-            error_code_ = Error(cass_user_type_set_collection_by_name(user_type, name, collection))
+            error_code = Error(cass_user_type_set_collection_by_name(user_type, name, collection))
         }
         return self
     }
@@ -451,7 +454,7 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
             defer {
                 cass_collection_free(collection)
             }
-            error_code_ = Error(cass_user_type_set_collection(user_type, index, collection))
+            error_code = Error(cass_user_type_set_collection(user_type, index, collection))
         }
         return self
     }
@@ -462,7 +465,7 @@ public class UserType: MutableCollection, Hashable, CustomStringConvertible {
             defer {
                 cass_collection_free(collection)
             }
-            error_code_ = Error(cass_user_type_set_collection_by_name(user_type, name, collection))
+            error_code = Error(cass_user_type_set_collection_by_name(user_type, name, collection))
         }
         return self
     }

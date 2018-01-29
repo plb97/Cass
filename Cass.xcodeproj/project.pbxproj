@@ -53,6 +53,8 @@
 		37A0B90C200E0EC700CB3F1C /* SslVerifyFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B90B200E0EC700CB3F1C /* SslVerifyFlags.swift */; };
 		37A0B90E200E105900CB3F1C /* ProtocolVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B90D200E105900CB3F1C /* ProtocolVersion.swift */; };
 		37A0B910200E12E100CB3F1C /* ErrorSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37A0B90F200E12E100CB3F1C /* ErrorSource.swift */; };
+		37EE0B4F201B1767004808DC /* LogMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37EE0B4E201B1767004808DC /* LogMessage.swift */; };
+		37EE0B54201DC6B6004808DC /* LogCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37EE0B53201DC6B5004808DC /* LogCallback.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -108,6 +110,8 @@
 		37A0B90B200E0EC700CB3F1C /* SslVerifyFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SslVerifyFlags.swift; sourceTree = "<group>"; };
 		37A0B90D200E105900CB3F1C /* ProtocolVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolVersion.swift; sourceTree = "<group>"; };
 		37A0B90F200E12E100CB3F1C /* ErrorSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorSource.swift; sourceTree = "<group>"; };
+		37EE0B4E201B1767004808DC /* LogMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogMessage.swift; sourceTree = "<group>"; };
+		37EE0B53201DC6B5004808DC /* LogCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogCallback.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -172,7 +176,9 @@
 				372627FC1FED4B370064A392 /* Iterator.swift */,
 				37A0B907200E08B600CB3F1C /* IteratorType.swift */,
 				372627E61FECFEFE0064A392 /* KeyspaceMeta.swift */,
+				37EE0B53201DC6B5004808DC /* LogCallback.swift */,
 				37A0B909200E08E100CB3F1C /* LogLevel.swift */,
+				37EE0B4E201B1767004808DC /* LogMessage.swift */,
 				372627EC1FED130F0064A392 /* MaterializedViewMeta.swift */,
 				37A0B8E62006440200CB3F1C /* Prepared.swift */,
 				37A0B90D200E105900CB3F1C /* ProtocolVersion.swift */,
@@ -275,6 +281,7 @@
 				372627E71FECFEFE0064A392 /* KeyspaceMeta.swift in Sources */,
 				373FD3A61FE94C9100B14377 /* Batch.swift in Sources */,
 				373FD3AA1FE94C9100B14377 /* Future.swift in Sources */,
+				37EE0B54201DC6B6004808DC /* LogCallback.swift in Sources */,
 				3708E5701FE93D7A00365543 /* Cass.m in Sources */,
 				372627EF1FED15D40064A392 /* DataType.swift in Sources */,
 				37A0B902200DFEC400CB3F1C /* ColumnType.swift in Sources */,
@@ -307,6 +314,7 @@
 				373FD3A71FE94C9100B14377 /* Callback.swift in Sources */,
 				372627FB1FED38860064A392 /* Row.swift in Sources */,
 				372627FD1FED4B370064A392 /* Iterator.swift in Sources */,
+				37EE0B4F201B1767004808DC /* LogMessage.swift in Sources */,
 				373FD3A81FE94C9100B14377 /* Cluster.swift in Sources */,
 				37A0B90E200E105900CB3F1C /* ProtocolVersion.swift in Sources */,
 			);

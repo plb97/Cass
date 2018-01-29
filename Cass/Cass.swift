@@ -7,6 +7,42 @@
 //
 
 import Foundation
+
+/*
+ !!! ATTENTION !!!
+
+ The type T to be stored must be a trivial type. The memory at this pointer plus offset must be properly aligned for accessing T. The memory must also be uninitialized, initialized to T, or initialized to another trivial type that is layout compatible with T.
+
+ A trivial type can be copied bit for bit with no indirection or reference-counting operations. Generally, native Swift types that do not contain strong or weak references or other forms of indirection are trivial, as are imported C structs and enumerations.
+
+ */
+/*
+ REMARQUE
+ Le type 'Callback' est 'trivial' (c'est une 'struct' ne contenant que des champs simples : deux pointeurs et deux entiers)
+ Dans l'exemple 'callbacks' le type 'Session' est bien trivial (c'est une class (struct) ne contenant qu'un pointeur et pour lequel il ne faut pas gerer de "reference-counting")
+ Dans un cas plus complexe, il faut etre conscient que l'ARC (Automatic Reference Counting) est contourne, mais c'est justemnt ce qui etait voulu...
+ TODO : tester beaucoup plus severement pour etre sur que cette approche reste correcte en general.
+ */
+func allocPointer<T>(_ p_: T?) -> UnsafeMutableRawPointer? {
+    if let p = p_ {
+        let ptr = UnsafeMutableRawPointer.allocate(bytes: MemoryLayout<T>.stride, alignedTo:MemoryLayout<T>.alignment)
+        //ptr.initializeMemory(as: type(of: p), to: p) // cree une reference sur 'p_: T?'
+        ptr.storeBytes(of: p, as: T.self) // ne cree pas de reference sur 'p_: T?' mais ATTENTION peut ne pas fonctionner dans le cas general
+        print("allocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
+        return ptr
+    }
+    return nil
+}
+func deallocPointer<T>(_ p_: UnsafeMutableRawPointer?, as type : T) {
+    if let ptr = p_ {
+        print("deallocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
+        //ptr.bindMemory(to: T.self, capacity: 1)
+        //    .deinitialize(count: 1)
+        //    .deallocate(bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment) // garde la reference sur 'p_:  T?'
+        ptr.deallocate(bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment)
+    }
+}
+
 public typealias Date = Foundation.Date
 
 extension Date {
@@ -30,7 +66,7 @@ struct BLOB: RandomAccessCollection, MutableCollection {
     init(_ array: Array<UInt8>) {
         self.array = array
     }
-    init(repeating: UInt8, count: Int) {
+    init(repeating: UInt8 = 0, count: Int) {
         self.array = Array(repeating: repeating, count: count)
     }
     init(ptr buf_: UnsafePointer<UInt8>? = nil, len: Int = 0) {
@@ -107,30 +143,30 @@ typealias ptr_error_f = (OpaquePointer?, UnsafeMutablePointer<UnsafePointer<Int8
 typealias ptr_f = (OpaquePointer?, UnsafeMutablePointer<UnsafePointer<Int8>?>?, UnsafeMutablePointer<Int>?) -> ()
 typealias ptr_f0 = (OpaquePointer?, UnsafeMutablePointer<Int>?) -> (UnsafePointer<Int8>?)
 extension String {
-    init?(_ f: ptr_f0, ptr ptr_: OpaquePointer?) {
+    init?(_ function: ptr_f0, ptr ptr_: OpaquePointer?) {
         if let ptr = ptr_ {
             var name_length: Int = 0
-            let name = f(ptr, &name_length)
+            let name = function(ptr, &name_length)
             self.init(ptr: name, len: name_length)!
         } else {
             return nil
         }
     }
-    init?(f: ptr_f, ptr ptr_: OpaquePointer?) {
+    init?(function: ptr_f, ptr ptr_: OpaquePointer?) {
         if let ptr = ptr_ {
             var name: UnsafePointer<Int8>?
             var name_length: Int = 0
-            f(ptr, &name, &name_length)
+            function(ptr, &name, &name_length)
             self.init(ptr: name, len: name_length)!
         } else {
             return nil
         }
     }
-    init?(f: ptr_error_f, ptr ptr_: OpaquePointer?) {
+    init?(function: ptr_error_f, ptr ptr_: OpaquePointer?) {
         if let ptr = ptr_ {
             var name: UnsafePointer<Int8>?
             var name_length: Int = 0
-            let rc = f(ptr, &name, &name_length)
+            let rc = function(ptr, &name, &name_length)
             if CASS_OK == rc {
                 self.init(ptr: name, len: name_length)!
             } else {
@@ -140,11 +176,11 @@ extension String {
             return nil
         }
     }
-    init?(f: ptr_index_error_f, ptr ptr_: OpaquePointer?, index: Int) {
+    init?(function: ptr_index_error_f, ptr ptr_: OpaquePointer?, index: Int) {
         if let ptr = ptr_ {
             var name: UnsafePointer<Int8>?
             var name_length: Int = 0
-            let rc = f(ptr, index, &name, &name_length)
+            let rc = function(ptr, index, &name, &name_length)
             if CASS_OK == rc {
                 self.init(ptr: name, len: name_length)!
             } else {
@@ -154,17 +190,17 @@ extension String {
             return nil
         }
     }
-    init?(ptr: UnsafePointer<Int8>? = nil, len: Int = 0) {
+    init?(ptr: UnsafePointer<Int8>? = nil, len: Int = -1) {
         if nil == ptr || 0 > len {
             return nil
         }
-        let size = len + 1
+        let size = 0 > len ? Int(strlen(ptr)) : len + 1
         let p = UnsafeMutablePointer<Int8>.allocate(capacity: size)
         defer {
             p.deallocate(capacity: size)
         }
         p.initialize(to: 0, count:size)
-        strncpy(p, ptr, len)
+        strncpy(p, ptr, size - 1) // ATTENTION : 'len' peut etre different de 'size - 1'
         self.init(validatingUTF8: p)
     }
 }
@@ -305,59 +341,45 @@ public struct Duration {
 }
 
 extension Int8 {
-    typealias T = cass_int8_t
     var cass: cass_int8_t { return self }
 }
 extension Int16 {
-    typealias T = cass_int16_t
     var cass: cass_int16_t { return self }
 }
 extension Int32 {
-    typealias T = cass_int32_t
     var cass: cass_int32_t { return self }
 }
 extension Int {
-    typealias T = cass_int32_t
     var cass: cass_int32_t { return Int32(self) }
 }
 extension UInt32 {
-    typealias T = cass_uint32_t
     var cass: cass_uint32_t { return self }
 }
 extension UInt {
-    typealias T = cass_uint32_t
     var cass: cass_uint32_t { return UInt32(self) }
 }
 extension Int64 {
-    typealias T = cass_int64_t
     var cass: cass_int64_t { return self }
 }
 extension Float {
-    typealias T = cass_float_t
     var cass: cass_float_t { return self }
 }
 extension Double {
-    typealias T = cass_double_t
     var cass: cass_double_t { return self }
 }
 extension Bool {
-    typealias T = cass_bool_t
     var cass: cass_bool_t { return self ? cass_true : cass_false }
 }
 extension String {
-    typealias T = (UnsafePointer<Int8>, size_t)
-    var cass: (UnsafePointer<Int8>, size_t) { return (UnsafePointer<Int8>(self), self.count) }
+    var cass: (UnsafePointer<Int8>, size_t) { return (ptr: UnsafePointer<Int8>(self), len: self.count) }
 }
 extension Set {
-    typealias T = OpaquePointer
     var cass: OpaquePointer { if let collection = toCollection(cass: self) { return collection } else { fatalError(FATAL_ERROR_MESSAGE)} }
 }
 extension Array {
-    typealias T = OpaquePointer
     var cass: OpaquePointer { if let collection = toCollection(cass: self) { return collection } else { fatalError(FATAL_ERROR_MESSAGE)} }
 }
 extension Dictionary {
-    typealias T = OpaquePointer
     var cass: OpaquePointer { if let collection = toCollection(cass: self) { return collection } else { fatalError(FATAL_ERROR_MESSAGE)} }
 }
 

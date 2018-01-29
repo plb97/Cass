@@ -73,28 +73,28 @@ class FunctionMeta {
         }
     }
     public var name: String {
-        if let str = String(f: cass_function_meta_name, ptr: function_meta) {
+        if let str = String(function: cass_function_meta_name, ptr: function_meta) {
             return str
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     public var fullName: String {
-        if let str = String(f: cass_function_meta_full_name, ptr: function_meta) {
+        if let str = String(function: cass_function_meta_full_name, ptr: function_meta) {
             return str
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     public var body: String {
-        if let str = String(f: cass_function_meta_body, ptr: function_meta) {
+        if let str = String(function: cass_function_meta_body, ptr: function_meta) {
             return str
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     public var language: String {
-        if let str = String(f: cass_function_meta_language, ptr: function_meta) {
+        if let str = String(function: cass_function_meta_language, ptr: function_meta) {
             return str
         } else {
             fatalError(FATAL_ERROR_MESSAGE)

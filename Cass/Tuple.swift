@@ -7,15 +7,9 @@
 //
 public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
     public typealias Element = Any?
-    var error_code_: Error? = nil
+    var error_code: Error
     var array: Array<Element>
     var tuple_: OpaquePointer?
-    public init(count: Int) {
-        self.array = Array(repeating: nil, count: count)
-    }
-    public init(_ values: Element...) {
-        self.array = Array(values)
-    }
     private static func toArray(tuple: OpaquePointer) -> Array<Tuple.Element> {
         var array = Array<Tuple.Element>()
         let iterator_ = cass_iterator_from_tuple(tuple)
@@ -27,12 +21,22 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
         }
         return array
     }
+    public init(count: Int) {
+        error_code = Error()
+        self.array = Array(repeating: nil, count: count)
+    }
+    public init(_ values: Element...) {
+        error_code = Error()
+        self.array = Array(values)
+    }
     init(cass tuple: OpaquePointer) {
         // ATTENTION : ne pas conserver 'tuple' pour ne pas appeler 'cass_tuple_free' dans 'deinit'
+        error_code = Error()
         self.array = Tuple.toArray(tuple: tuple)
     }
     init(dataType: DataType) {
         // ATTENTION : il faut conserver 'tuple' pour appeler 'cass_tuple_free' dans 'deinit'
+        error_code = Error()
         if let tuple = cass_tuple_new_from_data_type(dataType.data_type) {
             self.tuple_ = tuple
             self.array = Tuple.toArray(tuple: tuple)
@@ -118,91 +122,91 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
     @discardableResult
     private func setNull(_ index: Int) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_null(tuple, index))
+            error_code = Error(cass_tuple_set_null(tuple, index))
         }
         return self
     }
     @discardableResult
     private func setInt8(_ index: Int, value: Int8) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_int8(tuple, index, value))
+            error_code = Error(cass_tuple_set_int8(tuple, index, value))
         }
         return self
     }
     @discardableResult
     private func setInt16(_ index: Int, value: Int16) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_int16(tuple, index, value))
+            error_code = Error(cass_tuple_set_int16(tuple, index, value))
         }
         return self
     }
     @discardableResult
     private func setInt32(_ index: Int, value: Int32) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_int32(tuple, index, value))
+            error_code = Error(cass_tuple_set_int32(tuple, index, value))
         }
         return self
     }
     @discardableResult
     private func setUInt32(_ index: Int, value: UInt32) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_uint32(tuple, index, value))
+            error_code = Error(cass_tuple_set_uint32(tuple, index, value))
         }
         return self
     }
     @discardableResult
     private func setInt64(_ index: Int, value: Int64) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_int64(tuple, index, value))
+            error_code = Error(cass_tuple_set_int64(tuple, index, value))
         }
         return self
     }
     @discardableResult
     private func setFloat(_ index: Int, value: Float) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_float(tuple, index, value))
+            error_code = Error(cass_tuple_set_float(tuple, index, value))
         }
         return self
     }
     @discardableResult
     private func setDouble(_ index: Int, value: Double) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_double(tuple, index, value))
+            error_code = Error(cass_tuple_set_double(tuple, index, value))
         }
         return self
     }
     @discardableResult
     private func setBool(_ index: Int, value: Bool) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_bool(tuple, index, value ? cass_true : cass_false))
+            error_code = Error(cass_tuple_set_bool(tuple, index, value ? cass_true : cass_false))
         }
         return self
     }
     @discardableResult
     private func setString(_ index: Int, value: String) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_string(tuple, index, value))
+            error_code = Error(cass_tuple_set_string(tuple, index, value))
         }
         return self
     }
     @discardableResult
     private func setBytes(_ index: Int, value: BLOB) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_bytes(tuple, index, value.array, value.array.count))
+            error_code = Error(cass_tuple_set_bytes(tuple, index, value.array, value.array.count))
         }
         return self
     }
     @discardableResult
     private func setUuid(_ index: Int, value: UUID) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_uuid(tuple, index, value.cass))
+            error_code = Error(cass_tuple_set_uuid(tuple, index, value.cass))
         }
         return self
     }
     @discardableResult
     private func setInet(_ index: Int, value: Inet) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_inet(tuple, index, value.cass))
+            error_code = Error(cass_tuple_set_inet(tuple, index, value.cass))
         }
         return self
     }
@@ -210,28 +214,28 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
     private func setDecimal(_ index: Int, value: Decimal) -> Tuple {
         if let tuple = tuple_ {
             let (varint, varint_size, scale) = value.cass
-            error_code_ = Error(cass_tuple_set_decimal(tuple, index, varint, varint_size, scale))
+            error_code = Error(cass_tuple_set_decimal(tuple, index, varint, varint_size, scale))
         }
         return self
     }
     @discardableResult
     private func setDuration(_ index: Int, value: Duration) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_duration(tuple, index, value.months, value.days, value.nanos))
+            error_code = Error(cass_tuple_set_duration(tuple, index, value.months, value.days, value.nanos))
         }
         return self
     }
     @discardableResult
     private func setTuple(_ index: Int, value: Tuple) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_tuple(tuple, index, value.cass))
+            error_code = Error(cass_tuple_set_tuple(tuple, index, value.cass))
         }
         return self
     }
     @discardableResult
     private func setUserType(_ index: Int, value: UserType) -> Tuple {
         if let tuple = tuple_ {
-            error_code_ = Error(cass_tuple_set_user_type(tuple, index, value.cass))
+            error_code = Error(cass_tuple_set_user_type(tuple, index, value.cass))
         }
         return self
     }
@@ -242,7 +246,7 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
             defer {
                 cass_collection_free(collection)
             }
-            error_code_ = Error(cass_tuple_set_collection(tuple, index, collection))
+            error_code = Error(cass_tuple_set_collection(tuple, index, collection))
         }
         return self
     }
@@ -253,7 +257,7 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
             defer {
                 cass_collection_free(collection)
             }
-            error_code_ = Error(cass_tuple_set_collection(tuple, index, collection))
+            error_code = Error(cass_tuple_set_collection(tuple, index, collection))
         }
         return self
     }
@@ -264,7 +268,7 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
             defer {
                 cass_collection_free(collection)
             }
-            error_code_ = Error(cass_tuple_set_collection(tuple, index, collection))
+            error_code = Error(cass_tuple_set_collection(tuple, index, collection))
         }
         return self
     }

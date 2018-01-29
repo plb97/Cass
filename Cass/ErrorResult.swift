@@ -6,9 +6,7 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-//public
-class ErrorResult {
-    var error_code_: Error?
+public class ErrorResult {
     let error_result: OpaquePointer
     init(_ error_result: OpaquePointer) {
         self.error_result = error_result
@@ -16,14 +14,14 @@ class ErrorResult {
     deinit {
         cass_error_result_free(error_result)
     }
-    var code: CassError {
-        return cass_error_result_code(error_result)
+    public var code: Error {
+        return Error(cass_error_result_code(error_result))
     }
-    var consistency: CassConsistency {
-        return cass_error_result_consistency(error_result)
+    public var consistency: Consistency {
+        return Consistency(cass_error_result_consistency(error_result))
     }
-    var writeType: CassWriteType {
-        return cass_error_result_write_type(error_result)
+    public var writeType: WriteType {
+        return WriteType(cass_error_result_write_type(error_result))
     }
     public var responsesReceived: Int32 {
         return cass_error_result_responses_received(error_result)
@@ -38,18 +36,18 @@ class ErrorResult {
         return cass_true == cass_error_result_data_present(error_result)
     }
     public var keyspace: String? {
-        return String(f: cass_error_result_keyspace, ptr: error_result)
+        return String(function: cass_error_result_keyspace, ptr: error_result)
     }
     public var table: String? {
-        return String(f: cass_error_result_table, ptr: error_result)
+        return String(function: cass_error_result_table, ptr: error_result)
     }
     public var function: String? {
-        return String(f: cass_error_result_function, ptr: error_result)
+        return String(function: cass_error_result_function, ptr: error_result)
     }
     public var argTypes: Int {
         return cass_error_num_arg_types(error_result)
     }
     public func argType(index: Int) -> String? {
-        return String(f: cass_error_result_arg_type, ptr: error_result, index: index)
+        return String(function: cass_error_result_arg_type, ptr: error_result, index: index)
     }
 }

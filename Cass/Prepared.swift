@@ -20,7 +20,7 @@ public class Prepared {
         return PreparedStatement(cass_prepared_bind(prepared)!)
     }
     public func parameterName(index: Int) -> String? {
-        return String(f: cass_prepared_parameter_name, ptr: prepared, index: index)
+        return String(function: cass_prepared_parameter_name, ptr: prepared, index: index)
     }
     public func dataType(index: Int) -> DataType? {
         // TODO : Do not free this reference as it is bound to the lifetime of the prepared.

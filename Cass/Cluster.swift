@@ -6,25 +6,25 @@
 //  Copyright © 2017 PLB. All rights reserved.
 //
 
-public
-class Cluster {
+public class Cluster {
     let cluster: OpaquePointer
-    var error_code_: Error?
+    var error_code: Error
     public init() {
         cluster = cass_cluster_new()
+        error_code = Error()
     }
     deinit {
         cass_cluster_free(cluster)
     }
     public func setContactPoints(_ contact_points: String) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_contact_points(cluster, contact_points))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_contact_points(cluster, contact_points))
         }
         return self
     }
     public func setPort(_ port: Int = 9042) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_port (cluster, Int32(port)))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_port (cluster, Int32(port)))
         }
         return self
     }
@@ -34,43 +34,43 @@ class Cluster {
     }
     public func setAuthenticatorCallbacks(_ authenticatorCallbacks: AuthenticatorCallbacks) -> Cluster {
         let data = allocPointer(authenticatorCallbacks)
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_authenticator_callbacks(cluster, &default_exchange_callbacks, default_data_cleanup_callback, data))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_authenticator_callbacks(cluster, &default_exchange_callbacks, default_data_cleanup_callback, data))
         }
         return self
     }
     public func setProtocolVersion(_ protocol_version: ProtocolVersion = .v4) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_protocol_version(cluster, Int32(protocol_version.cass.rawValue)))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_protocol_version(cluster, Int32(protocol_version.cass.rawValue)))
         }
         return self
     }
     public func setNumThreadsIo(_ num_threads: UInt = 1) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_num_threads_io(cluster, UInt32(num_threads)))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_num_threads_io(cluster, UInt32(num_threads)))
         }
         return self
     }
     public func setQueueSizeIo(_ queue_size: UInt = 8192) {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_queue_size_io(cluster, UInt32(queue_size)))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_queue_size_io(cluster, UInt32(queue_size)))
         }
     }
     public func setQueueSizeEvent(_ queue_size: UInt = 8192) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_queue_size_event(cluster, UInt32(queue_size)))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_queue_size_event(cluster, UInt32(queue_size)))
         }
         return self
     }
     public func setCoreConnectionsPerHost(_ num_connections: UInt = 1) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_core_connections_per_host(cluster, UInt32(num_connections)))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_core_connections_per_host(cluster, UInt32(num_connections)))
         }
         return self
     }
     public func setMaxConnectionsPerHost(_ num_connections: UInt = 2) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_max_connections_per_host(cluster, UInt32(num_connections)))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_max_connections_per_host(cluster, UInt32(num_connections)))
         }
         return self
     }
@@ -79,42 +79,42 @@ class Cluster {
         return self
     }
     public func setMaxConcurrentCreation(_ num_connections: UInt = 1) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_max_concurrent_creation(cluster, UInt32(num_connections)))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_max_concurrent_creation(cluster, UInt32(num_connections)))
         }
         return self
     }
     public func setMaxConcurrentRequestsThreshold(_ num_requests: UInt = 100) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_max_concurrent_requests_threshold(cluster, UInt32(num_requests)))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_max_concurrent_requests_threshold(cluster, UInt32(num_requests)))
         }
         return self
     }
     public func setMaxRequestsPerFlush(_ num_requests: UInt = 128) -> Cluster {
-        error_code_ = Error(cass_cluster_set_max_requests_per_flush(cluster, UInt32(num_requests)))
+        error_code = Error(cass_cluster_set_max_requests_per_flush(cluster, UInt32(num_requests)))
         return self
     }
 //    public func setWriteBytesHighWaterMark(_ num_bytes: UInt = 64 * 1024) -> Cluster {
-//        if nil == error_code_ || .ok == error_code_ {
-//            error_code_ = Error(cass_cluster_set_write_bytes_high_water_mark(cluster, UInt32(num_bytes)))
+//        if .ok == error_code {
+//            error_code = Error(cass_cluster_set_write_bytes_high_water_mark(cluster, UInt32(num_bytes)))
 //        }
 //        return self
 //    }
 //    public func setWriteBytesLowWaterMark(_ num_bytes: UInt = 32 * 1024) -> Cluster {
-//        if nil == error_code_ || .ok == error_code_ {
-//            error_code_ = Error(cass_cluster_set_write_bytes_low_water_mark(cluster, UInt32(num_bytes)))
+//        if .ok == error_code {
+//            error_code = Error(cass_cluster_set_write_bytes_low_water_mark(cluster, UInt32(num_bytes)))
 //        }
 //        return self
 //    }
 //    public func setPendingRequestsHighWaterMark(_ num_requests: UInt = 256) -> Cluster {
-//        if nil == error_code_ || .ok == error_code_ {
-//            error_code_ = Error(cass_cluster_set_pending_requests_high_water_mark(cluster, UInt32(num_requests)))
+//        if .ok == error_code {
+//            error_code = Error(cass_cluster_set_pending_requests_high_water_mark(cluster, UInt32(num_requests)))
 //        }
 //        return self
 //    }
 //    public func setPendingRequestsLowWaterMark(_ num_requests: UInt = 128) -> Cluster {
-//        if nil == error_code_ || .ok == error_code_ {
-//            error_code_ = Error(cass_cluster_set_pending_requests_low_water_mark(cluster, UInt32(num_requests)))
+//        if .ok == error_code {
+//            error_code = Error(cass_cluster_set_pending_requests_low_water_mark(cluster, UInt32(num_requests)))
 //        }
 //        return self
 //    }
@@ -139,8 +139,8 @@ class Cluster {
         return self
     }
     public func setLoadBalanceDcAware(local_dc: String = "local", used_hosts_per_remote_dc: UInt = 1, allow_remote_dcs_for_local_cl: Bool = false) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_load_balance_dc_aware(cluster, local_dc, UInt32(used_hosts_per_remote_dc), allow_remote_dcs_for_local_cl ? cass_true : cass_false))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_load_balance_dc_aware(cluster, local_dc, UInt32(used_hosts_per_remote_dc), allow_remote_dcs_for_local_cl ? cass_true : cass_false))
         }
         return self
     }
@@ -205,27 +205,27 @@ class Cluster {
         return self
     }
     public func setUseHostnameResolution(_ enabled: Bool = false) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_use_hostname_resolution(cluster, enabled ? cass_true : cass_false))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_use_hostname_resolution(cluster, enabled ? cass_true : cass_false))
         }
         return self
     }
     public func setRandomizedContactPoint(_ enabled: Bool = true) -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_use_randomized_contact_points(cluster, enabled ? cass_true : cass_false))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_use_randomized_contact_points(cluster, enabled ? cass_true : cass_false))
         }
         return self
     }
     public func setConstantSpeculativeExecutionPolicy(constant_delay_ms: Int64, max_speculative_executions: Int)
         -> Cluster {
-            if nil == error_code_ || .ok == error_code_ {
-                error_code_ = Error(cass_cluster_set_constant_speculative_execution_policy(cluster, constant_delay_ms, Int32(max_speculative_executions)))
+            if .ok == error_code {
+                error_code = Error(cass_cluster_set_constant_speculative_execution_policy(cluster, constant_delay_ms, Int32(max_speculative_executions)))
             }
             return self
     }
     public func setNoSpeculativeExecutionPolicy() -> Cluster {
-        if nil == error_code_ || .ok == error_code_ {
-            error_code_ = Error(cass_cluster_set_no_speculative_execution_policy(cluster))
+        if .ok == error_code {
+            error_code = Error(cass_cluster_set_no_speculative_execution_policy(cluster))
         }
         return self
     }
