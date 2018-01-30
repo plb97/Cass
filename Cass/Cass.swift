@@ -20,14 +20,18 @@ import Foundation
  REMARQUE
  Le type 'Callback' est 'trivial' (c'est une 'struct' ne contenant que des champs simples : deux pointeurs et deux entiers)
  Dans l'exemple 'callbacks' le type 'Session' est bien trivial (c'est une class (struct) ne contenant qu'un pointeur et pour lequel il ne faut pas gerer de "reference-counting")
- Dans un cas plus complexe, il faut etre conscient que l'ARC (Automatic Reference Counting) est contourne, mais c'est justemnt ce qui etait voulu...
- TODO : tester beaucoup plus severement pour etre sur que cette approche reste correcte en general.
+ Dans un cas plus complexe, il faut etre conscient que l'ARC (Automatic Reference Counting) est contourne...
  */
 func allocPointer<T>(_ p_: T?) -> UnsafeMutableRawPointer? {
     if let p = p_ {
-        let ptr = UnsafeMutableRawPointer.allocate(bytes: MemoryLayout<T>.stride, alignedTo:MemoryLayout<T>.alignment)
+        // cette approche fonctionne dans les cas testes
+        let u = UnsafeMutablePointer<T>.allocate(capacity: 1)
+            u.initialize(to: p, count: 1)
+        let ptr = u.deinitialize(count: 1)
+        //let ptr = UnsafeMutableRawPointer.allocate(bytes: MemoryLayout<T>.stride, alignedTo:MemoryLayout<T>.alignment)
         //ptr.initializeMemory(as: type(of: p), to: p) // cree une reference sur 'p_: T?'
-        ptr.storeBytes(of: p, as: T.self) // ne cree pas de reference sur 'p_: T?' mais ATTENTION peut ne pas fonctionner dans le cas general
+        //let ptr = UnsafeMutableRawPointer.allocate(bytes: MemoryLayout<T>.stride, alignedTo:MemoryLayout<T>.alignment)
+        //ptr.storeBytes(of: p, as: T.self) // ne cree pas de reference sur 'p_: T?' mais ATTENTION peut ne pas fonctionner dans le cas general
         //print("allocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
         return ptr
     }
@@ -36,10 +40,10 @@ func allocPointer<T>(_ p_: T?) -> UnsafeMutableRawPointer? {
 func deallocPointer<T>(_ p_: UnsafeMutableRawPointer?, as type : T) {
     if let ptr = p_ {
         //print("deallocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
-        //ptr.bindMemory(to: T.self, capacity: 1)
-        //    .deinitialize(count: 1)
-        //    .deallocate(bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment) // garde la reference sur 'p_:  T?'
-        ptr.deallocate(bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment)
+        ptr.bindMemory(to: T.self, capacity: 1)
+            .deinitialize(count: 1)
+            .deallocate(bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment) // garde la reference sur 'p_:  T?'
+        //ptr.deallocate(bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment)
     }
 }
 
