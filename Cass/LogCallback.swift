@@ -17,7 +17,7 @@ public struct LogCallback {
         print("LogCallback init")
         self.data_ = allocPointer(data_)
     }
-    public func dealloc<T>(_ log_callback_ptr: UnsafeMutableRawPointer?,_ : T.Type) {
+    public func dealloc<T>(_ log_callback_ptr: UnsafeMutableRawPointer?,as _ : T.Type) {
         deallocPointer(data_, as: T.self)
         deallocPointer(log_callback_ptr, as: LogCallback.self)
     }
