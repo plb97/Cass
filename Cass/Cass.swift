@@ -46,6 +46,9 @@ func deallocPointer<T>(_ p_: UnsafeMutableRawPointer?, as type : T) {
         //ptr.deallocate(bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment)
     }
 }
+func pointee<T>(_ p_: UnsafeMutableRawPointer?, as type : T.Type) -> T? {
+    return p_?.bindMemory(to: T.self, capacity: 1).pointee
+}
 
 public typealias Date = Foundation.Date
 

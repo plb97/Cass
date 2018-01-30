@@ -29,10 +29,10 @@ public struct CallbackData {
         self.future = Future(ftrp)
     }
     public func data<T>(as data_type: T.Type) -> T? {
-        return data_?.bindMemory(to: data_type, capacity: 1).pointee
+        return pointee(data_, as: T.self)
     }
-    public func dealloc<T>(_ data_type: T) {
-        deallocPointer(data_, as: data_type)
+    public func dealloc<T>(_ data_type: T.Type) {
+        deallocPointer(data_, as: T.self)
         deallocPointer(callback_ptr, as: Callback.self)
     }
 }
