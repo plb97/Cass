@@ -21,6 +21,7 @@ public typealias DataCleanupCallback_f = (Response) -> ()
 public protocol Response {
     var response: Array<UInt8> { get }
     var data: UnsafeMutableRawPointer? { get }
+    var error: String? { get }
 }
 
 func default_inital_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) -> () {
