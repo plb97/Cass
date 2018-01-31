@@ -6,8 +6,6 @@
 //  Copyright © 2018 PLHB. All rights reserved.
 //
 
-import Dispatch
-
 public typealias LogCallbackFunction = (LogCallbackData) -> ()
 public struct LogCallback {
     fileprivate let function: LogCallbackFunction

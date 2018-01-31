@@ -18,73 +18,51 @@ public typealias SuccessCallback_f = (Authenticator, Response, String?) -> ()
 public typealias CleanupCallback_f = (Authenticator, Response) -> ()
 public typealias DataCleanupCallback_f = (Response) -> ()
 
-public protocol Response {
-    var response: Array<UInt8> { get }
-    var data: UnsafeMutableRawPointer? { get }
-    var error: String? { get }
-}
-
 func default_inital_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) -> () {
-    if let auth = auth_ {
-        if let data = data_ {
-            let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
-            if let initialCallback = authenticatorCallbacks.initialCallback_ {
-                let authenticator = Authenticator(auth: auth)
-                let response = authenticatorCallbacks.response
-                initialCallback(authenticator, response)
-            }
-        } else {
-            fatalError(FATAL_ERROR_MESSAGE)
+    if let auth = auth_, let data = data_ {
+        let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
+        if let initialCallback = authenticatorCallbacks.initialCallback_ {
+            let authenticator = Authenticator(auth: auth)
+            let response = authenticatorCallbacks.response
+            initialCallback(authenticator, response)
         }
     } else {
         fatalError(FATAL_ERROR_MESSAGE)
     }
 }
 func default_challenge_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>? = nil, _ token_length: Int = 0) -> () {
-    if let auth = auth_ {
-        if let data = data_ {
-            let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
-            if let challengeCallback = authenticatorCallbacks.challengeCallback_ {
-                let authenticator = Authenticator(auth: auth)
-                let response = authenticatorCallbacks.response
-                let token = String(ptr: token_, len: token_length)
-                challengeCallback(authenticator, response, token)
-            }
-        } else {
-            fatalError(FATAL_ERROR_MESSAGE)
+    if let auth = auth_, let data = data_ {
+        let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
+        if let challengeCallback = authenticatorCallbacks.challengeCallback_ {
+            let authenticator = Authenticator(auth: auth)
+            let response = authenticatorCallbacks.response
+            let token = String(ptr: token_, len: token_length)
+            challengeCallback(authenticator, response, token)
         }
     } else {
         fatalError(FATAL_ERROR_MESSAGE)
     }
 }
 func default_success_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>? = nil, _ token_length: Int = 0) -> () {
-    if let auth = auth_ {
-        if let data = data_ {
-            let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
-            if let successCallback = authenticatorCallbacks.successCallback_ {
-                let authenticator = Authenticator(auth: auth)
-                let response = authenticatorCallbacks.response
-                let token = String(ptr: token_, len: token_length)
-                successCallback(authenticator, response, token)
-            }
-        } else {
-            fatalError(FATAL_ERROR_MESSAGE)
+    if let auth = auth_, let data = data_ {
+        let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
+        if let successCallback = authenticatorCallbacks.successCallback_ {
+            let authenticator = Authenticator(auth: auth)
+            let response = authenticatorCallbacks.response
+            let token = String(ptr: token_, len: token_length)
+            successCallback(authenticator, response, token)
         }
     } else {
         fatalError(FATAL_ERROR_MESSAGE)
     }
 }
 func default_cleanup_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) -> () {
-    if let auth = auth_ {
-        if let data = data_ {
-            let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
-            if let cleanupCallback = authenticatorCallbacks.cleanupCallback_ {
-                let authenticator = Authenticator(auth: auth)
-                let response = authenticatorCallbacks.response
-                cleanupCallback(authenticator, response)
-            }
-        } else {
-            fatalError(FATAL_ERROR_MESSAGE)
+    if let auth = auth_, let data = data_ {
+        let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
+        if let cleanupCallback = authenticatorCallbacks.cleanupCallback_ {
+            let authenticator = Authenticator(auth: auth)
+            let response = authenticatorCallbacks.response
+            cleanupCallback(authenticator, response)
         }
     } else {
         fatalError(FATAL_ERROR_MESSAGE)

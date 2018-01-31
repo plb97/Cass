@@ -6,8 +6,17 @@
 //  Copyright © 2017 PLHB. All rights reserved.
 //
 
-public
-struct Authenticator {
+public protocol Response {
+    var response: Array<UInt8>? { get }
+    var error: String? { get }
+    var data: UnsafeMutableRawPointer? { get }
+}
+public extension Response {
+    var error: String? { return nil }
+    var data: UnsafeMutableRawPointer? { return nil }
+}
+
+public struct Authenticator {
     let auth: OpaquePointer
     init(auth: OpaquePointer) {
         self.auth = auth
@@ -28,8 +37,12 @@ struct Authenticator {
         get { return cass_authenticator_exchange_data(auth) }
         set (exchange_data) { cass_authenticator_set_exchange_data(auth, exchange_data) }
     }
-    public func setResponse(response resp_: Array<UInt8>?) -> () {
-        if let resp = resp_ {
+    public func setResponse(response: Response) {
+        if let error = response.error {
+            cass_authenticator_set_error(auth, error)
+            return
+        }
+        if let resp = response.response {
             let ptr = UnsafeMutableRawPointer(UnsafeMutablePointer<UInt8>(mutating: resp))
                 .bindMemory(to: Int8.self, capacity: resp.count)
             defer {
