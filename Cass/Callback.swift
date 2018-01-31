@@ -29,7 +29,11 @@ public struct CallbackData {
         self.future = Future(ftrp)
     }
     public func data<T>(as _: T.Type) -> T? {
-        return pointee(data_, as: T.self)
+        if let data = data_ {
+            return pointee(data, as: T.self)
+        } else {
+            return nil
+        }
     }
     public func dealloc<T>(_ : T.Type) {
         deallocPointer(data_, as: T.self)
@@ -37,7 +41,8 @@ public struct CallbackData {
     }
 }
 fileprivate func default_callback(future_: OpaquePointer?, data_: UnsafeMutableRawPointer?) -> () {
-    if let callback = data_?.bindMemory(to: Callback.self, capacity: 1).pointee {
+    if let data = data_ {
+        let callback = pointee(data, as: Callback.self)
         if let future = future_ {
             callback.function(CallbackData(future: future, ptr: data_!, data: callback.data_))
         }

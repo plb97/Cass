@@ -30,16 +30,19 @@ public struct LogCallbackData {
         self.logMessage = LogMessage(log_message)
     }
     public func data<T>(as _: T.Type) -> T? {
-        return pointee(data_, as: T.self)
+        if let data = data_ {
+            return pointee(data, as: T.self)
+        } else {
+            return nil
+        }
     }
 }
 func default_log_callback(_ log_message_: UnsafePointer<CassLogMessage>?,_ data_: UnsafeMutableRawPointer?) {
-    if let log_message = log_message_?.pointee {
-        if let callback = data_?.bindMemory(to: LogCallback.self, capacity: 1).pointee {
-            callback.function(LogCallbackData(log_message: log_message, data: callback.data_))
-        } else {
-            fatalError(FATAL_ERROR_MESSAGE)
-        }
+    if let log_message = log_message_?.pointee, let data = data_ {
+        let callback = pointee(data, as: LogCallback.self)
+        callback.function(LogCallbackData(log_message: log_message, data: callback.data_))
+    } else {
+        fatalError(FATAL_ERROR_MESSAGE)
     }
 }
 

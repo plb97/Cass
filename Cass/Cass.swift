@@ -8,46 +8,24 @@
 
 import Foundation
 
-/*
- !!! ATTENTION !!!
-
- The type T to be stored must be a trivial type. The memory at this pointer plus offset must be properly aligned for accessing T. The memory must also be uninitialized, initialized to T, or initialized to another trivial type that is layout compatible with T.
-
- A trivial type can be copied bit for bit with no indirection or reference-counting operations. Generally, native Swift types that do not contain strong or weak references or other forms of indirection are trivial, as are imported C structs and enumerations.
-
- */
-/*
- REMARQUE
- Le type 'Callback' est 'trivial' (c'est une 'struct' ne contenant que des champs simples : deux pointeurs et deux entiers)
- Dans l'exemple 'callbacks' le type 'Session' est bien trivial (c'est une class (struct) ne contenant qu'un pointeur et pour lequel il ne faut pas gerer de "reference-counting")
- Dans un cas plus complexe, il faut etre conscient que l'ARC (Automatic Reference Counting) est contourne...
- */
-func allocPointer<T>(_ p_: T?) -> UnsafeMutableRawPointer? {
-    if let p = p_ {
-        // cette approche fonctionne dans les cas testes
-        let u = UnsafeMutablePointer<T>.allocate(capacity: 1)
-            u.initialize(to: p, count: 1)
-        let ptr = u.deinitialize(count: 1)
-        //let ptr = UnsafeMutableRawPointer.allocate(bytes: MemoryLayout<T>.stride, alignedTo:MemoryLayout<T>.alignment)
-        //ptr.initializeMemory(as: type(of: p), to: p) // cree une reference sur 'p_: T?'
-        //let ptr = UnsafeMutableRawPointer.allocate(bytes: MemoryLayout<T>.stride, alignedTo:MemoryLayout<T>.alignment)
-        //ptr.storeBytes(of: p, as: T.self) // ne cree pas de reference sur 'p_: T?' mais ATTENTION peut ne pas fonctionner dans le cas general
-        //print("allocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
-        return ptr
-    }
-    return nil
+func allocPointer<T>(_ p: T, count: Int = 1) -> UnsafeMutableRawPointer {
+    let ump = UnsafeMutablePointer<T>.allocate(capacity: count)
+        ump.initialize(to: p, count: count)
+    let ptr = UnsafeMutableRawPointer(ump)
+    print("allocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(count * MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
+    return ptr
 }
-func deallocPointer<T>(_ p_: UnsafeMutableRawPointer?, as type : T) {
+func deallocPointer<T>(_ p_: UnsafeMutableRawPointer?, as _ : T.Type, count: Int = 1) {
     if let ptr = p_ {
-        //print("deallocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
-        ptr.bindMemory(to: T.self, capacity: 1)
-            .deinitialize(count: 1)
-            .deallocate(bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment) // garde la reference sur 'p_:  T?'
-        //ptr.deallocate(bytes: MemoryLayout<T>.stride, alignedTo: MemoryLayout<T>.alignment)
+        print("deallocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(count * MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
+        let ump = ptr.bindMemory(to: T.self, capacity: count)
+            ump.deinitialize(count: count)
+            ump.deallocate(capacity: count)
     }
 }
-func pointee<T>(_ p_: UnsafeMutableRawPointer?, as type : T.Type) -> T? {
-    return p_?.bindMemory(to: T.self, capacity: 1).pointee
+func pointee<T>(_ ptr: UnsafeMutableRawPointer, as _ : T.Type, count: Int = 1) -> T {
+    print("pointee<T>: T=\(T.self) ptr=\(ptr) bytes=\(count * MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
+    return ptr.bindMemory(to: T.self, capacity: count).pointee
 }
 
 public typealias Date = Foundation.Date
@@ -112,8 +90,8 @@ extension Decimal {
         bytesPointer.initializeMemory(as: UInt64.self, to: 0)
         bytesPointer.copyBytes(from: buf, count: len)
         let f = Int64(1 << (8*len))
-        let pu = bytesPointer.bindMemory(to: Int64.self, capacity: 1)
-        let u = pu.pointee  > f >> 1 ? pu.pointee - f : pu.pointee
+        let pu = pointee(bytesPointer, as: Int64.self)
+        let u = pu  > f >> 1 ? pu - f : pu
         if 0 > u {
             self.init(sign:.minus, exponent: -Int(scale), significand: Decimal(-u))
         } else {
@@ -123,12 +101,7 @@ extension Decimal {
     public var cass: (varint: UnsafePointer<UInt8>, varint_size: Int, scale: Int32) {
         let exp = Int32(self.exponent)
         let u = NSDecimalNumber(decimal: self.significand).int64Value
-        var ptr = UnsafeMutableRawPointer.allocate(bytes: 8, alignedTo: 8)
-        defer {
-            ptr.deallocate(bytes: 8, alignedTo: 8)
-        }
-        ptr.storeBytes(of: u, as: Int64.self)
-        let ia = Array(UnsafeBufferPointer(start: ptr.bindMemory(to: UInt8.self, capacity: 8), count: 8))
+        let ia = Array(UnsafeBufferPointer(start: allocPointer(u).bindMemory(to: UInt8.self, capacity: 8), count: 8))
         var varint_size = 0
         for b in ia {
             varint_size += 1
@@ -267,8 +240,8 @@ extension UUID {
             bytesPointer.deallocate(bytes: 16, alignedTo: 8)
         }
         bytesPointer.copyBytes(from: a, count: 16)
-        let pu = bytesPointer.bindMemory(to: CassUuid.self, capacity: 1)
-        return pu.pointee
+        let pu = pointee(bytesPointer, as: CassUuid.self)
+        return pu
     }
     public var time_and_version: UInt64 {
         return self.cass.time_and_version

@@ -27,7 +27,7 @@ public protocol Response {
 func default_inital_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) -> () {
     if let auth = auth_ {
         if let data = data_ {
-            let authenticatorCallbacks = data.bindMemory(to: AuthenticatorCallbacks.self, capacity: 1).pointee
+            let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
             if let initialCallback = authenticatorCallbacks.initialCallback_ {
                 let authenticator = Authenticator(auth: auth)
                 let response = authenticatorCallbacks.response
@@ -43,7 +43,7 @@ func default_inital_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPo
 func default_challenge_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>? = nil, _ token_length: Int = 0) -> () {
     if let auth = auth_ {
         if let data = data_ {
-            let authenticatorCallbacks = data.bindMemory(to: AuthenticatorCallbacks.self, capacity: 1).pointee
+            let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
             if let challengeCallback = authenticatorCallbacks.challengeCallback_ {
                 let authenticator = Authenticator(auth: auth)
                 let response = authenticatorCallbacks.response
@@ -60,7 +60,7 @@ func default_challenge_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRa
 func default_success_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>? = nil, _ token_length: Int = 0) -> () {
     if let auth = auth_ {
         if let data = data_ {
-            let authenticatorCallbacks = data.bindMemory(to: AuthenticatorCallbacks.self, capacity: 1).pointee
+            let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
             if let successCallback = authenticatorCallbacks.successCallback_ {
                 let authenticator = Authenticator(auth: auth)
                 let response = authenticatorCallbacks.response
@@ -77,7 +77,7 @@ func default_success_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawP
 func default_cleanup_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) -> () {
     if let auth = auth_ {
         if let data = data_ {
-            let authenticatorCallbacks = data.bindMemory(to: AuthenticatorCallbacks.self, capacity: 1).pointee
+            let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
             if let cleanupCallback = authenticatorCallbacks.cleanupCallback_ {
                 let authenticator = Authenticator(auth: auth)
                 let response = authenticatorCallbacks.response
@@ -95,7 +95,7 @@ func default_data_cleanup_callback(_ data_: UnsafeMutableRawPointer?) -> () {
         deallocPointer(data_, as: AuthenticatorCallbacks.self)
     }
     if let data = data_ {
-        let authenticatorCallbacks = data.bindMemory(to: AuthenticatorCallbacks.self, capacity: 1).pointee
+        let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
         if let dataCleanupCallback = authenticatorCallbacks.dataCleanupCallback_ {
             dataCleanupCallback(authenticatorCallbacks.response)
         }
