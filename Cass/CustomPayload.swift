@@ -19,10 +19,10 @@ class CustomPayload {
     deinit {
         cass_custom_payload_free(payload)
     }
-    public func set(name: String, value: Array<UInt8>) -> () {
+    public func set(name: String, value: Array<UInt8>) {
         cass_custom_payload_set(payload, name, value, value.count)
     }
-    public func remove(name: String) -> () {
+    public func remove(name: String) {
         cass_custom_payload_remove(payload, name)
     }
 }

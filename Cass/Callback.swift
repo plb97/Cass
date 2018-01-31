@@ -40,7 +40,7 @@ public struct CallbackData {
         deallocPointer(callback_ptr, as: Callback.self)
     }
 }
-fileprivate func default_callback(future_: OpaquePointer?, data_: UnsafeMutableRawPointer?) -> () {
+fileprivate func default_callback(future_: OpaquePointer?, data_: UnsafeMutableRawPointer?) {
     if let data = data_ {
         let callback = pointee(data, as: Callback.self)
         if let future = future_ {

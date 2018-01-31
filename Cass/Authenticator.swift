@@ -51,7 +51,7 @@ public struct Authenticator {
             cass_authenticator_set_response(auth, ptr, resp.count)
         }
     }
-    func setError(_ error: String) -> () {
+    func setError(_ error: String) {
         cass_authenticator_set_error(auth, error)
     }
 }

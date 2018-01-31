@@ -18,7 +18,7 @@ public typealias SuccessCallback_f = (Authenticator, Response, String?) -> ()
 public typealias CleanupCallback_f = (Authenticator, Response) -> ()
 public typealias DataCleanupCallback_f = (Response) -> ()
 
-func default_inital_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) -> () {
+func default_inital_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) {
     if let auth = auth_, let data = data_ {
         let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
         if let initialCallback = authenticatorCallbacks.initialCallback_ {
@@ -30,7 +30,7 @@ func default_inital_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPo
         fatalError(FATAL_ERROR_MESSAGE)
     }
 }
-func default_challenge_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>? = nil, _ token_length: Int = 0) -> () {
+func default_challenge_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>? = nil, _ token_length: Int = 0) {
     if let auth = auth_, let data = data_ {
         let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
         if let challengeCallback = authenticatorCallbacks.challengeCallback_ {
@@ -43,7 +43,7 @@ func default_challenge_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRa
         fatalError(FATAL_ERROR_MESSAGE)
     }
 }
-func default_success_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>? = nil, _ token_length: Int = 0) -> () {
+func default_success_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?,_ token_: UnsafePointer<Int8>? = nil, _ token_length: Int = 0) {
     if let auth = auth_, let data = data_ {
         let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
         if let successCallback = authenticatorCallbacks.successCallback_ {
@@ -56,7 +56,7 @@ func default_success_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawP
         fatalError(FATAL_ERROR_MESSAGE)
     }
 }
-func default_cleanup_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) -> () {
+func default_cleanup_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawPointer?) {
     if let auth = auth_, let data = data_ {
         let authenticatorCallbacks = pointee(data, as: AuthenticatorCallbacks.self)
         if let cleanupCallback = authenticatorCallbacks.cleanupCallback_ {
@@ -68,7 +68,7 @@ func default_cleanup_callback(_ auth_: OpaquePointer?,_ data_: UnsafeMutableRawP
         fatalError(FATAL_ERROR_MESSAGE)
     }
 }
-func default_data_cleanup_callback(_ data_: UnsafeMutableRawPointer?) -> () {
+func default_data_cleanup_callback(_ data_: UnsafeMutableRawPointer?) {
     defer {
         deallocPointer(data_, as: AuthenticatorCallbacks.self)
     }

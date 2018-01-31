@@ -25,50 +25,62 @@ public class Statement {
     }
     deinit {
     }
+    @discardableResult
     public func addKeyIndex(_ index: Int) -> Statement {
         error_code = Error(cass_statement_add_key_index(statement, index))
         return self
     }
+    @discardableResult
     public func resetParameters(_ count: Int) -> Statement {
         error_code = Error(cass_statement_reset_parameters(statement, count))
         return self
     }
+    @discardableResult
     public func setKeyspace(_ keyspace: String) -> Statement {
         error_code = Error(cass_statement_set_keyspace(statement, keyspace))
         return self
     }
+    @discardableResult
     public func setConsistency(_ consistency: Consistency) -> Statement {
         error_code = Error(cass_statement_set_consistency(statement, consistency.cass))
         return self
     }
+    @discardableResult
     func setSerialConsistency(_ consistency: SerialConsistency) -> Statement {
         error_code = Error(cass_statement_set_serial_consistency(statement, consistency.cass))
         return self
     }
+    @discardableResult
     public func setPagingSize(_ size: Int32) -> Statement {
         error_code = Error(cass_statement_set_paging_size(statement, size))
         return self
     }
+    @discardableResult
     public func setPagingState(_ result: Result) -> Statement {
         error_code = Error(cass_statement_set_paging_state(statement, result.result))
         return self
     }
+    @discardableResult
     public func setPagingState(_ token: String) -> Statement {
         error_code = Error(cass_statement_set_paging_state_token(statement, token,token.count))
         return self
     }
+    @discardableResult
     public func setTimestamp(_ timestamp: Int64) -> Statement {
         error_code = Error(cass_statement_set_timestamp(statement, timestamp))
         return self
     }
+    @discardableResult
     public func setRequestTimeoutMillis(_ timeout: UInt64) -> Statement {
         error_code = Error(cass_statement_set_request_timeout(statement, timeout))
         return self
     }
+    @discardableResult
     public func setIsIdempotent(_ idempotent: Bool) -> Statement {
         error_code = Error(cass_statement_set_is_idempotent(statement, idempotent ? cass_true : cass_false))
         return self
     }
+    @discardableResult
     public func setCustomPayload(_ payload: CustomPayload) -> Statement {
         error_code = Error(cass_statement_set_custom_payload(statement, payload.payload))
         return self

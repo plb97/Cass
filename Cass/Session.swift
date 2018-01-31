@@ -73,5 +73,10 @@ class Session {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
+    public var metrics: Metrics {
+        var metrics = CassMetrics()
+        cass_session_get_metrics(session, &metrics)
+        return Metrics(metrics)
+    }
 }
 
