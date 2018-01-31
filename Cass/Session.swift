@@ -10,11 +10,9 @@ public
 class Session {
     let session: OpaquePointer
     public init(_ session: OpaquePointer = cass_session_new()) {
-        print("init session \(session)")
         self.session = session
     }
     deinit {
-        print("deinit session \(session)")
         cass_session_free(session)
     }
     public var schemaMeta: SchemaMeta {return SchemaMeta(cass_session_get_schema_meta(session))}

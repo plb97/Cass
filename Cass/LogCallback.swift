@@ -12,7 +12,6 @@ public struct LogCallback {
     fileprivate let data_: UnsafeMutableRawPointer?
     public init<T>(function: @escaping LogCallbackFunction, data data_: T? = nil) {
         self.function = function
-        print("LogCallback init")
         self.data_ = allocPointer(data_)
     }
     public func dealloc<T>(_ log_callback_ptr: UnsafeMutableRawPointer?,as _ : T.Type) {

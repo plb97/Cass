@@ -12,19 +12,16 @@ func allocPointer<T>(_ p: T, count: Int = 1) -> UnsafeMutableRawPointer {
     let ump = UnsafeMutablePointer<T>.allocate(capacity: count)
         ump.initialize(to: p, count: count)
     let ptr = UnsafeMutableRawPointer(ump)
-    print("allocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(count * MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
     return ptr
 }
 func deallocPointer<T>(_ p_: UnsafeMutableRawPointer?, as _ : T.Type, count: Int = 1) {
     if let ptr = p_ {
-        print("deallocPointer<T>: T=\(T.self) ptr=\(ptr) bytes=\(count * MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
         let ump = ptr.bindMemory(to: T.self, capacity: count)
             ump.deinitialize(count: count)
             ump.deallocate(capacity: count)
     }
 }
 func pointee<T>(_ ptr: UnsafeMutableRawPointer, as _ : T.Type, count: Int = 1) -> T {
-    print("pointee<T>: T=\(T.self) ptr=\(ptr) bytes=\(count * MemoryLayout<T>.stride) alignedTo=\(MemoryLayout<T>.alignment)")
     return ptr.bindMemory(to: T.self, capacity: count).pointee
 }
 
@@ -113,7 +110,7 @@ extension Decimal {
         let rdec = Array(dec.reversed())
         let varint = UnsafeRawPointer(rdec).bindMemory(to: UInt8.self, capacity: varint_size)
         let scale = -exp
-        print("A revoir decimal=\(self.description) varint=\(varint) varint_size=\(varint_size) scale=\(scale)") // TODO
+        print("*** A revoir decimal=\(self.description) varint=\(varint) varint_size=\(varint_size) scale=\(scale)") // TODO
         return (varint, varint_size, scale)
     }
 }

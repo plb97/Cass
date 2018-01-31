@@ -57,7 +57,6 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
             return tuple
         } else {
             if let tuple = cass_tuple_new(array.count) {
-                print("new tuple \(tuple)")
                 let rc = set_lst(tuple, lst: array)
                 if CASS_OK == rc {
                     tuple_ = tuple
@@ -355,44 +354,3 @@ fileprivate func set_lst(_ tuple: OpaquePointer, lst: [Any?]) -> CassError {
     return rc
 }
 
-// autre approche possible...
-/*
-typealias TupleArray = Array<Any?>
-extension Array where Array.Element == Any?  {
-    public init(count: Int) {
-        self.init(repeating: nil, count: count)
-    }
-    public init(_ values: Any?...) {
-        self.init(values)
-    }
-    init(tuple: OpaquePointer) {
-        print("init Tuple \(tuple)")
-        // ATTENTION : ne pas conserver 'tuple' pour ne pas appeler 'cass_tuple_free(tuple)' dans 'deinit'
-        self.init()
-        for v in TupleIterator(tuple) {
-            self.append(v)
-        }
-    }
-    public init(dataType: DataType) {
-        self.init(tuple: cass_tuple_new_from_data_type(dataType.data_type))
-    }
-    // ATTENTION : c'est la responsabilite de l'appelant de liberer le 'tuple' avec 'cass_tuple_free(tuple)'
-    var tuple: OpaquePointer {
-        let res = cass_tuple_new(self.count)!
-        let rc = set_lst(res, lst: self)
-        if CASS_OK == rc {
-            return res
-        } else {
-            fatalError(FATAL_ERROR_MESSAGE)
-        }
-    }
-    // REMARQUE : il ne faut pas liberer le 'tuple' associe au dataType
-    public var dataType: DataType {
-        return DataType(cass_tuple_data_type(self.tuple))!
-    }
-}
-*/
-
-//extension Array: Equatable where Element: Equatable {
-//    static func ==(lhs: Array<Element>, rhs: Array<Element>) -> Bool { return false }
-//}

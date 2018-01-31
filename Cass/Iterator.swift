@@ -176,27 +176,6 @@ class Iterator {
         }
         return nil
     }
-    //var tuple: Tuple.Element {
-    //    if let val = value {
-    //        print("tuple: \(val)")
-    //        return val.anyHashable
-    //    }
-    //    return nil
-    //}
-    //var keyValueField: UserType.Element? {
-    //    if hasNext() {
-    //        if let iterator = iterator_ {
-    //            if let str = String(f: cass_iterator_get_user_type_field_name, ptr: iterator) {
-    //                if let val = Value(cass_iterator_get_user_type_field_value(iterator)) {
-    //                    return (name: str, value: val.anyHashable)
-    //                } else {
-    //                    return (name: str, value: nil)
-    //                }
-    //            }
-    //        }
-    //    }
-    //    return nil
-    //}
     var keyspaceMeta: KeyspaceMeta? {
         if hasNext() {
             return KeyspaceMeta(cass_iterator_get_keyspace_meta(iterator_!))

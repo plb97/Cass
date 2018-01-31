@@ -164,7 +164,6 @@ fileprivate func bind_lst(_ statement: OpaquePointer, lst: [Any?]) -> CassError 
             let (varint, varint_size, scale) = v.cass
             rc = cass_statement_bind_decimal(statement, idx, varint, varint_size, scale)
         case let v as UserType:
-            print("bind UserType: idx=\(idx) v=\(v)")
             rc = cass_statement_bind_user_type(statement, idx, v.cass)
         case let v as SET:
             let collection = v.cass
