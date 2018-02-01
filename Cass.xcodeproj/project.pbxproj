@@ -182,6 +182,7 @@
 				37A0B909200E08E100CB3F1C /* LogLevel.swift */,
 				37EE0B4E201B1767004808DC /* LogMessage.swift */,
 				372627EC1FED130F0064A392 /* MaterializedViewMeta.swift */,
+				372D8BE62022159D005FA38A /* Metrics.swift */,
 				37A0B8E62006440200CB3F1C /* Prepared.swift */,
 				37A0B90D200E105900CB3F1C /* ProtocolVersion.swift */,
 				373FD3A31FE94C9100B14377 /* Result.swift */,
@@ -199,7 +200,6 @@
 				37A0B8FB200D308900CB3F1C /* ValueType.swift */,
 				372627E81FECFFCC0064A392 /* Version.swift */,
 				37A0B8FF200DFCB500CB3F1C /* WriteType.swift */,
-				372D8BE62022159D005FA38A /* Metrics.swift */,
 			);
 			path = Cass;
 			sourceTree = "<group>";
