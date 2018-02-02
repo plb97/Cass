@@ -86,6 +86,7 @@
 		372628191FF5A48B0064A392 /* ErrorResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorResult.swift; sourceTree = "<group>"; };
 		372628211FF78FFD0064A392 /* AuthenticatorCallbacks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatorCallbacks.swift; sourceTree = "<group>"; };
 		372D8BE62022159D005FA38A /* Metrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metrics.swift; sourceTree = "<group>"; };
+		372D8BEC202455F6005FA38A /* NOTES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = NOTES.md; sourceTree = "<group>"; };
 		373FD39D1FE94C9100B14377 /* Batch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Batch.swift; sourceTree = "<group>"; };
 		373FD39F1FE94C9100B14377 /* Callback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Callback.swift; sourceTree = "<group>"; };
 		373FD3A01FE94C9100B14377 /* Cluster.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Cluster.swift; sourceTree = "<group>"; };
@@ -130,6 +131,7 @@
 		3708E5611FE93D7A00365543 = {
 			isa = PBXGroup;
 			children = (
+				372D8BEC202455F6005FA38A /* NOTES.md */,
 				373FD3CC1FEA798000B14377 /* LICENCE.md */,
 				373FD3CD1FEA798000B14377 /* LICENSE.md */,
 				373FD3C81FEA754B00B14377 /* README.md */,

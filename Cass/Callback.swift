@@ -8,43 +8,43 @@
 
 public typealias CallbackFunction = (CallbackData) -> ()
 public struct Callback {
-    static func setCallback(future: OpaquePointer, callback: Callback) {
-        let callback_ptr_ = allocPointer(callback)
-        cass_future_set_callback(future, default_callback, callback_ptr_)
-    }
     fileprivate let function: CallbackFunction
-    fileprivate let data_: UnsafeMutableRawPointer?
-    public init<T>(callback: @escaping CallbackFunction, data p_: T? = nil) {
+    fileprivate let data_ptr_: UnsafeMutableRawPointer?
+    private var ptr_: UnsafeMutableRawPointer?
+    public init<T>(callback: @escaping CallbackFunction, data data_: T? = nil) {
         self.function = callback
-        self.data_ = allocPointer(p_)
+        self.data_ptr_ = allocPointer(data_)
+        self.ptr_ = nil
+        ptr_ = allocPointer(self)
     }
-}
-public struct CallbackData {
-    private let callback_ptr: UnsafeMutableRawPointer
-    private let data_: UnsafeMutableRawPointer?
-    public let future: Future
-    fileprivate init(future ftrp: OpaquePointer, ptr : UnsafeMutableRawPointer, data data_: UnsafeMutableRawPointer? = nil) {
-        self.callback_ptr = ptr
-        self.data_ = data_
-        self.future = Future(ftrp)
+    func setCallback(future: OpaquePointer) {
+        cass_future_set_callback(future, default_callback, ptr_)
+    }
+    public func deallocData<T>(as: T.Type) {
+        deallocPointer(data_ptr_, as: T.self)
+        deallocPointer(ptr_, as: Callback.self)
     }
     public func data<T>(as _: T.Type) -> T? {
-        if let data = data_ {
+        if let data = data_ptr_ {
             return pointee(data, as: T.self)
         } else {
             return nil
         }
     }
-    public func dealloc<T>(_ : T.Type) {
-        deallocPointer(data_, as: T.self)
-        deallocPointer(callback_ptr, as: Callback.self)
+}
+public struct CallbackData {
+    public let callback: Callback
+    public let future: Future
+    fileprivate init(future: OpaquePointer, callback: Callback) {
+        self.callback = callback
+        self.future = Future(future)
     }
 }
 fileprivate func default_callback(future_: OpaquePointer?, data_: UnsafeMutableRawPointer?) {
     if let data = data_ {
         let callback = pointee(data, as: Callback.self)
         if let future = future_ {
-            callback.function(CallbackData(future: future, ptr: data_!, data: callback.data_))
+            callback.function(CallbackData(future: future, callback: callback))
         }
     } else {
         fatalError(FATAL_ERROR_MESSAGE)
