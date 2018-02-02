@@ -10,7 +10,6 @@ public typealias LogCallbackFunction = (LogCallbackData) -> ()
 public struct LogCallback {
     fileprivate let function: LogCallbackFunction
     fileprivate let data_ptr_: UnsafeMutableRawPointer?
-    //private lazy var ptr: UnsafeMutableRawPointer = allocPointer(self)
     private var ptr_: UnsafeMutableRawPointer?
     public init<T>(function: @escaping LogCallbackFunction, data data_: T? = nil) {
         self.function = function
@@ -19,17 +18,17 @@ public struct LogCallback {
         ptr_ = allocPointer(self)
         cass_log_set_callback(default_log_callback, ptr_!)
     }
+    public func deallocData<T>(as _ : T.Type) {
+        deallocPointer(data_ptr_, as: T.self)
+        deallocPointer(ptr_!, as: LogCallback.self)
+        cass_log_set_callback(nil, nil)
+    }
     public func data<T>(as _: T.Type) -> T? {
         if let data = data_ptr_ {
             return pointee(data, as: T.self)
         } else {
             return nil
         }
-    }
-    public func deallocData<T>(as _ : T.Type) {
-        deallocPointer(data_ptr_, as: T.self)
-        deallocPointer(ptr_!, as: LogCallback.self)
-        cass_log_set_callback(nil, nil)
     }
 }
 public struct LogCallbackData {

@@ -17,9 +17,6 @@ public struct Callback {
         self.ptr_ = nil
         ptr_ = allocPointer(self)
     }
-    func setCallback(future: OpaquePointer) {
-        cass_future_set_callback(future, default_callback, ptr_)
-    }
     public func deallocData<T>(as: T.Type) {
         deallocPointer(data_ptr_, as: T.self)
         deallocPointer(ptr_, as: Callback.self)
@@ -31,6 +28,9 @@ public struct Callback {
             return nil
         }
     }
+    func setCallback(future: OpaquePointer) {
+        cass_future_set_callback(future, default_callback, ptr_)
+    }
 }
 public struct CallbackData {
     public let callback: Callback
@@ -41,11 +41,9 @@ public struct CallbackData {
     }
 }
 fileprivate func default_callback(future_: OpaquePointer?, data_: UnsafeMutableRawPointer?) {
-    if let data = data_ {
+    if let future = future_ , let data = data_ {
         let callback = pointee(data, as: Callback.self)
-        if let future = future_ {
-            callback.function(CallbackData(future: future, callback: callback))
-        }
+        callback.function(CallbackData(future: future, callback: callback))
     } else {
         fatalError(FATAL_ERROR_MESSAGE)
     }
