@@ -8,20 +8,20 @@
 
 public struct Metrics {
     public struct Requests {
-        public let min: UInt64
-        public let max: UInt64
-        public let mean: UInt64
-        public let stddev: UInt64
-        public let median: UInt64
-        public let percentile_75th: UInt64
-        public let percentile_95th: UInt64
-        public let percentile_98th: UInt64
-        public let percentile_99th: UInt64
-        public let percentile_999th: UInt64
-        public let mean_rate: Double
-        public let one_minute_rate: Double
-        public let five_minute_rate: Double
-        public let fifteen_minute_rate: Double
+        public let min: UInt64                  // Minimum in microseconds
+        public let max: UInt64                  // Maximum in microseconds
+        public let mean: UInt64                 // Mean in microseconds
+        public let stddev: UInt64               // Standard deviation in microseconds
+        public let median: UInt64               // Median in microseconds
+        public let percentile_75th: UInt64      // 75th percentile in microseconds
+        public let percentile_95th: UInt64      // 95th percentile in microseconds
+        public let percentile_98th: UInt64      // 98th percentile in microseconds
+        public let percentile_99th: UInt64      // 99the percentile in microseconds
+        public let percentile_999th: UInt64     // 99.9th percentile in microseconds
+        public let mean_rate: Double            // Mean rate in requests per second
+        public let one_minute_rate: Double      // 1 minute rate in requests per second
+        public let five_minute_rate: Double     // 5 minute rate in requests per second
+        public let fifteen_minute_rate: Double  // 15 minute rate in requests per second
         init(min: UInt64, max: UInt64, mean: UInt64, stddev: UInt64, median: UInt64
             , percentile_75th: UInt64, percentile_95th: UInt64, percentile_98th: UInt64, percentile_99th: UInt64, percentile_999th: UInt64
             , mean_rate: Double, one_minute_rate: Double, five_minute_rate: Double, fifteen_minute_rate: Double
@@ -43,10 +43,10 @@ public struct Metrics {
         }
     }
     public struct Stats {
-        public let total_connections: UInt64
-        public let available_connections: UInt64
-        public let exceeded_pending_requests_water_mark: UInt64
-        public let exceeded_write_bytes_water_mark: UInt64
+        public let total_connections: UInt64                    // The total number of connections
+        public let available_connections: UInt64                // Deprecated
+        public let exceeded_pending_requests_water_mark: UInt64 // Deprecated
+        public let exceeded_write_bytes_water_mark: UInt64      // Deprecated
         init(total_connections: UInt64, available_connections: UInt64, exceeded_pending_requests_water_mark: UInt64, exceeded_write_bytes_water_mark: UInt64) {
             self.total_connections = total_connections
             self.available_connections = available_connections
@@ -55,9 +55,9 @@ public struct Metrics {
         }
     }
     public struct Errors {
-        public let connection_timeouts: UInt64
-        public let pending_request_timeouts: UInt64
-        public let request_timeouts: UInt64
+        public let connection_timeouts: UInt64      // Occurrences of a connection timeout
+        public let pending_request_timeouts: UInt64 //
+        public let request_timeouts: UInt64         // Occurrences of requests that timed out waiting for a connection
         init(connection_timeouts: UInt64, pending_request_timeouts: UInt64, request_timeouts: UInt64) {
             self.connection_timeouts = connection_timeouts
             self.pending_request_timeouts = pending_request_timeouts
