@@ -41,7 +41,7 @@ public struct CallbackData {
     }
 }
 fileprivate func default_callback(future_: OpaquePointer?, data_: UnsafeMutableRawPointer?) {
-    if let future = future_ , let data = data_ {
+    if let future = future_, let data = data_ {
         let callback = pointee(data, as: Callback.self)
         callback.function(CallbackData(future: future, callback: callback))
     } else {
