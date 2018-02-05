@@ -266,6 +266,9 @@ public enum Error: CustomStringConvertible {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
+    public var ok: Bool {
+        return .ok == self
+    }
     @discardableResult
     public func check(checker: ((_ err: Error) -> Bool) = default_checker) -> Bool {
         return checker(self)

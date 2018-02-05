@@ -18,6 +18,9 @@ class Batch {
     deinit {
         cass_batch_free(batch)
     }
+    public var ok: Bool {
+        return .ok == error_code
+    }
     @discardableResult
     public func check(checker: ((_ err: Error) -> Bool) = default_checker) -> Bool {
         return error_code.check(checker: checker)

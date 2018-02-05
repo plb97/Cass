@@ -43,6 +43,12 @@ class Future {
     var errorResult: ErrorResult {
        return ErrorResult(cass_future_get_error_result(future))
     }
+    public var errorMessage: String {
+        if nil == error_message_ {
+            error_message_ = .ok == errorCode ? "" : future_error_message(future)
+        }
+        return error_message_!
+    }
     public var errorCode: Error {
         if .ok == error_code {
             let rc = cass_future_error_code(future)
@@ -50,11 +56,8 @@ class Future {
         }
         return error_code
     }
-    public var errorMessage: String {
-        if nil == error_message_ {
-            error_message_ = .ok == errorCode ? "" : future_error_message(future)
-        }
-        return error_message_!
+    public var ok: Bool {
+        return .ok == error_code
     }
     @discardableResult
     public func check(checker: ((_ err: Error) -> Bool) = default_checker) -> Bool {

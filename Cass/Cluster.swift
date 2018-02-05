@@ -31,8 +31,8 @@ public class Cluster {
         return self
     }
     @discardableResult
-    func setSsl(_ ssl: OpaquePointer?) -> Cluster {
-         cass_cluster_set_ssl(cluster, ssl)
+    public func setSsl(_ ssl: Ssl) -> Cluster {
+         cass_cluster_set_ssl(cluster, ssl.cass)
          return self
     }
     @discardableResult
