@@ -5,14 +5,17 @@
 ### Informations utiles
 
 [Markdown](https://learnxinyminutes.com/docs/fr-fr/markdown/)
+
 [Configuring Java CAPS for SSL Support](https://docs.oracle.com/cd/E19509-01/820-3503/jcapsconfssls_intro/index.html)
+
 [Datastax configuration SSL](https://docs.datastax.com/en/developer/cpp-driver/2.8/topics/security/ssl/)
+
 
 ### Création du conteneur Docker Cassandra avec SSL
 
     CONTENEUR=cassandra
 
-    // installer le containeur cassandra
+    // installer le conteneur cassandra
     docker run --name ${CONTENEUR} -p 7000:7000 -p7001:7001 -p7199:7199 -p9042:9042 -p9160:9160 cassandra:latest -d
     docker logs ${CONTENEUR} > ${CONTENEUR}_install.log
 
@@ -21,7 +24,7 @@
         // Changements utiles pour les exemples autres que 'ssl'
         // sauvegarder la configuration
         cp -v /etc/cassandra/cassandra.yaml /etc/cassandra/cassandra.yaml.origin
-        // autoriser les procedures stockées utilisateurs (facultatif)
+        // autoriser les procedures stockees utilisateurs (facultatif)
         cat /etc/cassandra/cassandra.yaml|grep "^enable_user_defined_functions:"
         sed -i -e "s/^enable_user_defined_functions: false/enable_user_defined_functions: true #false/g" /etc/cassandra/cassandra.yaml
         cat /etc/cassandra/cassandra.yaml|grep "^enable_user_defined_functions:"
@@ -81,7 +84,7 @@
         keytool -importkeystore -srckeystore ${USER_KEYSTORE} -srcstorepass ${USER_PASSWORD} -destkeystore ${USER_ALIAS}.p12 -deststoretype PKCS12 -deststorepass ${USER_PASSWORD}
         // certificat client seul
         openssl pkcs12 -in ${USER_ALIAS}.p12 -nokeys -out ${USER_ALIAS}.cer.pem -passin pass:${USER_PASSWORD}
-        // cle privee clien seulz
+        // cle privee client seule
         openssl pkcs12 -in ${USER_ALIAS}.p12 -nodes -nocerts -out ${USER_ALIAS}.key.pem -passin pass:${USER_PASSWORD}
 
         // sortir du conteneur
