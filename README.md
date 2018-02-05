@@ -7,9 +7,18 @@ Première tentative **expérimentale** pour utiliser avec le langage **Swift** (
 ## intallation du pilote
 
 ### informations
-    https://docs.datastax.com/en/developer/cpp-driver/
-    git clone https://github.com/datastax/cpp-driver.git
+   [cpp-driver]( https://docs.datastax.com/en/developer/cpp-driver/)
 
+### préparation
+    git clone https://github.com/datastax/cpp-driver.git
+    brew update
+    brew upgrade
+    brew install autoconf automake cmake libtool
+    brew install libuv
+    brew install openssl
+    brew link --force openssl
+
+### construction
     cd cpp-driver
     mkdir build
     pushd build
