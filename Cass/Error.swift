@@ -8,10 +8,21 @@
 
 let FATAL_ERROR_MESSAGE = "Ne devrait pas arriver"
 
-func default_checker(_ err: Error) -> Bool {
+public typealias Checker = (Error) -> Bool
+public func okChecker(_ err: Error) -> Bool {
+    return .ok == err
+}
+public func okPrintChecker(_ err: Error) -> Bool {
     if .ok != err {
-        print(err)
-        fatalError(err.description)
+        print("*** Error: \(err)")
+        return false
+    }
+    return true
+}
+public func fatalChecker(_ err: Error) -> Bool {
+    if .ok != err {
+        print("*** Error: \(err)")
+        fatalError("*** Error: \(err)")
     }
     return true
 }
@@ -79,69 +90,18 @@ public enum Error: CustomStringConvertible {
         self = Error.fromCass(cass)
     }
     public var description: String {
-        switch self {
-        case .ok: return "CASS_OK"
-        case .libBadParams: return "CASS_ERROR_LIB_BAD_PARAMS"
-        case .LibNoStreams: return "CASS_ERROR_LIB_NO_STREAMS"
-        case .LibUnableToInit: return "CASS_ERROR_LIB_UNABLE_TO_INIT"
-        case .LibMessageEncode: return "CASS_ERROR_LIB_MESSAGE_ENCODE"
-        case .LibHostResolution: return "CASS_ERROR_LIB_HOST_RESOLUTION"
-        case .LibUnexpectedResponse: return "CASS_ERROR_LIB_UNEXPECTED_RESPONSE"
-        case .LibRequestQueueFull: return "CASS_ERROR_LIB_REQUEST_QUEUE_FULL"
-        case .LibNoAvailableIoThread: return "CASS_ERROR_LIB_NO_AVAILABLE_IO_THREAD"
-        case .LibWriteError: return "CASS_ERROR_LIB_WRITE_ERROR"
-        case .LibNoHostsAvailable: return "CASS_ERROR_LIB_NO_HOSTS_AVAILABLE"
-        case .LibIndexOutOfBounds: return "CASS_ERROR_LIB_INDEX_OUT_OF_BOUNDS"
-        case .LibInvalidItemCount: return "CASS_ERROR_LIB_INVALID_ITEM_COUNT"
-        case .LibInvalidValueType: return "CASS_ERROR_LIB_INVALID_VALUE_TYPE"
-        case .LibRequestTimedOut: return "CASS_ERROR_LIB_REQUEST_TIMED_OUT"
-        case .LibUnableToSetKeyspace: return "CASS_ERROR_LIB_UNABLE_TO_SET_KEYSPACE"
-        case .LibCallbackAlreadySet: return "CASS_ERROR_LIB_CALLBACK_ALREADY_SET"
-        case .LibInvalidStatementType: return "CASS_ERROR_LIB_INVALID_STATEMENT_TYPE"
-        case .LibNameDoesNotExist: return "CASS_ERROR_LIB_NAME_DOES_NOT_EXIST"
-        case .LibUnableToDetermineProtocol: return "CASS_ERROR_LIB_UNABLE_TO_DETERMINE_PROTOCOL"
-        case .LibNullValue: return "CASS_ERROR_LIB_NULL_VALUE"
-        case .LibNotImplemented: return "CASS_ERROR_LIB_NOT_IMPLEMENTED"
-        case .LibUnableToConnect: return "CASS_ERROR_LIB_UNABLE_TO_CONNECT"
-        case .LibUnableToClose: return "CASS_ERROR_LIB_UNABLE_TO_CLOSE"
-        case .LibNoPagingState: return "CASS_ERROR_LIB_NO_PAGING_STATE"
-        case .LibParameterUnset: return "CASS_ERROR_LIB_PARAMETER_UNSET"
-        case .LibInvalidErrorResultType: return "CASS_ERROR_LIB_INVALID_ERROR_RESULT_TYPE"
-        case .LibInvalidFutureType: return "CASS_ERROR_LIB_INVALID_FUTURE_TYPE"
-        case .LibInternalError: return "CASS_ERROR_LIB_INTERNAL_ERROR"
-        case .LibInvalidCustomType: return "CASS_ERROR_LIB_INVALID_CUSTOM_TYPE"
-        case .LibInvalidData: return "CASS_ERROR_LIB_INVALID_DATA"
-        case .LibNotEnoughData: return "CASS_ERROR_LIB_NOT_ENOUGH_DATA"
-        case .LibInvalidState: return "CASS_ERROR_LIB_INVALID_STATE"
-        case .LibNoCustomPayload: return "CASS_ERROR_LIB_NO_CUSTOM_PAYLOAD"
-        case .ServerServerError: return "CASS_ERROR_SERVER_SERVER_ERROR"
-        case .ServerProtocolError: return "CASS_ERROR_SERVER_PROTOCOL_ERROR"
-        case .ServerBadCredentials: return "CASS_ERROR_SERVER_BAD_CREDENTIALS"
-        case .ServerUnavailable: return "CASS_ERROR_SERVER_UNAVAILABLE"
-        case .ServerOverloaded: return "CASS_ERROR_SERVER_OVERLOADED"
-        case .ServerIsBootstrapping: return "CASS_ERROR_SERVER_IS_BOOTSTRAPPING"
-        case .ServerTruncateError: return "CASS_ERROR_SERVER_TRUNCATE_ERROR"
-        case .ServerWriteTimeout: return "CASS_ERROR_SERVER_WRITE_TIMEOUT"
-        case .ServerReadTimeout: return "CASS_ERROR_SERVER_READ_TIMEOUT"
-        case .ServerReadFailure: return "CASS_ERROR_SERVER_READ_FAILURE"
-        case .ServerFunctionFailure: return "CASS_ERROR_SERVER_FUNCTION_FAILURE"
-        case .ServerWriteFailure: return "CASS_ERROR_SERVER_WRITE_FAILURE"
-        case .ServerSyntaxError: return "CASS_ERROR_SERVER_SYNTAX_ERROR"
-        case .ServerUnauthorized: return "CASS_ERROR_SERVER_UNAUTHORIZED"
-        case .ServerInvalidQuery: return "CASS_ERROR_SERVER_INVALID_QUERY"
-        case .ServerConfigError: return "CASS_ERROR_SERVER_CONFIG_ERROR"
-        case .ServerAlreadyExists: return "CASS_ERROR_SERVER_ALREADY_EXISTS"
-        case .ServerUnprepared: return "CASS_ERROR_SERVER_UNPREPARED"
-        case .SslInvalidCert: return "CASS_ERROR_SSL_INVALID_CERT"
-        case .SslInvalidPrivateKey: return "CASS_ERROR_SSL_INVALID_PRIVATE_KEY"
-        case .SslNoPeerCert: return "CASS_ERROR_SSL_NO_PEER_CERT"
-        case .SslInvalidPeerCert: return "CASS_ERROR_SSL_INVALID_PEER_CERT"
-        case .SslIdentityMismatch: return "CASS_ERROR_SSL_IDENTITY_MISMATCH"
-        case .SslProtocolError: return "CASS_ERROR_SSL_PROTOCOL_ERROR"
+        let cass = Error.toCass(self)
+        if let desc = String(validatingUTF8: cass_error_desc(cass)) {
+            return "code=\(cass.rawValue) desc=\(desc)"
+        } else {
+            return "code=\(cass.rawValue) desc=\(cass)"
         }
     }
     var cass: CassError {
-        switch self {
+        return Error.toCass(self)
+    }
+    private static func toCass(_ err: Error) -> CassError {
+        switch err {
         case .ok: return CASS_OK
         case .libBadParams: return CASS_ERROR_LIB_BAD_PARAMS
         case .LibNoStreams: return CASS_ERROR_LIB_NO_STREAMS
@@ -266,11 +226,8 @@ public enum Error: CustomStringConvertible {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
-    public var ok: Bool {
-        return .ok == self
-    }
     @discardableResult
-    public func check(checker: ((_ err: Error) -> Bool) = default_checker) -> Bool {
+    public func check(checker: Checker = fatalChecker) -> Bool {
         return checker(self)
     }
 }

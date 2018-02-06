@@ -8,6 +8,7 @@
 
 public class DataType {
     var error_code: Error
+    var checker: Checker
     /*
     public struct SubTypeCollection: Collection {
         let dataType: DataType
@@ -68,6 +69,7 @@ public class DataType {
        if let data_type = data_type_ {
             must_be_freed = false
             self.data_type = data_type
+            self.checker = fatalChecker
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
             //return nil
@@ -78,6 +80,7 @@ public class DataType {
         if let data_type = cass_data_type_new_from_existing(type.data_type) {
             must_be_freed = true
             self.data_type = data_type
+            self.checker = fatalChecker
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
             //return nil
@@ -88,6 +91,7 @@ public class DataType {
         if let data_type = cass_data_type_new_tuple(itemCount) {
             must_be_freed = true
             self.data_type = data_type
+            self.checker = fatalChecker
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
             //return nil
@@ -98,6 +102,7 @@ public class DataType {
         if let data_type = cass_data_type_new_udt(itemCount) {
             must_be_freed = true
             self.data_type = data_type
+            self.checker = fatalChecker
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
             //return nil
@@ -107,6 +112,15 @@ public class DataType {
         if must_be_freed {
             cass_data_type_free(data_type)
         }
+    }
+    @discardableResult
+    public func setChecker(_ checker: @escaping Checker = fatalChecker) -> Self {
+        self.checker = checker
+        return self
+    }
+    @discardableResult
+    public func check() -> Bool {
+        return error_code.check(checker: checker)
     }
     public var type: ValueType {
         return ValueType(cass_data_type_type(data_type))
@@ -156,19 +170,19 @@ public class DataType {
     public func subTypeName(index: Int) -> String {
         return String(function: cass_data_type_sub_type_name, ptr: data_type, index: index)!
     }
-    public func addSubType(_ subDataType: DataType) -> DataType {
+    public func addSubType(_ subDataType: DataType) -> Self {
         error_code = Error(cass_data_type_add_sub_type(data_type, subDataType.data_type))
         return self
     }
-    public func addSubType(name: String,_ subDataType: DataType) -> DataType {
+    public func addSubType(name: String,_ subDataType: DataType) -> Self {
         error_code = Error(cass_data_type_add_sub_type_by_name(data_type, name, subDataType.data_type))
         return self
     }
-    func addSubValueType(_ subValueType: CassValueType) -> DataType {
+    func addSubValueType(_ subValueType: CassValueType) -> Self {
         error_code = Error(cass_data_type_add_sub_value_type(data_type, subValueType))
         return self
     }
-    func addSubValueType(name: String,_ subValueType: CassValueType) -> DataType {
+    func addSubValueType(name: String,_ subValueType: CassValueType) -> Self {
         error_code = Error(cass_data_type_add_sub_value_type_by_name(data_type, name, subValueType))
         return self
     }

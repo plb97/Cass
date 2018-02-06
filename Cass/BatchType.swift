@@ -6,14 +6,6 @@
 //  Copyright © 2018 PLHB. All rights reserved.
 //
 
-//
-//  BatchType.swift
-//  Cass
-//
-//  Created by Philippe on 16/01/2018.
-//  Copyright © 2018 PLHB. All rights reserved.
-//
-
 public enum BatchType: CustomStringConvertible {
     case logged
     case unlogged

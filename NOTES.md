@@ -4,12 +4,9 @@
 
 ### Informations utiles
 
-[Markdown](https://learnxinyminutes.com/docs/fr-fr/markdown/)
-
-[Configuring Java CAPS for SSL Support](https://docs.oracle.com/cd/E19509-01/820-3503/jcapsconfssls_intro/index.html)
-
-[Datastax configuration SSL](https://docs.datastax.com/en/developer/cpp-driver/2.8/topics/security/ssl/)
-
+*[Markdown](https://learnxinyminutes.com/docs/fr-fr/markdown/)
+*[Configuring Java CAPS for SSL Support](https://docs.oracle.com/cd/E19509-01/820-3503/jcapsconfssls_intro/index.html)
+*[Datastax configuration SSL](https://docs.datastax.com/en/developer/cpp-driver/2.8/topics/security/ssl/)
 
 ### Création du conteneur Docker Cassandra avec SSL
 
@@ -43,7 +40,7 @@
     // faire une copie du conteneur
     docker commit ${CONTENEUR} ${CONTENEUR_SSL}
     // lancer le nouveau conteneur
-    docker run --name ${CONTENEUR_SSL} -p 7000:7000 -p7001:7001 -p7199:7199 -p9042:9042 -p9160:9160 -d ${CONTENEUR_SSL}
+    docker run --name ${CONTENEUR_SSL} -p 7000:7000 -p7001:7001 -p7199:7199 -p9042:9042 -p9160:9160 ${CONTENEUR_SSL} -d
     docker logs ${CONTENEUR_SSL} > ${CONTENEUR_SSL}_install.log
 
     // entrer dans le conteneur

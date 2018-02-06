@@ -9,10 +9,12 @@
 public class Ssl {
     let ssl: OpaquePointer
     var error_code: Error
+    var checker: Checker
     public init() {
         if let ssl = cass_ssl_new() {
             self.ssl = ssl
             error_code = Error()
+            self.checker = fatalChecker
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
         }
@@ -20,12 +22,14 @@ public class Ssl {
     deinit {
         cass_ssl_free(ssl)
     }
-    public var ok: Bool {
-        return .ok == error_code
+    @discardableResult
+    public func setChecker(_ checker: @escaping Checker = fatalChecker) -> Self {
+        self.checker = checker
+        return self
     }
     @discardableResult
-    public func check(checker: ((_ err: Error) -> Bool) = default_checker) -> Bool {
-        return error_code.check(checker:checker)
+    public func check() -> Bool {
+        return error_code.check(checker: checker)
     }
     @discardableResult
     public func setVerifyFlags(_ verif: SslVerifyFlags...) -> Ssl {

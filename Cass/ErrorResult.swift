@@ -44,7 +44,7 @@ public class ErrorResult {
     public var function: String? {
         return String(function: cass_error_result_function, ptr: error_result)
     }
-    public var argTypes: Int {
+    public var numArgTypes: Int {
         return cass_error_num_arg_types(error_result)
     }
     public func argType(index: Int) -> String? {

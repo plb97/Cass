@@ -15,15 +15,26 @@ public typealias MAP = Dictionary<AnyHashable, Any?>
 public class Statement {
     let statement: OpaquePointer
     var error_code: Error
+    var checker: Checker
     fileprivate init(_ statement_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let statement = statement_ {
-        self.statement = statement
+            self.statement = statement
         } else {
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
     deinit {
+    }
+    @discardableResult
+    public func setChecker(_ checker: @escaping Checker = fatalChecker) -> Self {
+        self.checker = checker
+        return self
+    }
+    @discardableResult
+    public func check() -> Bool {
+        return error_code.check(checker: checker)
     }
     @discardableResult
     public func addKeyIndex(_ index: Int) -> Statement {

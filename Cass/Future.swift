@@ -18,13 +18,23 @@ public
 class Future {
     let future: OpaquePointer
     fileprivate var error_code: Error
-    fileprivate var error_message_: String?
+    fileprivate var checker: Checker
     init(_ future: OpaquePointer) {
+        error_code = Error(cass_future_error_code(future))
         self.future = future
-        error_code = Error()
+        self.checker = fatalChecker
     }
     deinit {
         cass_future_free(future)
+    }
+    @discardableResult
+    public func setChecker(_ checker: @escaping Checker = fatalChecker) -> Self {
+        self.checker = checker
+        return self
+    }
+    @discardableResult
+    public func check() -> Bool {
+        return error_code.check(checker: checker)
     }
     public var ready: Bool {
         return cass_true == cass_future_ready(future)
@@ -39,29 +49,15 @@ class Future {
         return wait(micros: sec * 1_000_000)
     }
 
-    //public
-    var errorResult: ErrorResult {
+    public var errorResult: ErrorResult {
        return ErrorResult(cass_future_get_error_result(future))
     }
     public var errorMessage: String {
-        if nil == error_message_ {
-            error_message_ = .ok == errorCode ? "" : future_error_message(future)
-        }
-        return error_message_!
-    }
-    public var errorCode: Error {
         if .ok == error_code {
-            let rc = cass_future_error_code(future)
-            error_code = Error(rc)
+            return ""
+        } else {
+            return String(future_error_message(future))
         }
-        return error_code
-    }
-    public var ok: Bool {
-        return .ok == error_code
-    }
-    @discardableResult
-    public func check(checker: ((_ err: Error) -> Bool) = default_checker) -> Bool {
-        return errorCode.check(checker:checker)
     }
     public var prepared: Prepared {
         if let prepared = cass_future_get_prepared(future) {
@@ -75,7 +71,7 @@ class Future {
         return self
     }
     public var result: Result {
-        return Result(future)
+        return Result(self)
     }
     /*
      public var customPayloadItemCount: Int {

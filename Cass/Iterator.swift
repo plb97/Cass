@@ -9,8 +9,10 @@
 public
 class Iterator {
     var error_code: Error
+    var checker: Checker
     let iterator_: OpaquePointer?
     fileprivate init(rowsFromResult meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_from_result(meta)
@@ -19,6 +21,7 @@ class Iterator {
         }
     }
     fileprivate init(valuesFromCollection meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_from_collection(meta)
@@ -27,6 +30,7 @@ class Iterator {
         }
     }
     //fileprivate init(valuesFromTuple tuple_: OpaquePointer?) {
+    //    self.checker = fatalChecker
     //    error_code = Error()
     //    if let tuple = tuple_ {
     //        iterator_ = cass_iterator_from_tuple(tuple)
@@ -35,6 +39,7 @@ class Iterator {
     //    }
     //}
     //fileprivate init(fieldsFromUserType user_type_: OpaquePointer?) {
+    //    self.checker = fatalChecker
     //    error_code = Error()
     //    if let user_type = user_type_ {
     //        iterator_ = cass_iterator_fields_from_user_type(user_type)
@@ -43,6 +48,7 @@ class Iterator {
     //    }
     //}
     fileprivate init(itemsFromMap meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_from_map(meta)
@@ -51,6 +57,7 @@ class Iterator {
         }
     }
     fileprivate init(fieldsFromKeyspaceMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_fields_from_keyspace_meta(meta )
@@ -59,6 +66,7 @@ class Iterator {
         }
     }
     fileprivate init(fieldsFromAggregateMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_fields_from_aggregate_meta(meta)
@@ -67,6 +75,7 @@ class Iterator {
         }
     }
     fileprivate init(fieldsFromTableMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_fields_from_table_meta(meta)
@@ -75,6 +84,7 @@ class Iterator {
         }
     }
     fileprivate init(fieldsFromFunctionMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_fields_from_function_meta(meta)
@@ -83,6 +93,7 @@ class Iterator {
         }
     }
     fileprivate init(fieldsFromColumnMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_fields_from_column_meta(meta)
@@ -91,6 +102,7 @@ class Iterator {
         }
     }
     fileprivate init(tablesFromKeyspaceMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_tables_from_keyspace_meta(meta)
@@ -99,6 +111,7 @@ class Iterator {
         }
     }
     fileprivate init(functionsFromKeyspaceMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_functions_from_keyspace_meta(meta)
@@ -107,6 +120,7 @@ class Iterator {
         }
     }
     fileprivate init(aggregatesFromKeyspaceMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_aggregates_from_keyspace_meta(meta)
@@ -115,6 +129,7 @@ class Iterator {
         }
     }
     fileprivate init(columnsFromTableMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_columns_from_table_meta(meta)
@@ -123,6 +138,7 @@ class Iterator {
         }
     }
     fileprivate init(indexesFromTableMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_indexes_from_table_meta(meta)
@@ -131,6 +147,7 @@ class Iterator {
         }
     }
     fileprivate init(materializedViewsFromTableMeta meta_: OpaquePointer?) {
+        self.checker = fatalChecker
         error_code = Error()
         if let meta = meta_ {
             iterator_ = cass_iterator_materialized_views_from_table_meta(meta)
@@ -142,6 +159,15 @@ class Iterator {
         if let iterator = iterator_ {
             cass_iterator_free(iterator)
         }
+    }
+    @discardableResult
+    public func setChecker(_ checker: @escaping Checker = fatalChecker) -> Self {
+        self.checker = checker
+        return self
+    }
+    @discardableResult
+    public func check() -> Bool {
+        return error_code.check(checker: checker)
     }
     func hasNext() -> Bool {
         if let iterator = iterator_ {

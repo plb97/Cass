@@ -8,6 +8,7 @@
 public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
     public typealias Element = Any?
     var error_code: Error
+    var checker: Checker
     var array: Array<Element>
     var tuple_: OpaquePointer?
     private static func toArray(tuple: OpaquePointer) -> Array<Tuple.Element> {
@@ -22,21 +23,25 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
         return array
     }
     public init(count: Int) {
+        self.checker = fatalChecker
         error_code = Error()
         self.array = Array(repeating: nil, count: count)
     }
     public init(_ values: Element...) {
         error_code = Error()
+        self.checker = fatalChecker
         self.array = Array(values)
     }
     init(cass tuple: OpaquePointer) {
         // ATTENTION : ne pas conserver 'tuple' pour ne pas appeler 'cass_tuple_free' dans 'deinit'
         error_code = Error()
+        self.checker = fatalChecker
         self.array = Tuple.toArray(tuple: tuple)
     }
     init(dataType: DataType) {
         // ATTENTION : il faut conserver 'tuple' pour appeler 'cass_tuple_free' dans 'deinit'
         error_code = Error()
+        self.checker = fatalChecker
         if let tuple = cass_tuple_new_from_data_type(dataType.data_type) {
             self.tuple_ = tuple
             self.array = Tuple.toArray(tuple: tuple)
@@ -48,6 +53,15 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
         if let tuple = tuple_ {
             cass_tuple_free(tuple)
         }
+    }
+    @discardableResult
+    public func setChecker(_ checker: @escaping Checker = fatalChecker) -> Self {
+        self.checker = checker
+        return self
+    }
+    @discardableResult
+    public func check() -> Bool {
+        return error_code.check(checker: checker)
     }
     public var description: String {
         return "tuple\(String(describing: tuple_)) \(array.description)"
@@ -119,98 +133,98 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
 
 
     @discardableResult
-    private func setNull(_ index: Int) -> Tuple {
+    private func setNull(_ index: Int) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_null(tuple, index))
         }
         return self
     }
     @discardableResult
-    private func setInt8(_ index: Int, value: Int8) -> Tuple {
+    private func setInt8(_ index: Int, value: Int8) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_int8(tuple, index, value))
         }
         return self
     }
     @discardableResult
-    private func setInt16(_ index: Int, value: Int16) -> Tuple {
+    private func setInt16(_ index: Int, value: Int16) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_int16(tuple, index, value))
         }
         return self
     }
     @discardableResult
-    private func setInt32(_ index: Int, value: Int32) -> Tuple {
+    private func setInt32(_ index: Int, value: Int32) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_int32(tuple, index, value))
         }
         return self
     }
     @discardableResult
-    private func setUInt32(_ index: Int, value: UInt32) -> Tuple {
+    private func setUInt32(_ index: Int, value: UInt32) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_uint32(tuple, index, value))
         }
         return self
     }
     @discardableResult
-    private func setInt64(_ index: Int, value: Int64) -> Tuple {
+    private func setInt64(_ index: Int, value: Int64) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_int64(tuple, index, value))
         }
         return self
     }
     @discardableResult
-    private func setFloat(_ index: Int, value: Float) -> Tuple {
+    private func setFloat(_ index: Int, value: Float) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_float(tuple, index, value))
         }
         return self
     }
     @discardableResult
-    private func setDouble(_ index: Int, value: Double) -> Tuple {
+    private func setDouble(_ index: Int, value: Double) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_double(tuple, index, value))
         }
         return self
     }
     @discardableResult
-    private func setBool(_ index: Int, value: Bool) -> Tuple {
+    private func setBool(_ index: Int, value: Bool) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_bool(tuple, index, value ? cass_true : cass_false))
         }
         return self
     }
     @discardableResult
-    private func setString(_ index: Int, value: String) -> Tuple {
+    private func setString(_ index: Int, value: String) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_string(tuple, index, value))
         }
         return self
     }
     @discardableResult
-    private func setBytes(_ index: Int, value: BLOB) -> Tuple {
+    private func setBytes(_ index: Int, value: BLOB) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_bytes(tuple, index, value.array, value.array.count))
         }
         return self
     }
     @discardableResult
-    private func setUuid(_ index: Int, value: UUID) -> Tuple {
+    private func setUuid(_ index: Int, value: UUID) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_uuid(tuple, index, value.cass))
         }
         return self
     }
     @discardableResult
-    private func setInet(_ index: Int, value: Inet) -> Tuple {
+    private func setInet(_ index: Int, value: Inet) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_inet(tuple, index, value.cass))
         }
         return self
     }
     @discardableResult
-    private func setDecimal(_ index: Int, value: Decimal) -> Tuple {
+    private func setDecimal(_ index: Int, value: Decimal) -> Self {
         if let tuple = tuple_ {
             let (varint, varint_size, scale) = value.cass
             error_code = Error(cass_tuple_set_decimal(tuple, index, varint, varint_size, scale))
@@ -218,28 +232,28 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
         return self
     }
     @discardableResult
-    private func setDuration(_ index: Int, value: Duration) -> Tuple {
+    private func setDuration(_ index: Int, value: Duration) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_duration(tuple, index, value.months, value.days, value.nanos))
         }
         return self
     }
     @discardableResult
-    private func setTuple(_ index: Int, value: Tuple) -> Tuple {
+    private func setTuple(_ index: Int, value: Tuple) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_tuple(tuple, index, value.cass))
         }
         return self
     }
     @discardableResult
-    private func setUserType(_ index: Int, value: UserType) -> Tuple {
+    private func setUserType(_ index: Int, value: UserType) -> Self {
         if let tuple = tuple_ {
             error_code = Error(cass_tuple_set_user_type(tuple, index, value.cass))
         }
         return self
     }
     @discardableResult
-    private func setCollection(_ index: Int,_ value: LIST) -> Tuple {
+    private func setCollection(_ index: Int,_ value: LIST) -> Self {
         if let tuple = tuple_ {
             let collection = value.cass
             defer {
@@ -250,7 +264,7 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
         return self
     }
     @discardableResult
-    private func setCollection(_ index: Int,_ value: SET) -> Tuple {
+    private func setCollection(_ index: Int,_ value: SET) -> Self {
         if let tuple = tuple_ {
             let collection = value.cass
             defer {
@@ -261,7 +275,7 @@ public class Tuple: MutableCollection, Hashable, CustomStringConvertible {
         return self
     }
     @discardableResult
-    private func setCollection(_ index: Int,_ value: MAP) -> Tuple {
+    private func setCollection(_ index: Int,_ value: MAP) -> Self {
         if let tuple = tuple_ {
             let collection = value.cass
             defer {

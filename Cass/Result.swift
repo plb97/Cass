@@ -9,10 +9,11 @@
 public
 class Result {
     let result: OpaquePointer
-    init(_ future: OpaquePointer) {
-        if let rs = cass_future_get_result(future) {
+    init(_ future: Future) {
+        if let rs = cass_future_get_result(future.future) {
             result = rs
         } else {
+            print("=== \(future.errorMessage)")
             fatalError(FATAL_ERROR_MESSAGE)
         }
     }
@@ -39,6 +40,7 @@ class Result {
     public var rows: ResultIterator {
         return ResultIterator(result)
     }
+
 }
 
 
