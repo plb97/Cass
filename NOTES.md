@@ -39,11 +39,11 @@
 
     // faire une copie du conteneur
     docker commit ${CONTENEUR} ${CONTENEUR_SSL}
-    // lancer le nouveau conteneur
+    // lancer le nouveau conteneur SSL
     docker run --name ${CONTENEUR_SSL} -p 7000:7000 -p7001:7001 -p7199:7199 -p9042:9042 -p9160:9160 ${CONTENEUR_SSL} -d
     docker logs ${CONTENEUR_SSL} > ${CONTENEUR_SSL}_install.log
 
-    // entrer dans le conteneur
+    // entrer dans le conteneur SSL
     docker exec -t -i ${CONTENEUR_SSL} /bin/bash
         ALIAS=cassandra
         PASSWORD=cassandra
@@ -84,10 +84,10 @@
         // cle privee client seule
         openssl pkcs12 -in ${USER_ALIAS}.p12 -nodes -nocerts -out ${USER_ALIAS}.key.pem -passin pass:${USER_PASSWORD}
 
-        // sortir du conteneur
+        // sortir du conteneur SSL
         exit
 
-    // arreter le conteneur
+    // arreter le conteneur SSL
     docker stop ${CONTENEUR_SSL}
     // copier en local le fichier de configuration
     docker cp ${CONTENEUR_SSL}:/etc/cassandra/cassandra.yaml .
@@ -122,8 +122,8 @@
             # cipher_suites: [TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]
         ...
 
-    // recopier le fichier de configutation local dans le conteneur
+    // recopier le fichier de configutation local dans le conteneur SSL
     docker cp cassandra.yaml ${CONTENEUR_SSL}:/etc/cassandra
 
-    // redemarrer le conteneur
+    // redemarrer le conteneur SSL
     docker restart ${CONTENEUR_SSL}
