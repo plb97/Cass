@@ -4,9 +4,9 @@
 
 ### Informations utiles
 
-*[Markdown](https://learnxinyminutes.com/docs/fr-fr/markdown/)
-*[Configuring Java CAPS for SSL Support](https://docs.oracle.com/cd/E19509-01/820-3503/jcapsconfssls_intro/index.html)
-*[Datastax configuration SSL](https://docs.datastax.com/en/developer/cpp-driver/2.8/topics/security/ssl/)
+* [Markdown](https://learnxinyminutes.com/docs/fr-fr/markdown/)
+* [Configuring Java CAPS for SSL Support](https://docs.oracle.com/cd/E19509-01/820-3503/jcapsconfssls_intro/index.html)
+* [Datastax configuration SSL](https://docs.datastax.com/en/developer/cpp-driver/2.8/topics/security/ssl/)
 
 ### Création du conteneur Docker Cassandra avec SSL
 
