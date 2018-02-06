@@ -106,14 +106,14 @@
         ...
         # enable or disable client/server encryption.
         client_encryption_options:
-            enabled: true
+        enabled: true #false
             # If enabled and optional is set to true encrypted and unencrypted connections are handled.
             optional: false
             keystore: /etc/cassandra/conf/keystore.jks
-            keystore_password: cassandra
-            require_client_auth: true
+            keystore_password: cassandra #conf/.keystore
+            require_client_auth: true #false
             # Set trustore and truststore_password if require_client_auth is true
-            truststore: /etc/cassandra/conf/truststore.jks
+            truststore: /etc/cassandra/conf/truststore.jks #conf/.truststore
             truststore_password: cassandra
             # More advanced defaults below:
             # protocol: TLS
