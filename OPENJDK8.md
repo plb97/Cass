@@ -11,7 +11,7 @@
     echo $'#!/bin/sh
         MAINTENER=plb97
         APPLI=$(basename $(pwd)) # openjdk8
-        VERS=3.8
+        VERS=latest
         TAG=alpine_${VERS}
         BASE=${MAINTENER}/alpine:${TAG}
         ' | sed -e 's/^        //' > env.sh
@@ -98,7 +98,7 @@
     docker image save -o ${APPLI}.tar ${MAINTENER}/${APPLI}:${TAG}
     docker image rm ${MAINTENER}/${APPLI}:${TAG} ${MAINTENER}/${APPLI}:latest
     docker image load -i ${APPLI}.tar ; docker image tag ${MAINTENER}/${APPLI}:${TAG} ${MAINTENER}/${APPLI}:latest
-    rm -v ${APPLI}.tar
+    rm -vf ${APPLI}.tar
     docker image ls -a
 
     #// supprimer les images intermediaires restantes (facultatif)

@@ -2,16 +2,27 @@
 
 ## Alpine
 
+### Lectures
+
+* [Paquets](http://dl-cdn.alpinelinux.org/alpine/v3.10/main/armv7/)
+* [...](http://dl-cdn.alpinelinux.org/alpine/v3.10/community/armv7/)
+*
+
 ### Créer le fichier 'env.sh' 
 
     echo $'#!/bin/sh
         MAINTENER=plb97
-        APPLI=$(basename $(pwd)) # alpine
-        VERS=3.8
-        TAG=alpine_${VERS}
-        case $(uname -m) in "x86_64") ARCH=amd64; ;; "armv7l") ARCH=arm32v6; ;; none) ARCH=unknown; ;; esac
-        BASE=${ARCH}/alpine:${VERS}
-        ' | sed -e 's/^        //' > env.sh
+        #APPLI=$(basename $(pwd)) # alpine
+        APPLI=alpine
+        #VERS=latest
+        #TAG=alpine_${VERS}
+        case $(uname -m) in "x86_64") ARCH=amd64; ;; "armv7l") ARCH=arm32v7; ;; none) ARCH=unknown; ;; esac
+        #BASE=${ARCH}/alpine:${VERS}
+        BASE=${ARCH}/alpine
+        IMAGE="${MAINTENER}/${APPLI}"
+        CONTENEUR="${MAINTENER}_${APPLI}"
+        COMMANDE=""
+        ' | sed -e 's/^        //' | tee env.sh
     chmod +x env.sh
     .  env.sh
 
@@ -37,74 +48,80 @@
             echo
         
         ENTRYPOINT ["/sbin/openrc-init"]
+        VOLUME /sys/fs/cgroup
         
-        ' | sed -e 's/^        //' > Dockerfile
+        ' | sed -e 's/^        //' | tee Dockerfile
 
 
 ### Construire l'image
 
     .  env.sh
 
-    docker image build --no-cache --rm --build-arg "BASE=${BASE}" -t "${MAINTENER}/${APPLI}:${TAG}" -t "${MAINTENER}/${APPLI}:latest" .
+    docker image build --no-cache --rm --build-arg "BASE=${BASE}" -t ${IMAGE} .
 
-    docker image inspect "${MAINTENER}/${APPLI}:${TAG}"
+    docker image inspect ${IMAGE}
 
 
 ### Lancer le conteneur
 
     .  env.sh
 
-    docker container run --privileged --name ${APPLI}_${TAG} -d ${MAINTENER}/${APPLI}:${TAG}
+    docker container run --name ${CONTENEUR} -d ${IMAGE} ${COMMANDE}
 
 ### Utiliser le conteneur
 
     .  env.sh
     
     #// consulter le journal du conteneur
-    docker container logs ${APPLI}_${TAG}
+    docker container logs ${CONTENEUR}
 
     #// Consulter les processus actifs
-    docker container exec ${APPLI}_${TAG} ps
+    docker container exec ${CONTENEUR} ps
 
     #// aller dans le conteneur en tant que 'root'
-    docker container exec -it ${APPLI}_${TAG} sh
+    docker container exec -it ${CONTENEUR} sh
 
     #// arreter le conteneur
-    docker container stop ${APPLI}_${TAG}
+    docker container stop ${CONTENEUR}
 
     #// demarrer le conteneur
-    docker container start ${APPLI}_${TAG}
+    docker container start ${CONTENEUR}
 
     #// redemarrer le conteneur
-    docker container restart ${APPLI}_${TAG}
+    docker container restart ${CONTENEUR}
 
 ### Nettoyer le conteneur
 
     .  env.sh
     
-    docker container stop ${APPLI}_${TAG} ; docker container rm ${APPLI}_${TAG}
+    docker container stop ${CONTENEUR} ; \
+    docker container rm ${CONTENEUR}
 
 ### Nettoyer l'image
   
     .  env.sh
 
-    docker container stop ${APPLI}_${TAG} ; docker container rm ${APPLI}_${TAG} ; \
-    docker image rm ${MAINTENER}/${APPLI}:${TAG} ${MAINTENER}/${APPLI}:latest
+    docker container stop ${CONTENEUR} ; \
+    docker container rm ${CONTENEUR} ; \
+    docker image rm ${IMAGE}
 
 ### Nettoyer les images
   
     .  env.sh
 
-    docker container stop ${APPLI}_${TAG} ; docker container rm ${APPLI}_${TAG}
-    docker image ls -a 
-    docker image save -o ${APPLI}.tar ${MAINTENER}/${APPLI}:${TAG}
-    docker image rm ${MAINTENER}/${APPLI}:${TAG} ${MAINTENER}/${APPLI}:latest
-    docker image load -i ${APPLI}.tar ; docker image tag ${MAINTENER}/${APPLI}:${TAG} ${MAINTENER}/${APPLI}:latest 
-    rm -v ${APPLI}.tar
+    docker container stop ${CONTENEUR} ; docker container rm ${CONTENEUR}
+    docker image ls -a
+    docker image save -o ${APPLI}.tar ${IMAGE}
+    docker image rm ${IMAGE}
+    docker image load -i ${APPLI}.tar
+    #docker image tag ${IMAGE}:<TAG>
+    rm -fv ${APPLI}.tar
     docker image ls -a
     
     #// supprimer les images intermediaires restantes (facultatif)
-    for i in $(docker image ls -a|grep "<none>"|awk '{ print $3; }'); do echo $i;for c in $(dc ls -q -a -f "ancestor=$i"); do docker container rm $c; done; di rm $i; done
+    for i in $(docker image ls -a|grep "<none>"|awk '{ print $3; }'); do echo $i; \
+        for c in $(dc ls -q -a -f "ancestor=$i"); do docker container rm --force $c; done; di rm $i; \
+    done
 
     docker image ls -a
 

@@ -356,6 +356,9 @@
 
 * [changement de disque SSD](https://www.youtube.com/watch?v=gliJz9EmRq8)
 * [...](https://fr.ifixit.com/Tutoriel/Remplacement+du+SSD+du+MacBook+Pro+15-Inch+Retina+mi-2015+SSD/48251)
+* [Sensibilté à la casse](https://github.com/cr/MacCaseSensitiveConversion)
+* [Supprimer une sauvegarde TimeMachien](https://matthieufleitz.fr/supprimer-manuellement-backup-time-machine/)
+* [Démarrage](https://support.apple.com/fr-fr/HT202796)
 * 
 
     sudo lsof -nP -i4TCP:80 | grep LISTEN
@@ -367,6 +370,71 @@
     <enter>
     cd /var/lib/docker/volumes
     ls -l
-    # pour sortir ^Z
     
+
+### Changer la sensibilité à la casse d'une sauvegarde TimeMachine
+    
+    sudo /System/Library/Extensions/TMSafetyNet.kext/Contents/Helpers/bypass \
+    xattr -w com.apple.backupd.VolumeIsCaseSensitive 1 \
+    /Volumes/SSD860EVO1T/Backups.backupdb/Philippe-Pro/Latest/Macintosh\ HD/
+    
+    for f in $(ls -ld /Volumes/SSD860EVO1T/Backups.backupdb/Philippe-Pro/2018-09-*|awk '{ print $9; }')
+    do
+        echo $f
+        /System/Library/Extensions/TMSafetyNet.kext/Contents/Helpers/bypass \
+        xattr -w com.apple.backupd.VolumeIsCaseSensitive 1 \
+        "$f"
+    done
+    
+    for f in $(ls -ld /Volumes/SSD860EVO1T/Backups.backupdb/Philippe-Pro/2018-09-*|awk '{ print $9; }')
+    do
+        echo $f
+        xattr -p com.apple.backupd.VolumeIsCaseSensitive \
+        "$f"
+    done
+    
+    /System/Library/Extensions/TMSafetyNet.kext/Contents/Helpers/bypass \
+    xattr -w com.apple.backupd.VolumeIsCaseSensitive 1 \
+    /Volumes/SSD860EVO1T/Backups.backupdb/Philippe-Pro/2018-09-07-230729
+
+    /System/Library/Extensions/TMSafetyNet.kext/Contents/Helpers/bypass \
+    xattr -w com.apple.backupd.VolumeIsCaseSensitive 1 \
+
+    /System/Library/Extensions/TMSafetyNet.kext/Contents/Helpers/bypass \
+    xattr -w com.apple.backupd.VolumeIsCaseSensitive 1 \
+    /Volumes/SSD860EVO1T/Backups.backupdb/Philippe-Pro/2018-09-08-093155
+
+    /System/Library/Extensions/TMSafetyNet.kext/Contents/Helpers/bypass \
+    xattr -w com.apple.backupd.VolumeIsCaseSensitive 1 \
+    /Volumes/SSD860EVO1T/Backups.backupdb/Philippe-Pro/2018-09-08-103141
+    
+    /System/Library/Extensions/TMSafetyNet.kext/Contents/Helpers/bypass \
+    xattr -w com.apple.backupd.VolumeIsCaseSensitive 1 \
+    /Volumes/SSD860EVO1T/Backups.backupdb/Philippe-Pro/2018-09-08-113004
+    
+    /System/Library/Extensions/TMSafetyNet.kext/Contents/Helpers/bypass \
+    xattr -w com.apple.backupd.VolumeIsCaseSensitive 1 \
+    /Volumes/SSD860EVO1T/Backups.backupdb/Philippe-Pro/2018-09-08-123043
+
+    
+### SSH
+    
+    #// generer une cle RSA
+    ssh-keygen -t rsa
+    #// tramettre la clé sur le serveur distant
+    ssh-copy-id pi@rpi1.local
+
+### VNC
+
+    #// installer realvnc serveur
+    sudo apt-get update ; sudo apg-get -y upgrade
+    sudo apt-get -y install realvnc-vnc-server
+    #// lancer realvnc serveur
+    sudo systemctl start vncserver-x11-serviced.service
+    #// lancer realvnc serveur au demarrage
+    sudo systemctl enable vncserver-x11-serviced.service
+    #// arreter realvnc serveur
+    sudo systemctl stop vncserver-x11-serviced.service
+    #// ne plus lancver realvnc serveur au demarrage
+    sudo systemctl disable vncserver-x11-serviced.service
     

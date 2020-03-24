@@ -21,6 +21,8 @@
 * [...](http://irp.nain-t.net/doku.php/130netfilter:start)
 * [...](https://upandclear.org/2016/06/25/iptables-faut-pas-en-avoir-peur-regles-openvpn-secu/)
 * [WOL](https://www.freedesktop.org/software/systemd/man/systemd.link.html)
+* [Raspberry wifi configuration](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
+* [Raspberry wifi passerelle](https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md)
 * 
 
 ## Lister les cartes réseau "physiques" (docker0 comprise le cas échéant)
@@ -116,7 +118,7 @@ En tant que 'root'
     cd ..
     rm -rv hostapd
     
-    sudo reboot
+    reboot
 
 ### Configurer 'hostapd' (en tant que 'root')
 

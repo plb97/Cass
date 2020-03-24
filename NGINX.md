@@ -1,6 +1,6 @@
-#  Cass
+#  Raspberry Pi / Docker
 
-## Création d'une image 'Docker' pour Raspberry Pi 3 : Nginx basée sur Alpine
+## Nginx basé sur Alpine
 
 ### Lectures
 
@@ -10,24 +10,39 @@
 
     echo $'#!/bin/sh
         MAINTENER=plb97
-        APPLI=$(basename $(pwd)) # nginx
-        VERS=3.8
-        TAG=alpine_${VERS}
-        BASE=${MAINTENER}/php7_nginx:${TAG}
+        #APPLI=$(basename $(pwd)) # nginx
+        APPLI=nginx
+        BASE=${MAINTENER}/alpine
         
         NGINX_HTTP_PORT=80
-        NGINX_HTTPS_PORT=443
-        NGINX_NGINX_CONF_DIR=/etc/nginx
-        NGINX_DATA_DIR=/var/lib/nginx
-        NGINX_PHP7_CONF_DIR=/etc/php7
-        NGINX_NGINX_CONF_VOL=${NGINX_NGINX_CONF_DIR//\//-}
-        NGINX_DATA_VOL=${NGINX_DATA_DIR//\//-}
-        NGINX_PHP7_CONF_VOL=${NGINX_PHP7_CONF_DIR//\//-}
+        #NGINX_HTTPS_PORT=443
+        #NGINX_CONF_DIR=/etc/nginx
+        #NGINX_CERT_DIR=/etc/letsencrypt
+        #NGINX_DATA_DIR=/var/lib/nginx
+        NGINX_HTML_DIR=/var/lib/nginx/html
+        #NGINX_CONF_VOL=${APPLI}${NGINX_CONF_DIR//\//-}
+        #NGINX_CERT_VOL=${APPLI}${NGINX_CERT_DIR//\//-}
+        #NGINX_DATA_VOL=${APPLI}${NGINX_DATA_DIR//\//-}
+        NGINX_HTML_VOL=${APPLI}${NGINX_HTML_DIR//\//-}
         
-        APPLI=${APPLI}_php7
-        ' | sed -e 's/^        //' > env.sh
+        IMAGE=${MAINTENER}/${APPLI}
+        CONTENEUR=${MAINTENER}_${APPLI}
+        COMMANDE=""
+        ' | sed -e 's/^        //' | tee env.sh
     chmod +x env.sh
     .  env.sh
+
+### Créer le fichier 'http.conf'
+
+    echo "# http.conf
+        server {
+            listen 80 default_server;
+            listen [::]:80 default_server;
+            root ${NGINX_HTML_DIR};
+            location / {
+            }
+        }
+        " | sed -e 's/^        //' | tee http.conf
 
 ### Creer le fichier 'Dockerfile'
 
@@ -36,171 +51,153 @@
     echo $'ARG BASE
         FROM ${BASE}
         
-        ENV NGINX_DATA_DIR=/var/lib/nginx \\
-            NGINX_NGINX_CONF_DIR=/etc/nginx \\
+        ENV NGINX_HTML_DIR=/var/lib/nginx/html \\
             NGINX_HTTP_PORT=80 \\
-            NGINX_HTTPS_PORT=443 \\
-            NGINX_PHP7_CONF_DIR=/etc/php7 \\
             LANG=C.UTF-8
         
         RUN set -ex ; \\
             # Installation de nginx
             apk --no-cache add nginx ; \\
-            mkdir /run/nginx ; \\
-            # Creation de la configuration par defaut
-            default_conf="${NGINX_NGINX_CONF_DIR}/conf.d/default.conf" ; \\
-            mv -v ${default_conf} ${default_conf}.origin ; \\
-            touch ${default_conf} ; \\
-            echo "# ${default_conf}" >> ${default_conf} ; \\
-            echo "error_log /var/log/nginx/error.log warn;" >> ${default_conf} ; \\
-            echo "" >> ${default_conf} ; \\
-            echo "server {" >> ${default_conf} ; \\
-            echo "    include ${NGINX_NGINX_CONF_DIR}/mime.types;" >> ${default_conf} ; \\
-            echo "    default_type application/octet-stream;" >> ${default_conf} ; \\
-            echo "    access_log /var/log/nginx/access.log;" >> ${default_conf} ; \\
-            echo "    keepalive_timeout 3000;" >> ${default_conf} ; \\
-            echo "    listen ${NGINX_HTTP_PORT} default_server;" >> ${default_conf} ; \\
-            echo "    listen [::]:${NGINX_HTTP_PORT} default_server;" >> ${default_conf} ; \\
-            echo "" >> ${default_conf} ; \\
-            echo "    location / {" >> ${default_conf} ; \\
-            echo "        root ${NGINX_DATA_DIR}/html;" >> ${default_conf} ; \\
-            echo "        index index.php index.html index.htm;" >> ${default_conf} ; \\
-            echo "    }" >> ${default_conf} ; \\
-            echo "" >> ${default_conf} ; \\
-            echo "    location ~ \.php$ {" >> ${default_conf} ; \\
-            echo "        include fastcgi.conf;" >> ${default_conf} ; \\
-            echo "        fastcgi_index index.php;" >> ${default_conf} ; \\
-            echo "        fastcgi_pass unix:/var/run/php-fpm7/www.sock;" >> ${default_conf} ; \\
-            echo "    }" >> ${default_conf} ; \\
-            echo "    location = /50x.html {" >> ${default_conf} ; \\
-            echo "        root ${NGINX_DATA_DIR}/html;" >> ${default_conf} ; \\
-            echo "    }" >> ${default_conf} ; \\
-            echo "    location = /404.html {" >> ${default_conf} ; \\
-            echo "        internal;" >> ${default_conf} ; \\
-            echo "    }" >> ${default_conf} ; \\
-            echo "}" >> ${default_conf} ; \\
-            unset default_conf ; \\
-            # Creation d\'une page d\'informations sur PHP
-            phpinfo=${NGINX_DATA_DIR}/html/phpinfo.php ; \\
-            echo "<?php" > ${phpinfo} ; \\
-            echo "" >> ${phpinfo} ; \\
-            echo "// Affiche toutes les informations, comme le ferait INFO_ALL" >> ${phpinfo} ; \\
-            echo "phpinfo();" >> ${phpinfo} ; \\
-            echo "" >> ${phpinfo} ; \\
-            echo "// Affiche uniquement le module d\'information." >> ${phpinfo} ; \\
-            echo "// phpinfo(8) fournirait les mêmes informations." >> ${phpinfo} ; \\
-            echo "phpinfo(INFO_MODULES);" >> ${phpinfo} ; \\
-            echo "" >> ${phpinfo} ; \\
-            echo "?>" >> ${phpinfo} ; \\
-            unset phpinfo ; \\
-            # Vérification de la configuration de nginx
-            nginx -t ; \\
             rc-update add nginx default ; \\
+            mv -v /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.origin ; \\
+            echo "# default.conf" > /etc/nginx/conf.d/default.conf ; \\
+            echo "server {" >> /etc/nginx/conf.d/default.conf ; \\
+            echo "  listen 80 default_server;" >> /etc/nginx/conf.d/default.conf ; \\
+            echo "  listen [::]:80 default_server;" >> /etc/nginx/conf.d/default.conf ; \\
+            echo "  root ${NGINX_HTML_DIR};" >> /etc/nginx/conf.d/default.conf ; \\
+            echo "  location / {" >> /etc/nginx/conf.d/default.conf ; \\
+            echo "  }" >> /etc/nginx/conf.d/default.conf ; \\
+            echo "}" >> /etc/nginx/conf.d/default.conf ; \\
             echo
         
         ENTRYPOINT ["/sbin/openrc-init"]
-        
         EXPOSE ${NGINX_HTTP_PORT}
-        EXPOSE ${NGINX_HTTPS_PORT}
+        VOLUME /sys/fs/cgroup ${NGINX_HTML_DIR}
         
-        VOLUME ${NGINX_NGINX_CONF_DIR}
-        VOLUME ${NGINX_PHP7_CONF_DIR}
-        VOLUME ${NGINX_DATA_DIR}
-
-        ' | sed -e 's/^        //' > Dockerfile
+        ' | sed -e 's/^        //' | tee Dockerfile
 
 ### Construire l'image
 
     .  env.sh
 
-    docker image build --no-cache --force-rm --build-arg "BASE=${BASE}" -t "${MAINTENER}/${APPLI}:${TAG}" -t "${MAINTENER}/${APPLI}:latest" .
+    docker image build --no-cache --force-rm --build-arg "BASE=${BASE}" -t "${IMAGE}" .
 
-    docker image inspect "${MAINTENER}/${APPLI}:${TAG}"
+    docker image inspect "${IMAGE}"
 
 ### Créer les volumes
 
-    docker volume create ${APPLI}${NGINX_DATA_VOL} ; docker volume create ${APPLI}${NGINX_NGINX_CONF_VOL} ; docker volume create ${APPLI}${NGINX_PHP7_CONF_VOL}
+    docker volume create ${NGINX_HTML_VOL}
 
 ### Lancer le conteneur
 
     .  env.sh
 
-    docker volume create ${APPLI}${NGINX_DATA_VOL} ; \
-    docker volume create ${APPLI}${NGINX_NGINX_CONF_VOL} ; \
-    docker volume create ${APPLI}${NGINX_PHP7_CONF_VOL} ; \
-    docker container run --privileged --name ${APPLI}_${TAG} \
-        -v ${APPLI}${NGINX_DATA_VOL}:${NGINX_DATA_DIR} \
-        -v ${APPLI}${NGINX_NGINX_CONF_VOL}:${NGINX_NGINX_CONF_DIR} \
-        -v ${APPLI}${NGINX_PHP7_CONF_VOL}:${NGINX_PHP7_CONF_DIR} \
+    docker container run \
+        --name ${CONTENEUR} \
+        -v ${NGINX_HTML_VOL}:${NGINX_HTML_DIR} \
         -p ${NGINX_HTTP_PORT}:80 \
-        -p ${NGINX_HTTPS_PORT}:443 \
-        -d ${MAINTENER}/${APPLI}:${TAG}
-
+        -d ${IMAGE} ${COMMANDE}
+    
 ### Utiliser le conteneur
 
     .  env.sh
     
     #// consulter le journal du conteneur
-    docker container logs ${APPLI}_${TAG}
+    docker container logs ${CONTENEUR}
 
     #// Consulter les processus actifs
-    docker container exec ${APPLI}_${TAG} ps
+    docker container exec ${CONTENEUR} ps
 
     #// Consulter les ports qui ecoutent
-    docker container exec ${APPLI}_${TAG} netstat -l
-
-    #// Consulter la configuration
-    docker container exec ${APPLI}_${TAG} cat ${NGINX_PHP7_CONF_DIR}/php-fpm.d/www.conf
+    docker container exec ${CONTENEUR} netstat -l
 
     #// Consulter les journaux
-    docker container exec ${APPLI}_${TAG} cat /var/log/php7/error.log ; \
-    docker container exec ${APPLI}_${TAG} cat /var/log/nginx/error.log
+    docker container exec ${CONTENEUR} cat /var/log/nginx/error.log
 
-    #// aller dans le conteneur en tant que 'root'
-    docker container exec -it ${APPLI}_${TAG} sh
-
-    #// arreter le conteneur
-    docker container stop ${APPLI}_${TAG}
+    #// aller dans le conteneur en tant que USER ('root' par défaut)
+    docker container exec -it ${CONTENEUR} sh
 
     #// demarrer le conteneur
-    docker container start ${APPLI}_${TAG}
+    docker container start ${CONTENEUR}
+
+    #// arreter le conteneur
+    docker container stop ${CONTENEUR}
 
     #// redemarrer le conteneur
-    docker container restart ${APPLI}_${TAG}
+    docker container restart ${CONTENEUR}
 
 ### Nettoyer le conteneur
 
     .  env.sh
     
-    docker container stop ${APPLI}_${TAG} ; \
-    docker container rm ${APPLI}_${TAG} ; \
-    docker volume rm ${APPLI}${NGINX_DATA_VOL} ; \
-    docker volume rm ${APPLI}${NGINX_NGINX_CONF_VOL} ; \
-    docker volume rm ${APPLI}${NGINX_PHP7_CONF_VOL}
+    docker container stop ${CONTENEUR} ; \
+    docker container rm ${CONTENEUR}
+    # ATTTENTION
+    docker volume rm ${NGINX_HTML_VOL}
 
 ### Nettoyer l'image
   
     .  env.sh
 
-    docker container stop ${APPLI}_${TAG} ; \
-    docker container rm ${APPLI}_${TAG} ; \
-    docker image rm ${MAINTENER}/${APPLI}:${TAG} ${MAINTENER}/${APPLI}:latest
+    docker container stop ${CONTENEUR} ; \
+    docker container rm ${CONTENEUR} ; \
+    docker image rm ${IMAGE}
+
+### Nettoyer tout
+  
+    .  env.sh
+
+    # ATTENTION !
+    docker container stop ${CONTENEUR} ; docker container rm ${CONTENEUR} ; docker volume rm  docker volume rm ${NGINX_HTML_VOL} ; docker image rm ${IMAGE}
 
 ### Nettoyer les images
   
     .  env.sh
 
-    docker container stop ${APPLI}_${TAG} ; docker container rm ${APPLI}_${TAG}
+    docker container stop ${CONTENEUR} ; docker container rm ${CONTENEUR}
     docker image ls -a 
-    docker image save -o ${APPLI}.tar ${MAINTENER}/${APPLI}:${TAG}
-    docker image rm ${MAINTENER}/${APPLI}:${TAG} ${MAINTENER}/${APPLI}:latest
-    docker image load -i ${APPLI}.tar ; docker image tag ${MAINTENER}/${APPLI}:${TAG} ${MAINTENER}/${APPLI}:latest
-    rm -v ${APPLI}.tar
+    docker image save -o /tmp/${APPLI}.tar ${IMAGE}
+    docker image rm ${IMAGE}
+    docker image load -i /tmp/${APPLI}.tar
+    # docker image tag ${IMAGE}:<TAG>
+    sudo rm -fv /tmp/${APPLI}.tar
     docker image ls -a
     
     #// supprimer les images intermediaires restantes (facultatif)
-    for i in $(docker image ls -a|grep "<none>"|awk '{ print $3; }'); do echo $i;for c in $(dc ls -q -a -f "ancestor=$i"); do docker container rm $c; done; di rm $i; done
+    for i in $(docker image ls -a|grep "<none>"|awk '{ print $3; }'); do echo $i;\
+        for c in $(dc ls -q -a -f "ancestor=$i"); do docker container rm $c; done; di rm $i; \
+    done
 
     docker image ls -a
 
 
+### Créer le fichier 'docker-compose.yml'
+
+    .  env.sh
+
+    echo "# docker-compose.yml
+        version: '3'
+              
+        services:
+              
+          web:
+            build:
+              context: .
+              args:
+                BASE: ${BASE}
+            image: ${IMAGE}
+            ports:
+              - ${NGINX_HTTP_PORT:-80}:80
+            tmpfs:
+              - /run
+              - /run/lock
+              - /tmp
+            volumes:
+              - /sys/fs/cgroup
+              - ${NGINX_HTML_VOL:-${APPLI}-var-lib-nginx-html}:/var/lib/nginx/html
+              
+        volumes:
+              
+          ${NGINX_HTML_VOL:-${APPLI}-var-lib-nginx-html}:
+            #external: true
+        " | sed -e 's/^        //' | tee docker-compose.yml

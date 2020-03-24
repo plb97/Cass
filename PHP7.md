@@ -31,7 +31,7 @@
     echo $'ARG BASE
         FROM ${BASE}
         
-        ARG PHP7_USER=apache
+        ARG PHP7_USER=nginx
         
         ENV PHP7_USER=${PHP7_USER} \\
             PHP7_CONF_DIR=/etc/php7 \\

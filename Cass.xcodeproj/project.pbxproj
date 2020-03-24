@@ -110,16 +110,21 @@
 		374F6BFB20CBD5780073AE34 /* CASSANDRA_1.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CASSANDRA_1.md; sourceTree = "<group>"; };
 		37646EFA20E006A0001E711B /* KODI.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = KODI.md; sourceTree = "<group>"; };
 		376E79D8204C584C00226C76 /* BERRYBOOT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BERRYBOOT.md; sourceTree = "<group>"; };
+		376F979D242117FA000B1B6C /* JUPYTERLAB.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = JUPYTERLAB.md; sourceTree = "<group>"; };
 		3773B2BD2042E73600B04C39 /* CASSANDRA_2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CASSANDRA_2.md; sourceTree = "<group>"; };
 		3773B2BE2042F5E100B04C39 /* NAS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = NAS.md; sourceTree = "<group>"; };
 		3773B2BF2043133400B04C39 /* VIDEO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = VIDEO.md; sourceTree = "<group>"; };
 		3773B2C120494E1900B04C39 /* NEXTCLOUD.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = NEXTCLOUD.md; sourceTree = "<group>"; };
+		377ABCA42341F1B000C71599 /* JENKINS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = JENKINS.md; sourceTree = "<group>"; };
+		377ABCA52344B6BA00C71599 /* NGINX_PROXY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = NGINX_PROXY.md; sourceTree = "<group>"; };
+		377ABCA6234C82E700C71599 /* DOCKER_GEN.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DOCKER_GEN.md; sourceTree = "<group>"; };
 		378A565920612E9A00FF5BFA /* EMBARQUE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = EMBARQUE.md; sourceTree = "<group>"; };
 		378A565A2063C73B00FF5BFA /* YOCTO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = YOCTO.md; sourceTree = "<group>"; };
 		378B59B6205954E200084002 /* CROSSTOOLNG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CROSSTOOLNG.md; sourceTree = "<group>"; };
 		378B59B72059551D00084002 /* BUILDROOT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BUILDROOT.md; sourceTree = "<group>"; };
 		3790A6F020A08F3A001F28E0 /* MULTISTRAP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MULTISTRAP.md; sourceTree = "<group>"; };
-		3794D216202F729500D592B6 /* RASPBERRYPI3.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = RASPBERRYPI3.md; sourceTree = "<group>"; };
+		3794D216202F729500D592B6 /* RASPBERRYPI.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = RASPBERRYPI.md; sourceTree = "<group>"; };
+		379946692370A7AF00D0E727 /* NGINX_NEXTCLOUD.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = NGINX_NEXTCLOUD.md; sourceTree = "<group>"; };
 		379AA297213E91BA0087C338 /* AMNP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AMNP.md; sourceTree = "<group>"; };
 		379AA298214142D20087C338 /* AMNPF.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AMNPF.md; sourceTree = "<group>"; };
 		37A0B8E62006440200CB3F1C /* Prepared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Prepared.swift; sourceTree = "<group>"; };
@@ -137,6 +142,8 @@
 		37A0B90B200E0EC700CB3F1C /* SslVerifyFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SslVerifyFlags.swift; sourceTree = "<group>"; };
 		37A0B90D200E105900CB3F1C /* ProtocolVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolVersion.swift; sourceTree = "<group>"; };
 		37A0B90F200E12E100CB3F1C /* ErrorSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorSource.swift; sourceTree = "<group>"; };
+		37DB4C62234C921300067359 /* LETSENCRYPT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LETSENCRYPT.md; sourceTree = "<group>"; };
+		37DB4C64234DDFFF00067359 /* NGINX_PHP7.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = NGINX_PHP7.md; sourceTree = "<group>"; };
 		37DF3E062128323600143119 /* ASTERISK.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ASTERISK.md; sourceTree = "<group>"; };
 		37DF3E07212EE01000143119 /* FREEPBX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FREEPBX.md; sourceTree = "<group>"; };
 		37DF3E08212FF1EC00143119 /* BASH.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BASH.md; sourceTree = "<group>"; };
@@ -168,23 +175,27 @@
 		3708E5611FE93D7A00365543 = {
 			isa = PBXGroup;
 			children = (
-				379AA298214142D20087C338 /* AMNPF.md */,
-				379AA297213E91BA0087C338 /* AMNP.md */,
+				376F979D242117FA000B1B6C /* JUPYTERLAB.md */,
 				37F46267209756DF008B1B4F /* ACCES-POINT.md */,
 				374F6BFA20C67D850073AE34 /* ALPINE.md */,
+				379AA297213E91BA0087C338 /* AMNP.md */,
+				379AA298214142D20087C338 /* AMNPF.md */,
 				37DF3E062128323600143119 /* ASTERISK.md */,
 				37DF3E08212FF1EC00143119 /* BASH.md */,
 				376E79D8204C584C00226C76 /* BERRYBOOT.md */,
 				378B59B72059551D00084002 /* BUILDROOT.md */,
-				37DF3E0D2139B64A00143119 /* CASSANDRA2.md */,
-				37DF3E0C213957D200143119 /* CASSANDRA3.md */,
 				374F6BFB20CBD5780073AE34 /* CASSANDRA_1.md */,
 				3773B2BD2042E73600B04C39 /* CASSANDRA_2.md */,
+				37DF3E0D2139B64A00143119 /* CASSANDRA2.md */,
+				37DF3E0C213957D200143119 /* CASSANDRA3.md */,
 				378B59B6205954E200084002 /* CROSSTOOLNG.md */,
 				372D8BEC202455F6005FA38A /* DOCKER.md */,
+				377ABCA6234C82E700C71599 /* DOCKER_GEN.md */,
 				378A565920612E9A00FF5BFA /* EMBARQUE.md */,
 				37DF3E07212EE01000143119 /* FREEPBX.md */,
+				377ABCA42341F1B000C71599 /* JENKINS.md */,
 				37646EFA20E006A0001E711B /* KODI.md */,
+				37DB4C62234C921300067359 /* LETSENCRYPT.md */,
 				373FD3CC1FEA798000B14377 /* LICENCE.md */,
 				373FD3CD1FEA798000B14377 /* LICENSE.md */,
 				374F6BF920C573150073AE34 /* MARIADB.md */,
@@ -192,19 +203,22 @@
 				372A80E820B92521005540C5 /* MYSQL.md */,
 				3773B2BE2042F5E100B04C39 /* NAS.md */,
 				3773B2C120494E1900B04C39 /* NEXTCLOUD.md */,
+				377ABCA52344B6BA00C71599 /* NGINX_PROXY.md */,
+				379946692370A7AF00D0E727 /* NGINX_NEXTCLOUD.md */,
 				372A80E620B1B4F9005540C5 /* NGINX.md */,
+				37DB4C64234DDFFF00067359 /* NGINX_PHP7.md */,
 				37FC475D202B3ADD00BDF3FB /* NOTES.md */,
 				37DF3E0E2139B6F800143119 /* OPENJDK7.md */,
 				37DF3E0B2139549300143119 /* OPENJDK8.md */,
 				37DF3E092135493700143119 /* PHP5.md */,
 				37DF3E0A21355A4E00143119 /* PHP7.md */,
 				372A80E720B1D035005540C5 /* POSTGRES.md */,
-				3794D216202F729500D592B6 /* RASPBERRYPI3.md */,
+				3794D216202F729500D592B6 /* RASPBERRYPI.md */,
 				373FD3C81FEA754B00B14377 /* README.md */,
 				37F6B1F120D2AA3600994DA9 /* SWIFT.md */,
 				3773B2BF2043133400B04C39 /* VIDEO.md */,
-				37DF3E0F213B138400143119 /* WORDPRESS.md */,
 				372A80E920BB4248005540C5 /* WORDPRESS_1.md */,
+				37DF3E0F213B138400143119 /* WORDPRESS.md */,
 				378A565A2063C73B00FF5BFA /* YOCTO.md */,
 				374F6BF820C443750073AE34 /* ZOOKEEPER.md */,
 				3708E5791FE93E4A00365543 /* Config.xcconfig */,
@@ -316,12 +330,12 @@
 		3708E5621FE93D7A00365543 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = PLHB;
 				TargetAttributes = {
 					3708E5691FE93D7A00365543 = {
 						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = 0920;
+						LastSwiftMigration = 1010;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -417,6 +431,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -424,6 +439,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -472,6 +488,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -479,6 +496,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -503,6 +521,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
 		};
@@ -518,7 +537,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Cass/Cass-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -533,7 +553,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Cass/Cass-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
